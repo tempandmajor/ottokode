@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { ChevronRight, ChevronDown, File, Folder, FolderOpen, Plus, X } from 'lucide-react';
-import { Button } from '@/src/components/ui/button';
-import { Input } from '@/src/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export interface FileNode {
   id: string;

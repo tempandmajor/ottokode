@@ -84,7 +84,7 @@ export function DownloadSection() {
 
           {/* Features List */}
           <div className="space-y-6">
-            <h3 className="text-2xl font-semibold">What's included:</h3>
+            <h3 className="text-2xl font-semibold">What&apos;s included:</h3>
             <div className="grid gap-3">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">

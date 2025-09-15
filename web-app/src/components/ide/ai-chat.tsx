@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/src/components/ui/button';
-import { Input } from '@/src/components/ui/input';
-import { ScrollArea } from '@/src/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Send, Bot, User, Code, Lightbulb, Zap } from 'lucide-react';
 
 interface Message {

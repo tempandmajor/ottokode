@@ -52,7 +52,7 @@
   "redirects": [
     {
       "source": "/github",
-      "destination": "https://github.com/your-username/branchcode-ai",
+      "destination": "https://github.com/your-username/ottokode",
       "permanent": false
     },
     {
@@ -64,7 +64,7 @@
   "rewrites": [
     {
       "source": "/docs/:path*",
-      "destination": "https://docs.branchcode.ai/:path*"
+      "destination": "https://docs.ottokode.ai/:path*"
     }
   ]
 }
