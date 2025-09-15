@@ -20,7 +20,7 @@ export function Footer() {
               <a href="https://github.com/tempandmajor/ottokode" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Github className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="https://twitter.com/ottokode" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
               <a href="mailto:support@ottokode.com" className="text-muted-foreground hover:text-foreground transition-colors">
