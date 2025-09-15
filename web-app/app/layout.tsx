@@ -4,11 +4,11 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import "@/index.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ottokode.ai'),
   title: "Ottokode - AI-Powered IDE for Modern Developers",
   description: "Ottokode is an intelligent IDE with AI-powered code completion, multi-language support, and advanced debugging tools. Available for desktop and web.",
   keywords: ["AI IDE", "code completion", "developer tools", "artificial intelligence", "programming", "code editor", "software development"],
   authors: [{ name: "Ottokode" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   openGraph: {
     title: "Ottokode - AI-Powered Development Environment",
@@ -36,6 +36,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://ottokode.ai"
   }
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
