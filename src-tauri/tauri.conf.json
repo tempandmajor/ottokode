@@ -111,51 +111,5 @@
       }
     }
   },
-  "plugins": {
-    "fs": {
-      "scope": [
-        "$DOWNLOAD/*",
-        "$DOCUMENT/*",
-        "$DESKTOP/*",
-        "$HOME/*"
-      ]
-    },
-    "http": {
-      "scope": [
-        "https://api.openai.com/*",
-        "https://api.anthropic.com/*",
-        "https://generativelanguage.googleapis.com/*",
-        "https://api.cohere.ai/*",
-        "https://api.mistral.ai/*",
-        "https://*.supabase.co/*",
-        "https://api.stripe.com/*"
-      ]
-    },
-    "shell": {
-      "scope": [
-        {
-          "name": "sh",
-          "cmd": "sh",
-          "args": ["-c", "$ARGS"]
-        },
-        {
-          "name": "cmd",
-          "cmd": "cmd",
-          "args": ["/C", "$ARGS"]
-        },
-        {
-          "name": "powershell",
-          "cmd": "powershell",
-          "args": ["-Command", "$ARGS"]
-        }
-      ]
-    },
-    "opener": {
-      "scope": [
-        {
-          "url": "https://ottokode.ai/*"
-        }
-      ]
-    }
-  }
+  "plugins": {}
 }
