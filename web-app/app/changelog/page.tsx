@@ -213,7 +213,7 @@ export default function ChangelogPage() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Stay up to date with new features, improvements, and bug fixes in Ottokode.
-              We're constantly working to make your development experience better.
+              We&apos;re constantly working to make your development experience better.
             </p>
           </div>
 

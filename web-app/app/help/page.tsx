@@ -257,7 +257,7 @@ export default function HelpPage() {
                 <CardContent className="pt-8 pb-8">
                   <h3 className="text-2xl font-bold mb-4">Still need help?</h3>
                   <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                    Can't find what you're looking for? Our support team is here to help you
+                    Can&apos;t find what you&apos;re looking for? Our support team is here to help you
                     get the most out of Ottokode.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
