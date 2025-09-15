@@ -8,8 +8,8 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Code className="h-6 w-6 text-white" />
-              <span className="text-lg font-bold text-white">
+              <Code className="h-6 w-6 text-foreground" />
+              <span className="text-lg font-bold text-foreground">
                 Ottokode
               </span>
             </div>
@@ -17,13 +17,13 @@ export function Footer() {
               The AI-powered IDE that makes development faster, smarter, and more enjoyable.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="text-muted-foreground hover:text-white transition-colors">
+              <a href="https://github.com/tempandmajor/ottokode" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Github className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-white transition-colors">
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-white transition-colors">
+              <a href="mailto:support@ottokode.com" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Mail className="h-5 w-5" />
               </a>
             </div>
@@ -33,10 +33,10 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Product</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Download</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Changelog</a></li>
+              <li><a href="/#features" className="hover:text-foreground transition-colors">Features</a></li>
+              <li><a href="/#download" className="hover:text-foreground transition-colors">Download</a></li>
+              <li><a href="/pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+              <li><a href="/changelog" className="hover:text-foreground transition-colors">Changelog</a></li>
             </ul>
           </div>
 
@@ -44,10 +44,10 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Developers</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">API Reference</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Extensions</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">GitHub</a></li>
+              <li><a href="/docs" className="hover:text-foreground transition-colors">Documentation</a></li>
+              <li><a href="/docs/api" className="hover:text-foreground transition-colors">API Reference</a></li>
+              <li><a href="/extensions" className="hover:text-foreground transition-colors">Extensions</a></li>
+              <li><a href="https://github.com/tempandmajor/ottokode" className="hover:text-foreground transition-colors">GitHub</a></li>
             </ul>
           </div>
 
@@ -55,10 +55,10 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Support</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Community</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Bug Reports</a></li>
+              <li><a href="/help" className="hover:text-foreground transition-colors">Help Center</a></li>
+              <li><a href="/community" className="hover:text-foreground transition-colors">Community</a></li>
+              <li><a href="/support" className="hover:text-foreground transition-colors">Contact Us</a></li>
+              <li><a href="https://github.com/tempandmajor/ottokode/issues" className="hover:text-foreground transition-colors">Bug Reports</a></li>
             </ul>
           </div>
         </div>
