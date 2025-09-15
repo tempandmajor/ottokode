@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Branchcode AI",
+  "productName": "Ottokode",
   "version": "1.0.0",
-  "identifier": "com.branchcode.ai",
+  "identifier": "com.ottokode.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "cd web-app && TAURI_BUILD=true npm run build",
+    "frontendDist": "../web-app/out"
   },
   "app": {
     "windows": [
       {
-        "title": "Branchcode AI",
+        "title": "Ottokode",
         "width": 1400,
         "height": 900,
         "minWidth": 1200,
@@ -33,20 +33,18 @@
     ],
     "security": {
       "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
-    },
-    "enableAppMenu": true,
-    "withGlobalTauri": false
+    }
   },
   "bundle": {
     "active": true,
     "targets": "all",
     "category": "DeveloperTool",
-    "copyright": "Copyright © 2024 Branchcode AI. All rights reserved.",
-    "publisher": "Branchcode AI",
-    "homepage": "https://branchcode.ai",
+    "copyright": "Copyright © 2024 Ottokode. All rights reserved.",
+    "publisher": "Ottokode",
+    "homepage": "https://ottokode.ai",
     "externalBin": [],
     "resources": [],
-    "longDescription": "Branchcode AI is an enterprise AI-powered IDE for collaborative development. Build, debug, and deploy code faster with intelligent AI assistance, real-time collaboration features, and powerful development tools for modern software engineering.",
+    "longDescription": "Ottokode is an AI-powered IDE for modern development. Build, debug, and deploy code faster with intelligent AI assistance, real-time collaboration features, and powerful development tools for software engineering.",
     "shortDescription": "AI-powered collaborative IDE for modern developers",
     "icon": [
       "icons/32x32.png",
@@ -55,7 +53,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
@@ -85,32 +83,31 @@
       "hardenedRuntime": true,
       "entitlements": "entitlements.plist",
       "exceptionDomain": null,
-      "providerShortName": "BranchcodeAI",
-      "license": "LICENSE"
+      "providerShortName": "Ottokode"
     },
     "linux": {
       "deb": {
         "depends": ["libwebkit2gtk-4.0-37", "libgtk-3-0", "libayatana-appindicator3-1"],
         "files": {
-          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/applications/": "assets/ottokode.desktop",
           "/usr/share/pixmaps/": "icons/128x128.png"
         },
-        "desktopTemplate": "assets/branchcode-ai.desktop"
+        "desktopTemplate": "assets/ottokode.desktop"
       },
       "appimage": {
         "bundleMediaFramework": true,
         "files": {
-          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/applications/": "assets/ottokode.desktop",
           "/usr/share/pixmaps/": "icons/128x128.png"
         }
       },
       "rpm": {
         "depends": ["webkit2gtk3", "gtk3", "libappindicator-gtk3"],
         "files": {
-          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/applications/": "assets/ottokode.desktop",
           "/usr/share/pixmaps/": "icons/128x128.png"
         },
-        "desktopTemplate": "assets/branchcode-ai.desktop"
+        "desktopTemplate": "assets/ottokode.desktop"
       }
     }
   },
@@ -156,7 +153,7 @@
     "opener": {
       "scope": [
         {
-          "url": "https://branchcode.ai/*"
+          "url": "https://ottokode.ai/*"
         }
       ]
     }

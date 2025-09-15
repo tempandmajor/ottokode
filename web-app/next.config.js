@@ -57,7 +57,16 @@ const nextConfig = {
   },
 
   // Build output optimization
-  output: 'standalone',
+  output: process.env.TAURI_BUILD ? 'export' : 'standalone',
+
+  // Skip SSG for Tauri builds to avoid Supabase issues
+  ...(process.env.TAURI_BUILD && {
+    trailingSlash: true,
+    skipTrailingSlashRedirect: true,
+    images: {
+      unoptimized: true,
+    },
+  }),
 
   // Compression
   compress: true,

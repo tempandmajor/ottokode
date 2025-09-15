@@ -282,7 +282,7 @@ export default function CommunityPage() {
                 <Heart className="h-12 w-12 text-ai-primary mx-auto mb-6" />
                 <h3 className="text-3xl font-bold mb-4">Ready to Get Involved?</h3>
                 <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg">
-                  Whether you're a seasoned developer or just starting out, there's a place for you
+                  Whether you&apos;re a seasoned developer or just starting out, there&apos;s a place for you
                   in the Ottokode community. Join us and help shape the future of development tools.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
