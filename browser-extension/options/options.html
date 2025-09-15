@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI IDE Companion Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="settings-container">
+    <!-- Header -->
+    <div class="header">
+      <h1>
+        <span class="logo-icon">🤖</span>
+        AI IDE Companion Settings
+      </h1>
+      <p class="subtitle">Configure your browser companion for optimal AI IDE integration</p>
+    </div>
+
+    <!-- Connection Settings -->
+    <div class="section">
+      <h2>Desktop Connection</h2>
+      <div class="setting-group">
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Auto-connect to Desktop</span>
+            <span class="setting-description">Automatically connect to AI IDE when extension starts</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="autoConnect" class="toggle">
+          </div>
+        </label>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Desktop App URL</span>
+            <span class="setting-description">WebSocket URL for connecting to desktop app</span>
+          </div>
+          <div class="setting-control">
+            <input type="text" id="desktopUrl" class="input" placeholder="ws://localhost:3001">
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Connection Status</span>
+            <span class="setting-description">Current connection to desktop app</span>
+          </div>
+          <div class="setting-control">
+            <div class="connection-indicator" id="connectionIndicator">
+              <span class="status-dot"></span>
+              <span class="status-text">Checking...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Provider Settings -->
+    <div class="section">
+      <h2>AI Provider Preferences</h2>
+      <div class="setting-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Default AI Provider</span>
+            <span class="setting-description">Which AI provider to use for quick actions</span>
+          </div>
+          <div class="setting-control">
+            <select id="defaultProvider" class="select">
+              <option value="openai">OpenAI (GPT-4)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="google">Google (Gemini)</option>
+              <option value="ollama">Ollama (Local)</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Enable Code Analysis</span>
+            <span class="setting-description">Allow AI analysis of code snippets from web pages</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="enableCodeAnalysis" class="toggle">
+          </div>
+        </label>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Auto-detect Code Language</span>
+            <span class="setting-description">Automatically detect programming language for better analysis</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="autoDetectLanguage" class="toggle">
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Capture Settings -->
+    <div class="section">
+      <h2>Code Capture</h2>
+      <div class="setting-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Max Snippets to Store</span>
+            <span class="setting-description">Maximum number of captured code snippets to keep</span>
+          </div>
+          <div class="setting-control">
+            <input type="number" id="maxSnippets" class="input" min="10" max="200" value="50">
+          </div>
+        </div>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Auto-sync Captures</span>
+            <span class="setting-description">Automatically sync captured snippets with desktop app</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="autoSyncCaptures" class="toggle">
+          </div>
+        </label>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Show Capture Notifications</span>
+            <span class="setting-description">Display notifications when code is captured</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="showCaptureNotifications" class="toggle">
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Interface Settings -->
+    <div class="section">
+      <h2>Interface</h2>
+      <div class="setting-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Theme</span>
+            <span class="setting-description">Choose the extension's color theme</span>
+          </div>
+          <div class="setting-control">
+            <select id="theme" class="select">
+              <option value="auto">Auto (System)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Show Hover Actions</span>
+            <span class="setting-description">Show action buttons when hovering over code blocks</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="showHoverActions" class="toggle">
+          </div>
+        </label>
+
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Enable Keyboard Shortcuts</span>
+            <span class="setting-description">Allow keyboard shortcuts for quick actions</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="enableKeyboardShortcuts" class="toggle">
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="section">
+      <h2>Advanced</h2>
+      <div class="setting-group">
+        <label class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Debug Mode</span>
+            <span class="setting-description">Enable detailed logging for troubleshooting</span>
+          </div>
+          <div class="setting-control">
+            <input type="checkbox" id="debugMode" class="toggle">
+          </div>
+        </label>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Excluded Websites</span>
+            <span class="setting-description">Websites where the extension should not activate (one per line)</span>
+          </div>
+          <div class="setting-control">
+            <textarea id="excludedSites" class="textarea" placeholder="example.com&#10;test.org"></textarea>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Custom CSS Selectors</span>
+            <span class="setting-description">Additional CSS selectors for detecting code blocks</span>
+          </div>
+          <div class="setting-control">
+            <textarea id="customSelectors" class="textarea" placeholder=".my-code&#10;.custom-highlight"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="section">
+      <h2>Data Management</h2>
+      <div class="setting-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Storage Usage</span>
+            <span class="setting-description">Current extension storage usage</span>
+          </div>
+          <div class="setting-control">
+            <div class="storage-info" id="storageInfo">
+              <span class="storage-text">Calculating...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Clear Captured Snippets</span>
+            <span class="setting-description">Remove all captured code snippets</span>
+          </div>
+          <div class="setting-control">
+            <button id="clearSnippets" class="btn btn-secondary">Clear Snippets</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Export Settings</span>
+            <span class="setting-description">Download your settings as a backup file</span>
+          </div>
+          <div class="setting-control">
+            <button id="exportSettings" class="btn btn-secondary">Export</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-name">Import Settings</span>
+            <span class="setting-description">Restore settings from a backup file</span>
+          </div>
+          <div class="setting-control">
+            <input type="file" id="importSettings" accept=".json" style="display: none;">
+            <button id="importSettingsBtn" class="btn btn-secondary">Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-actions">
+        <button id="resetSettings" class="btn btn-outline">Reset to Defaults</button>
+        <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+      </div>
+      <div class="footer-info">
+        <p>AI IDE Browser Companion v1.0.0</p>
+        <p>Made with ❤️ for developers</p>
+      </div>
+    </div>
+
+    <!-- Toast for notifications -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

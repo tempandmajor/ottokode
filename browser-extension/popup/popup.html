@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI IDE Companion</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <span class="logo-icon">🤖</span>
+        <span class="logo-text">AI IDE</span>
+      </div>
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting...</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section">
+      <h3>Quick Actions</h3>
+      <div class="actions-grid">
+        <button class="action-btn" id="analyzePageBtn">
+          <span class="btn-icon">🔍</span>
+          <span class="btn-text">Analyze Page</span>
+        </button>
+        <button class="action-btn" id="captureSelectionBtn">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">Capture Selection</span>
+        </button>
+        <button class="action-btn" id="openDesktopBtn">
+          <span class="btn-icon">🚀</span>
+          <span class="btn-text">Open Desktop</span>
+        </button>
+        <button class="action-btn" id="syncProjectsBtn">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-text">Sync Projects</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Captures -->
+    <div class="section">
+      <h3>Recent Captures</h3>
+      <div class="captures-list" id="capturesList">
+        <div class="empty-state">
+          <span class="empty-icon">📝</span>
+          <p>No code captures yet</p>
+          <small>Select code on any page and capture it</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Projects -->
+    <div class="section">
+      <h3>Desktop Projects</h3>
+      <div class="projects-list" id="projectsList">
+        <div class="empty-state">
+          <span class="empty-icon">📁</span>
+          <p>No projects synced</p>
+          <small>Connect to desktop app to see projects</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Link -->
+    <div class="footer">
+      <button class="settings-btn" id="settingsBtn">
+        <span class="settings-icon">⚙️</span>
+        Settings
+      </button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

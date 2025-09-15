@@ -1,0 +1,5 @@
+/* Import ottokode design system */
+@import url('../../web-app/src/index.css');
+
+/* Shared styles for both desktop and web platforms */
+/* This ensures consistent theming across both applications */

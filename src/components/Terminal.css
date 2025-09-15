@@ -1,0 +1,125 @@
+.terminal {
+  height: 200px;
+  background: #1e1e1e;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  color: #ccc;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #252526;
+  border-bottom: 1px solid #333;
+}
+
+.terminal-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ccc;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-controls button {
+  background: none;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.terminal-controls button:hover {
+  background: #333;
+  border-color: #666;
+}
+
+.terminal-content {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.terminal-line {
+  margin-bottom: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-input-form {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.terminal-prompt {
+  color: #4CAF50;
+  font-weight: bold;
+  margin-right: 4px;
+  user-select: none;
+}
+
+.terminal-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+}
+
+.terminal-input::placeholder {
+  color: #666;
+}
+
+/* Scrollbar styling */
+.terminal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-content::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.terminal-content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+
+.terminal-content::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Terminal output styling */
+.terminal-line:empty {
+  line-height: 0.8;
+}
+
+/* Command output that starts with $ should be highlighted */
+.terminal-line:has-text('$') {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+/* Error messages */
+.terminal-line:has-text('Error:') {
+  color: #ff6b6b;
+}
+
+/* Success messages */
+.terminal-line:has-text('Success:') {
+  color: #4CAF50;
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Branchcode AI",
+  "version": "1.0.0",
+  "identifier": "com.branchcode.ai",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Branchcode AI",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1200,
+        "minHeight": 700,
+        "resizable": true,
+        "maximized": false,
+        "center": true,
+        "decorations": true,
+        "fullscreen": false,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "transparent": false,
+        "visible": true,
+        "closable": true,
+        "minimizable": true,
+        "maximizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
+    },
+    "enableAppMenu": true,
+    "withGlobalTauri": false
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "DeveloperTool",
+    "copyright": "Copyright © 2024 Branchcode AI. All rights reserved.",
+    "publisher": "Branchcode AI",
+    "homepage": "https://branchcode.ai",
+    "externalBin": [],
+    "resources": [],
+    "longDescription": "Branchcode AI is an enterprise AI-powered IDE for collaborative development. Build, debug, and deploy code faster with intelligent AI assistance, real-time collaboration features, and powerful development tools for modern software engineering.",
+    "shortDescription": "AI-powered collaborative IDE for modern developers",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": true,
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.sectigo.com",
+      "wix": {
+        "language": ["en-US"],
+        "template": "main.wxs",
+        "fragmentPaths": ["./wix/"],
+        "componentGroupRefs": ["CustomGroup"],
+        "componentRefs": ["myComponent"],
+        "featureGroupRefs": ["myFeatureGroup"],
+        "featureRefs": ["myFeature"],
+        "mergeRefs": ["MyMergeRef"]
+      },
+      "nsis": {
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "installMode": "perMachine",
+        "languages": ["English"],
+        "template": "installer.nsi"
+      }
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15",
+      "signingIdentity": null,
+      "hardenedRuntime": true,
+      "entitlements": "entitlements.plist",
+      "exceptionDomain": null,
+      "providerShortName": "BranchcodeAI",
+      "license": "LICENSE"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.0-37", "libgtk-3-0", "libayatana-appindicator3-1"],
+        "files": {
+          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/pixmaps/": "icons/128x128.png"
+        },
+        "desktopTemplate": "assets/branchcode-ai.desktop"
+      },
+      "appimage": {
+        "bundleMediaFramework": true,
+        "files": {
+          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/pixmaps/": "icons/128x128.png"
+        }
+      },
+      "rpm": {
+        "depends": ["webkit2gtk3", "gtk3", "libappindicator-gtk3"],
+        "files": {
+          "/usr/share/applications/": "assets/branchcode-ai.desktop",
+          "/usr/share/pixmaps/": "icons/128x128.png"
+        },
+        "desktopTemplate": "assets/branchcode-ai.desktop"
+      }
+    }
+  },
+  "plugins": {
+    "fs": {
+      "scope": [
+        "$DOWNLOAD/*",
+        "$DOCUMENT/*",
+        "$DESKTOP/*",
+        "$HOME/*"
+      ]
+    },
+    "http": {
+      "scope": [
+        "https://api.openai.com/*",
+        "https://api.anthropic.com/*",
+        "https://generativelanguage.googleapis.com/*",
+        "https://api.cohere.ai/*",
+        "https://api.mistral.ai/*",
+        "https://*.supabase.co/*",
+        "https://api.stripe.com/*"
+      ]
+    },
+    "shell": {
+      "scope": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": ["-c", "$ARGS"]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": ["/C", "$ARGS"]
+        },
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": ["-Command", "$ARGS"]
+        }
+      ]
+    },
+    "opener": {
+      "scope": [
+        {
+          "url": "https://branchcode.ai/*"
+        }
+      ]
+    }
+  }
+}

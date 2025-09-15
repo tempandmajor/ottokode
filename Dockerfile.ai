@@ -1,0 +1,45 @@
+# AI Service Dockerfile - Optimized for ML/AI workloads
+FROM python:3.11-slim as python-base
+
+# Install system dependencies for AI/ML
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    wget \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for hybrid Python/Node.js service
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python requirements first (for caching)
+COPY requirements.txt* ./
+RUN pip install --no-cache-dir -r requirements.txt || echo "No Python requirements found"
+
+# Copy Node.js dependencies
+COPY package*.json ./
+RUN npm ci --only=production || echo "No Node.js dependencies"
+
+# Copy AI service code
+COPY api/ai-service.js ./
+COPY src/services/ai/ ./services/ai/
+COPY src/lib/ ./lib/
+
+# Create directories for AI workloads
+RUN mkdir -p /app/models /app/cache /app/logs
+
+# Expose AI service port
+EXPOSE 3002
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3002/health || exit 1
+
+# Start AI service
+CMD ["node", "ai-service.js"]

@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "AI IDE Browser Companion",
+  "version": "1.0.0",
+  "description": "Browser companion for AI IDE desktop app - capture code, sync projects, and get AI assistance anywhere",
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "clipboardWrite",
+    "notifications"
+  ],
+
+  "host_permissions": [
+    "http://localhost:*/*",
+    "https://github.com/*",
+    "https://stackoverflow.com/*",
+    "https://docs.github.com/*",
+    "https://developer.mozilla.org/*"
+  ],
+
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/code-detector.js"],
+      "css": ["content/ai-overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "AI IDE Companion",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "options_page": "options/options.html",
+
+  "web_accessible_resources": [
+    {
+      "resources": ["content/*", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
