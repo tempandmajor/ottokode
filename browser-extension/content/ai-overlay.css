@@ -1,0 +1,192 @@
+/* AI IDE Browser Companion - Content Script Overlay Styles */
+
+/* Ensure our styles don't conflict with the host page */
+.ai-ide-code-actions,
+.ai-ide-actions-tooltip,
+.ai-ide-action-btn,
+.ai-ide-selection-action,
+.ai-ide-notification {
+  all: initial;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  z-index: 2147483647 !important; /* Maximum z-index */
+}
+
+.ai-ide-code-actions {
+  position: fixed !important;
+  pointer-events: auto !important;
+}
+
+.ai-ide-actions-tooltip {
+  background: rgba(0, 0, 0, 0.9) !important;
+  color: white !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.ai-ide-action-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  color: white !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+  text-decoration: none !important;
+  line-height: 1.2 !important;
+}
+
+.ai-ide-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.ai-ide-action-btn:active {
+  transform: translateY(0) !important;
+}
+
+.ai-ide-selection-action {
+  position: fixed !important;
+  background: #007acc !important;
+  color: white !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3) !important;
+  border: none !important;
+  outline: none !important;
+  text-decoration: none !important;
+  line-height: 1.2 !important;
+  pointer-events: auto !important;
+}
+
+.ai-ide-selection-action:hover {
+  background: #005a9e !important;
+}
+
+.ai-ide-notification {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  background: white !important;
+  color: #333 !important;
+  padding: 12px 16px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  max-width: 300px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border: 1px solid #e2e8f0 !important;
+  animation: ai-ide-slideIn 0.3s ease !important;
+  pointer-events: auto !important;
+  line-height: 1.4 !important;
+}
+
+.ai-ide-notification.success {
+  background: #d4edda !important;
+  color: #155724 !important;
+  border-left: 4px solid #28a745 !important;
+}
+
+.ai-ide-notification.info {
+  background: #d1ecf1 !important;
+  color: #0c5460 !important;
+  border-left: 4px solid #17a2b8 !important;
+}
+
+.ai-ide-notification.error {
+  background: #f8d7da !important;
+  color: #721c24 !important;
+  border-left: 4px solid #dc3545 !important;
+}
+
+.ai-ide-notification.warning {
+  background: #fff3cd !important;
+  color: #856404 !important;
+  border-left: 4px solid #ffc107 !important;
+}
+
+@keyframes ai-ide-slideIn {
+  from {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
+  }
+  to {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Code block highlighting when hovered */
+[data-ai-ide-processed]:hover {
+  outline: 2px solid rgba(102, 126, 234, 0.3) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+/* Loading spinner for action buttons */
+.ai-ide-action-btn.loading::after {
+  content: '' !important;
+  width: 12px !important;
+  height: 12px !important;
+  border: 2px solid transparent !important;
+  border-top: 2px solid currentColor !important;
+  border-radius: 50% !important;
+  animation: ai-ide-spin 1s linear infinite !important;
+  display: inline-block !important;
+  margin-left: 4px !important;
+}
+
+@keyframes ai-ide-spin {
+  to {
+    transform: rotate(360deg) !important;
+  }
+}
+
+/* Dark mode support for websites that use it */
+@media (prefers-color-scheme: dark) {
+  .ai-ide-notification {
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #475569 !important;
+  }
+
+  .ai-ide-notification.success {
+    background: #064e3b !important;
+    color: #a7f3d0 !important;
+  }
+
+  .ai-ide-notification.info {
+    background: #0c4a6e !important;
+    color: #7dd3fc !important;
+  }
+
+  .ai-ide-notification.error {
+    background: #7f1d1d !important;
+    color: #fca5a5 !important;
+  }
+
+  .ai-ide-notification.warning {
+    background: #78350f !important;
+    color: #fcd34d !important;
+  }
+}
+
+/* Override any conflicting styles from host pages */
+.ai-ide-code-actions *,
+.ai-ide-selection-action *,
+.ai-ide-notification * {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}

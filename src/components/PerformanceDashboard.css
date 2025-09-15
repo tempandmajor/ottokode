@@ -1,0 +1,331 @@
+.performance-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1e1e1e;
+  color: #cccccc;
+  overflow-y: auto;
+}
+
+.performance-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #252526;
+  border-bottom: 1px solid #333;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.performance-dashboard-header h2 {
+  margin: 0;
+  color: #cccccc;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.performance-dashboard-close {
+  background: none;
+  border: none;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 18px;
+}
+
+.performance-dashboard-close:hover {
+  background: #3c3c3c;
+}
+
+.performance-dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #888;
+}
+
+.performance-dashboard-controls {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #2d2d30;
+  border-bottom: 1px solid #333;
+}
+
+.performance-export-btn,
+.performance-clear-btn {
+  padding: 8px 16px;
+  border: 1px solid #555;
+  background: #3c3c3c;
+  color: #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.performance-export-btn:hover {
+  background: #0078d4;
+  border-color: #106ebe;
+  color: #fff;
+}
+
+.performance-clear-btn:hover {
+  background: #e74c3c;
+  border-color: #c0392b;
+  color: #fff;
+}
+
+.performance-status {
+  padding: 16px 20px;
+  border-bottom: 1px solid #333;
+}
+
+.performance-status h3 {
+  margin: 0 0 12px 0;
+  color: #cccccc;
+  font-size: 16px;
+}
+
+.performance-indicator {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.performance-indicator.good {
+  background: #1a472a;
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.performance-indicator.warning {
+  background: #4a3c1a;
+  color: #ff9800;
+  border: 1px solid #ff9800;
+}
+
+.performance-section {
+  padding: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.performance-section h3 {
+  margin: 0 0 16px 0;
+  color: #cccccc;
+  font-size: 16px;
+}
+
+/* Memory Usage */
+.memory-usage-card {
+  background: #2d2d30;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #3c3c3c;
+}
+
+.memory-bar {
+  height: 12px;
+  background: #3c3c3c;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.memory-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 6px;
+}
+
+.memory-text {
+  font-size: 14px;
+  color: #cccccc;
+  text-align: center;
+}
+
+/* Performance Metrics Grid */
+.performance-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: #2d2d30;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #3c3c3c;
+  text-align: center;
+}
+
+.metric-card h4 {
+  margin: 0 0 8px 0;
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0078d4;
+}
+
+/* Component Metrics */
+.component-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.component-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #2d2d30;
+  border-radius: 6px;
+  border: 1px solid #3c3c3c;
+}
+
+.component-name {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.component-time {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.component-time.good {
+  color: #4caf50;
+  background: #1a472a;
+}
+
+.component-time.slow {
+  color: #e74c3c;
+  background: #4a1a1a;
+}
+
+/* AI Latency Metrics */
+.ai-latency-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #2d2d30;
+  border-radius: 8px;
+  border: 1px solid #3c3c3c;
+}
+
+.provider-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.latency-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.latency-value {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.latency-value.good {
+  color: #4caf50;
+  background: #1a472a;
+}
+
+.latency-value.medium {
+  color: #ff9800;
+  background: #4a3c1a;
+}
+
+.latency-value.slow {
+  color: #e74c3c;
+  background: #4a1a1a;
+}
+
+.request-count {
+  font-size: 11px;
+  color: #888;
+}
+
+/* Recommendations */
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendation {
+  padding: 12px;
+  background: #2d2d30;
+  border-left: 4px solid #0078d4;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+.recommendation:first-child:contains('✅') {
+  border-left-color: #4caf50;
+  background: #1a472a;
+}
+
+/* Footer */
+.performance-footer {
+  padding: 16px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 11px;
+  background: #2d2d30;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .performance-dashboard-controls {
+    flex-direction: column;
+  }
+
+  .performance-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-metric,
+  .component-metric {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .latency-info {
+    align-items: flex-start;
+  }
+}

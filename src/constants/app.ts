@@ -1,0 +1,90 @@
+export const APP_CONFIG = {
+  name: import.meta.env.VITE_APP_NAME || 'Branchcode AI',
+  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
+  domain: import.meta.env.VITE_APP_DOMAIN || 'https://branchcode.ai',
+  description: 'Enterprise AI-powered IDE for collaborative development',
+  tagline: 'Code together, powered by AI',
+
+  // Company Info
+  company: {
+    name: 'Branchcode AI',
+    email: 'hello@branchcode.ai',
+    support: 'support@branchcode.ai',
+    legal: 'legal@branchcode.ai',
+  },
+
+  // Social Links
+  social: {
+    twitter: 'https://twitter.com/branchcodeai',
+    github: 'https://github.com/branchcode-ai',
+    linkedin: 'https://linkedin.com/company/branchcode-ai',
+    discord: 'https://discord.gg/branchcode-ai',
+  },
+
+  // Download Links
+  downloads: {
+    windows: 'https://branchcode.ai/download/windows',
+    mac: 'https://branchcode.ai/download/mac',
+    linux: 'https://branchcode.ai/download/linux',
+  },
+
+  // Feature Flags
+  features: {
+    enterprise: import.meta.env.VITE_ENABLE_ENTERPRISE_FEATURES === 'true',
+    collaboration: import.meta.env.VITE_ENABLE_COLLABORATION === 'true',
+    aiChat: import.meta.env.VITE_ENABLE_AI_CHAT === 'true',
+    analytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
+    debug: import.meta.env.VITE_DEBUG_MODE === 'true',
+  },
+
+  // AI Providers
+  ai: {
+    providers: ['openai', 'anthropic', 'google', 'cohere', 'mistral'],
+    defaultProvider: 'openai',
+    fallbackKeys: {
+      openai: import.meta.env.VITE_OPENAI_API_KEY,
+      anthropic: import.meta.env.VITE_ANTHROPIC_API_KEY,
+      google: import.meta.env.VITE_GOOGLE_AI_API_KEY,
+      cohere: import.meta.env.VITE_COHERE_API_KEY,
+      mistral: import.meta.env.VITE_MISTRAL_API_KEY,
+    }
+  },
+
+  // File Extensions
+  supportedExtensions: [
+    '.js', '.jsx', '.ts', '.tsx', '.py', '.java', '.cpp', '.c', '.cs', '.php',
+    '.rb', '.go', '.rs', '.swift', '.kt', '.scala', '.clj', '.hs', '.ml',
+    '.html', '.css', '.scss', '.less', '.vue', '.svelte', '.json', '.xml',
+    '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.env', '.md', '.txt'
+  ],
+
+  // Theme Colors
+  colors: {
+    primary: '#007acc',
+    secondary: '#1e1e1e',
+    accent: '#0078d4',
+    success: '#107c10',
+    warning: '#ffb900',
+    error: '#d13438',
+  }
+} as const;
+
+export const ROUTES = {
+  home: '/',
+  editor: '/editor',
+  dashboard: '/dashboard',
+  settings: '/settings',
+  pricing: '/pricing',
+  login: '/login',
+  signup: '/signup',
+  organization: '/organization',
+  profile: '/profile',
+} as const;
+
+export const STORAGE_KEYS = {
+  auth: 'branchcode_auth',
+  theme: 'branchcode_theme',
+  editor: 'branchcode_editor',
+  recent: 'branchcode_recent_files',
+  workspace: 'branchcode_workspace',
+} as const;

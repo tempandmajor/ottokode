@@ -1,0 +1,38 @@
+# Node.js API server
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy API source code
+COPY api/ ./api/
+COPY src/lib/ ./src/lib/
+COPY src/services/ ./src/services/
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Health check endpoint
+COPY <<EOF /app/health.js
+const http = require('http');
+const server = http.createServer((req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }));
+  } else {
+    res.writeHead(404);
+    res.end('Not Found');
+  }
+});
+server.listen(3001, () => {
+  console.log('Health check server listening on port 3001');
+});
+EOF
+
+EXPOSE 3001
+
+# Run the API server
+CMD ["node", "health.js"]

@@ -1,0 +1,293 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #ccc;
+  background-color: #1e1e1e;
+}
+
+/* App layout */
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  color: #ccc;
+}
+
+.app-header {
+  height: 40px;
+  background: #323233;
+  border-bottom: 1px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+}
+
+.app-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.app-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.header-button {
+  background: none;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-button:hover {
+  background: #404040;
+  border-color: #666;
+  color: #fff;
+}
+
+.header-button.active {
+  background: #0078d4;
+  border-color: #106ebe;
+  color: #fff;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.setup-sidebar {
+  flex-shrink: 0;
+}
+
+.file-sidebar {
+  flex-shrink: 0;
+}
+
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Editor tabs */
+.editor-tabs {
+  display: flex;
+  background: #2d2d30;
+  border-bottom: 1px solid #333;
+  overflow-x: auto;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #2d2d30;
+  border-right: 1px solid #333;
+  cursor: pointer;
+  font-size: 13px;
+  color: #ccc;
+  transition: background-color 0.2s ease;
+  user-select: none;
+  min-width: 120px;
+}
+
+.editor-tab:hover {
+  background: #383838;
+}
+
+.editor-tab.active {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.tab-close:hover {
+  background: #555;
+  color: #fff;
+}
+
+/* Editor container */
+.editor-container {
+  flex: 1;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+.editor-welcome {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #1e1e1e;
+  color: #888;
+}
+
+.editor-welcome h2 {
+  margin-bottom: 16px;
+  color: #ccc;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.editor-welcome p {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.terminal-container {
+  flex-shrink: 0;
+}
+
+/* Scrollbar styling for the entire app */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+::-webkit-scrollbar-corner {
+  background: #1e1e1e;
+}
+
+/* Cost Dashboard Sidebar */
+.cost-dashboard-sidebar {
+  width: 500px;
+  max-width: 30vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Agent Dashboard Sidebar */
+.agent-dashboard-sidebar {
+  width: 600px;
+  max-width: 35vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Collaboration Sidebar */
+.collaboration-sidebar {
+  width: 400px;
+  max-width: 30vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Secure Notepad Sidebar */
+.secure-notepad-sidebar {
+  width: 800px;
+  max-width: 40vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Ollama Manager Sidebar */
+.ollama-manager-sidebar {
+  width: 700px;
+  max-width: 35vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Git Panel Sidebar */
+.git-panel-sidebar {
+  width: 500px;
+  max-width: 30vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* Plugin Marketplace Sidebar */
+.plugin-marketplace-sidebar {
+  width: 900px;
+  max-width: 45vw;
+  background: #1e1e1e;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+}
+
+/* AI Provider Settings Sidebar */
+.ai-provider-settings-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+/* Billing Dashboard Sidebar */
+.billing-dashboard-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
