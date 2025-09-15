@@ -4,21 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "cd web-app && npm run dev",
     "dev:web": "cd web-app && npm run dev",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:web\"",
-    "build": "NODE_ENV=production vite build",
-    "build:dev": "NODE_ENV=development vite build",
-    "build:analyze": "NODE_ENV=production ANALYZE=true vite build",
+    "build": "cd web-app && npm run build",
     "build:web": "cd web-app && npm run build",
-    "build:all": "npm run build && npm run build:web",
-    "build-with-tsc": "tsc && NODE_ENV=production vite build",
-    "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:debug": "tauri build --debug",
-    "clean": "rm -rf dist web-app/.next node_modules/.vite",
+    "clean": "rm -rf web-app/.next web-app/out",
     "type-check": "tsc --noEmit && cd web-app && npm run type-check",
     "lint": "echo 'No linter configured' && cd web-app && npm run lint",
     "test": "echo 'No tests configured'"
@@ -50,9 +44,7 @@
     "@tauri-apps/cli": "^2.0.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^4.6.0",
     "concurrently": "^8.2.2",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "typescript": "~5.8.3"
   }
 }
