@@ -290,9 +290,9 @@ export function LoginForm() {
         <div className="text-center mt-6 text-sm text-muted-foreground">
           <p>By signing in, you agree to our</p>
           <div className="flex justify-center space-x-4 mt-1">
-            <a href="#" className="hover:text-foreground">Terms of Service</a>
+            <a href="/terms" className="hover:text-foreground">Terms of Service</a>
             <span>•</span>
-            <a href="#" className="hover:text-foreground">Privacy Policy</a>
+            <a href="/privacy" className="hover:text-foreground">Privacy Policy</a>
           </div>
         </div>
       </div>

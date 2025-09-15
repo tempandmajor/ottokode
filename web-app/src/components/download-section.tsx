@@ -1,25 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, Monitor, Smartphone, Tablet, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 const platforms = [
   {
     icon: Monitor,
     name: "Windows",
     description: "Windows 10/11 (64-bit)",
-    size: "~127 MB"
+    size: "~127 MB",
+    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-windows-x64.exe"
   },
   {
     icon: Monitor,
     name: "macOS",
     description: "macOS 10.15+ (Intel & Apple Silicon)",
-    size: "~142 MB"
+    size: "~142 MB",
+    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-macos-universal.dmg"
   },
   {
     icon: Monitor,
     name: "Linux",
     description: "Ubuntu 18.04+ / Debian 10+",
-    size: "~134 MB"
+    size: "~134 MB",
+    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-linux-x64.AppImage"
   }
 ];
 
@@ -62,10 +66,12 @@ export function DownloadSection() {
                         <p className="text-xs text-muted-foreground">{platform.size}</p>
                       </div>
                     </div>
-                    <Button variant="hero" className="group-hover:scale-105 transition-transform">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
+                    <a href={platform.downloadUrl} download>
+                      <Button variant="hero" className="group-hover:scale-105 transition-transform">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </a>
                   </CardContent>
                 </Card>
               ))}
@@ -75,10 +81,12 @@ export function DownloadSection() {
               <p className="text-sm text-muted-foreground mb-4">
                 Or try the web version instantly
               </p>
-              <Button variant="outline" size="lg" className="group">
-                <Smartphone className="h-5 w-5 mr-2" />
-                Launch Web IDE
-              </Button>
+              <Link href="/ide">
+                <Button variant="outline" size="lg" className="group">
+                  <Smartphone className="h-5 w-5 mr-2" />
+                  Launch Web IDE
+                </Button>
+              </Link>
             </div>
           </div>
 
