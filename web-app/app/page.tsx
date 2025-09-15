@@ -1,10 +1,10 @@
 "use client";
 
-import { Header } from "@/src/components/header";
-import { HeroSection } from "@/src/components/hero-section";
-import { FeaturesSection } from "@/src/components/features-section";
-import { DownloadSection } from "@/src/components/download-section";
-import { Footer } from "@/src/components/footer";
+import { Header } from "@/components/header";
+import { HeroSection } from "@/components/hero-section";
+import { FeaturesSection } from "@/components/features-section";
+import { DownloadSection } from "@/components/download-section";
+import { Footer } from "@/components/footer";
 
 export default function HomePage() {
   return (

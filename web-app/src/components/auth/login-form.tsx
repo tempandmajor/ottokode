@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/src/components/ui/button';
-import { Input } from '@/src/components/ui/input';
-import { Label } from '@/src/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
-import { Alert, AlertDescription } from '@/src/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Github, Loader2 } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
@@ -84,7 +84,7 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-ai-primary to-ai-secondary bg-clip-text text-transparent">
-            Branchcode AI
+            Ottokode
           </h1>
           <p className="text-muted-foreground mt-2">
             Sign in to access your AI-powered IDE

@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { Button } from '@/src/components/ui/button';
-import { Badge } from '@/src/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Code,
   Play,
@@ -17,38 +17,17 @@ import {
   Download
 } from 'lucide-react';
 
-import { MonacoEditor } from '@/src/components/ide/monaco-editor';
-import { FileExplorer, FileNode } from '@/src/components/ide/file-explorer';
-import { AIChat } from '@/src/components/ide/ai-chat';
-import { useAuth } from '@/src/components/auth/auth-provider';
-import { UserMenu } from '@/src/components/auth/user-menu';
+import { MonacoEditor } from '@/components/ide/monaco-editor';
+import { FileExplorer, FileNode } from '@/components/ide/file-explorer';
+import { AIChat } from '@/components/ide/ai-chat';
+import { useAuth } from '@/components/auth/auth-provider';
+import { UserMenu } from '@/components/auth/user-menu';
 
 export default function IDEPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [activeFile, setActiveFile] = useState<FileNode | null>(null);
   const [openFiles, setOpenFiles] = useState<FileNode[]>([]);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ai-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading IDE...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Will redirect
-  }
   const [files, setFiles] = useState<FileNode[]>([
     {
       id: '1',
@@ -59,7 +38,7 @@ export default function IDEPage() {
           id: '2',
           name: 'main.ts',
           type: 'file',
-          content: `// Welcome to Branchcode AI IDE
+          content: `// Welcome to Ottokode IDE
 console.log('Hello, World!');
 
 // Your AI-powered coding environment
@@ -154,7 +133,7 @@ export function Button({
       name: 'package.json',
       type: 'file',
       content: `{
-  "name": "branchcode-ai-project",
+  "name": "ottokode-project",
   "version": "1.0.0",
   "description": "AI-powered development project",
   "scripts": {
@@ -174,9 +153,9 @@ export function Button({
       id: '6',
       name: 'README.md',
       type: 'file',
-      content: `# Branchcode AI Project
+      content: `# Ottokode Project
 
-This is an AI-powered development project created with Branchcode AI IDE.
+This is an AI-powered development project created with Ottokode IDE.
 
 ## Features
 
@@ -202,6 +181,12 @@ Use the AI chat panel to:
 Happy coding! 🎉`
     }
   ]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   const handleFileSelect = useCallback((file: FileNode) => {
     setActiveFile(file);
@@ -320,7 +305,7 @@ Happy coding! 🎉`
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold bg-gradient-to-r from-ai-primary to-ai-secondary bg-clip-text text-transparent">
-              Branchcode AI IDE
+              Ottokode IDE
             </h1>
             <Badge variant="outline" className="border-ai-primary/20">
               Web Version

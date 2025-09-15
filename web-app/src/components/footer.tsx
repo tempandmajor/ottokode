@@ -68,9 +68,10 @@ export function Footer() {
             © 2024 Ottokode. All rights reserved.
           </p>
           <div className="flex space-x-6 text-sm text-muted-foreground mt-4 md:mt-0">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-foreground transition-colors">License</a>
+            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
+            <a href="/about" className="hover:text-foreground transition-colors">About</a>
+            <a href="/support" className="hover:text-foreground transition-colors">Support</a>
           </div>
         </div>
       </div>
