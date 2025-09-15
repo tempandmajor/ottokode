@@ -20,11 +20,12 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["web-app/**/*"],
   "exclude": [
-    "src/services/ai/EnhancedAIService.ts",
-    "src/components/EnhancedAIChat.tsx",
-    "src/services/ai/SupabaseCostTracker.ts"
+    "src",
+    "node_modules",
+    "web-app/node_modules",
+    "web-app/.next"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
