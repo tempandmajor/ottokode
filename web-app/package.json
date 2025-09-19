@@ -16,7 +16,7 @@
     "test": "echo 'No tests specified' && exit 0",
     "clean": "rm -rf .next out",
     "preview": "npm run build && npm run start",
-    "export": "next build && next export",
+    "export": "next build",
     "check-deps": "npm audit && npm outdated",
     "update-deps": "npm update",
     "prepare": "husky install || true"
