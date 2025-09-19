@@ -20,14 +20,15 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        name: Release ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
+        generate_release_notes: true
 
   build-tauri:
     needs: create-release
@@ -71,8 +72,8 @@ jobs:
         cd web-app
         npm run build
       env:
-        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_URL: https://gbugafddunddrvkvgifl.supabase.co
+        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidWdhZmRkdW5kZHJ2a3ZnaWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyMTIyNzgsImV4cCI6MjA0MTc4ODI3OH0.VXxY7Nc6QNJYfX8FU-nJF8nHtjhYX5vPGq8KnVu9X7o
 
     - name: Build Tauri app
       uses: tauri-apps/tauri-action@v0
@@ -112,8 +113,8 @@ jobs:
         cd web-app
         npm run build
       env:
-        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_URL: https://gbugafddunddrvkvgifl.supabase.co
+        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidWdhZmRkdW5kZHJ2a3ZnaWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyMTIyNzgsImV4cCI6MjA0MTc4ODI3OH0.VXxY7Nc6QNJYfX8FU-nJF8nHtjhYX5vPGq8KnVu9X7o
 
     - name: Deploy to Vercel (if configured)
       if: secrets.VERCEL_TOKEN
