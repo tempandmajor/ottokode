@@ -24,8 +24,8 @@ interface UserAgreementActions {
 type UserAgreementStore = UserAgreementState & UserAgreementActions;
 
 export const useUserAgreementStore = create<UserAgreementStore>()(
-  persist(
-    (set, get) => ({
+  (persist(
+    (set: any, get: any) => ({
       // State
       hasAcceptedAgreement: false,
       acceptedVersion: null,
@@ -84,13 +84,13 @@ export const useUserAgreementStore = create<UserAgreementStore>()(
     }),
     {
       name: AGREEMENT_STORAGE_KEY,
-      partialize: (state) => ({
+      partialize: (state: UserAgreementStore) => ({
         hasAcceptedAgreement: state.hasAcceptedAgreement,
         acceptedVersion: state.acceptedVersion,
         acceptedAt: state.acceptedAt,
-      }),
+      }) as Partial<UserAgreementStore>,
     }
-  )
+  ) as any)
 );
 
 // Utility functions for non-React contexts (like Tauri)
