@@ -91,6 +91,28 @@ Deno.serve(async (req: Request) => {
       global: { headers: { Authorization: auth } },
     });
 
+    // Admin enforcement: require authenticated user and either ADMIN_DOMAIN match or users.is_admin flag
+    const { data: userData, error: userErr } = await (supabase.auth as any).getUser?.();
+    if (userErr || !userData?.user?.email) {
+      return new Response(JSON.stringify({ error: "Unauthorized (no user)" }), { status: 401 });
+    }
+    const email: string = userData.user.email as string;
+    const ADMIN_DOMAIN = Deno.env.get("ADMIN_DOMAIN");
+    let isAdmin = false;
+    if (ADMIN_DOMAIN && email.toLowerCase().endsWith(`@${ADMIN_DOMAIN.toLowerCase()}`)) {
+      isAdmin = true;
+    } else {
+      const { data: urow } = await supabase
+        .from("users")
+        .select("id, email, is_admin")
+        .eq("id", userData.user.id)
+        .maybeSingle();
+      if ((urow as any)?.is_admin === true) isAdmin = true;
+    }
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden (admin required)" }), { status: 403 });
+    }
+
     const body: IndexRequest = await req.json().catch(() => ({} as any));
     const mode = body.mode ?? "files";
 
@@ -113,12 +135,18 @@ Deno.serve(async (req: Request) => {
         const embedding = await embedText(chunks[i]);
         rows.push({ repo_path: body.filterPath ?? null, file_path: f.path, chunk_index: i, content: chunks[i], embedding });
       }
-      const { error } = await supabase.from("ai_embeddings").upsert(rows, { onConflict: "file_path,chunk_index" });
+      // Delete existing embeddings for this file first, then insert new ones
+      await supabase.from("ai_embeddings").delete().eq("file_path", f.path);
+      const { error } = await supabase.from("ai_embeddings").insert(rows);
       if (error) throw error;
       total += rows.length;
     }
 
-    await supabase.from("ai_index_status").insert({ last_commit: null }).catch(() => {});
+    try {
+      await supabase.from("ai_index_status").insert({ last_commit: null }).catch(() => {});
+    } catch (error) {
+      // Ignore errors - this is just for tracking
+    }
 
     return new Response(JSON.stringify({ ok: true, indexed_chunks: total }), {
       headers: { "Content-Type": "application/json" },

@@ -1,41 +1,47 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import SecurityMiddleware from './src/middleware/security'
 
-// Comprehensive CSP with nonce-based security. All inline styles have been
-// converted to CSS custom properties for improved security.
 export function middleware(req: NextRequest) {
-  const res = NextResponse.next()
+  const isProduction = process.env.NODE_ENV === 'production'
+  const isVercel = process.env.VERCEL === '1'
 
-  // Generate a simple nonce per request (Edge runtime compatible)
-  const nonce = crypto.randomUUID()
-
-  // Only set CSP in production to avoid over-constraining local dev if needed
-  const isProd = process.env.NODE_ENV === 'production'
-
-  if (isProd) {
-    const csp = [
-      "default-src 'self'",
-      "frame-ancestors 'none'",
-      "img-src 'self' data: https:",
-      "font-src 'self' data:",
-      "style-src 'self'",
-      // Remove 'unsafe-inline' for scripts; use nonce and strict-dynamic
-      `script-src 'self' 'strict-dynamic' 'nonce-${nonce}'`,
-      // Allow required backends; keep tight
-      "connect-src 'self' *.supabase.co *.anthropic.com *.openai.com wss://*.supabase.co",
-    ].join('; ')
-
-    res.headers.set('Content-Security-Policy', csp)
-    // Expose nonce to the app if we later want to use it for inline tags
-    res.headers.set('x-csp-nonce', nonce)
+  // Only apply strict validation in non-Vercel production environments
+  if (isProduction && !isVercel) {
+    // Validate request for security threats
+    const validation = SecurityMiddleware.validateRequest(req)
+    if (!validation.isValid) {
+      return new NextResponse('Bad Request', { status: 400 })
+    }
   }
 
-  // Additional security headers kept from next.config.js
-  res.headers.set('X-Frame-Options', 'DENY')
-  res.headers.set('X-Content-Type-Options', 'nosniff')
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  // Check rate limiting (more lenient for Vercel)
+  const clientIP = req.ip || req.headers.get('x-forwarded-for') || 'anonymous'
+  const maxRequests = isVercel ? 500 : 200 // Higher limit for Vercel
+  const rateLimit = SecurityMiddleware.checkRateLimit(clientIP, maxRequests, 60000)
 
-  return res
+  if (!rateLimit.allowed && isProduction && !isVercel) {
+    const response = new NextResponse('Too Many Requests', { status: 429 })
+    return SecurityMiddleware.applyRateLimitHeaders(response, rateLimit)
+  }
+
+  const res = NextResponse.next()
+
+  // Apply security headers with Vercel-compatible settings
+  const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res, {
+    enableCSP: true,
+    enableHSTS: isProduction && !isVercel, // Vercel handles HSTS
+    enableXSS: true,
+    enableFrameOptions: !isVercel, // Vercel may need frames for analytics
+    enableContentTypeOptions: true,
+    enableReferrerPolicy: true,
+    enablePermissionsPolicy: !isVercel, // May interfere with Vercel features
+  })
+
+  // Apply rate limit headers
+  SecurityMiddleware.applyRateLimitHeaders(securedResponse, rateLimit)
+
+  return securedResponse
 }
 
 export const config = {
