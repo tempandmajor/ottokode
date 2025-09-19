@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,13 +33,13 @@ export function UserAgreementModal({
     const scrollHeight = target.scrollHeight;
     const clientHeight = target.clientHeight;
 
-    console.log('Scroll event:', { scrollTop, scrollHeight, clientHeight });
+    logger.debug('Scroll event', { scrollTop, scrollHeight, clientHeight });
 
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-    console.log('Is at bottom:', isAtBottom);
+    logger.debug('Is at bottom', isAtBottom);
 
     if (isAtBottom && !isScrolledToBottom) {
-      console.log('Setting scrolled to bottom = true');
+      logger.debug('Setting scrolled to bottom = true');
       setIsScrolledToBottom(true);
     }
   };

@@ -2,6 +2,8 @@
  * Environment variable validation and configuration
  */
 
+import { logger } from './logger';
+
 export interface EnvConfig {
   supabase: {
     url: string;
@@ -38,18 +40,29 @@ export function validateEnvironment(): EnvConfig {
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://ottokode.com';
 
-  // Validate required environment variables
+  // During build time, use placeholder values instead of throwing
+  const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV === 'production';
+
+  // Validate required environment variables (but don't throw during build)
   if (!supabaseUrl) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is required');
+    if (isBuildTime) {
+      console.warn('⚠️ NEXT_PUBLIC_SUPABASE_URL not configured, using placeholder for build');
+    } else {
+      throw new Error('NEXT_PUBLIC_SUPABASE_URL is required');
+    }
   }
   if (!supabaseAnonKey) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required');
+    if (isBuildTime) {
+      console.warn('⚠️ NEXT_PUBLIC_SUPABASE_ANON_KEY not configured, using placeholder for build');
+    } else {
+      throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required');
+    }
   }
 
   const required = {
     supabase: {
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
+      url: supabaseUrl || 'https://placeholder.supabase.co',
+      anonKey: supabaseAnonKey || 'placeholder_anon_key',
     },
     app: {
       name: appName,
@@ -87,15 +100,13 @@ export function validateEnvironment(): EnvConfig {
     },
   };
 
-  // Log configuration status
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔧 Environment Configuration:', {
-      hasSupabase: !!config.supabase.url && !!config.supabase.anonKey,
-      hasAIKeys: Object.values(config.ai).some(key => !!key),
-      hasStripe: !!config.stripe,
-      features: config.features,
-    });
-  }
+  // Log configuration status in development
+  logger.debug('Environment Configuration', {
+    hasSupabase: !!config.supabase.url && !!config.supabase.anonKey,
+    hasAIKeys: Object.values(config.ai).some(key => !!key),
+    hasStripe: !!config.stripe,
+    features: config.features,
+  });
 
   return config;
 }

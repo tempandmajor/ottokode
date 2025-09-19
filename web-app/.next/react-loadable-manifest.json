@@ -24,19 +24,19 @@
   "src/components/ide/ai-chat.tsx -> @/lib/ai-providers": {
     "id": 7814,
     "files": [
-      "static/chunks/814.6d8649893be173fb.js"
+      "static/chunks/7814.6d447be312985656.js"
     ]
   },
   "src/components/legal/user-agreement-wrapper.tsx -> @tauri-apps/api/window": {
     "id": 3278,
     "files": [
-      "static/chunks/278.04925c06291812c5.js"
+      "static/chunks/3278.bbb7082da708fdd1.js"
     ]
   },
   "src/lib/platform-detection.ts -> @tauri-apps/api/window": {
     "id": 3278,
     "files": [
-      "static/chunks/278.04925c06291812c5.js"
+      "static/chunks/3278.bbb7082da708fdd1.js"
     ]
   }
 }

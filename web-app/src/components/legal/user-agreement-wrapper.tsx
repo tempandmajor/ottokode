@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { UserAgreementModal } from './user-agreement-modal';
 import { useUserAgreementStore } from '@/stores/user-agreement-store';
+import { showNotification } from '@/lib/notifications';
 
 interface UserAgreementWrapperProps {
   children: React.ReactNode;
@@ -58,12 +59,12 @@ export function UserAgreementWrapper({
           const appWindow = getCurrentWindow();
           appWindow.close();
         }).catch(() => {
-          // Fallback: just show a message or redirect
-          alert('Please restart the application if you change your mind about accepting the user agreement.');
+          // Fallback: show notification instead of alert
+          showNotification('Please restart the application if you change your mind about accepting the user agreement.', 'warning');
         });
       } catch (error) {
         // Fallback for non-Tauri environments
-        alert('Please restart the application if you change your mind about accepting the user agreement.');
+        showNotification('Please restart the application if you change your mind about accepting the user agreement.', 'warning');
       }
     }
   };

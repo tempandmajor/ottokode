@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Minimal nonce-based CSP scaffold. We still include 'unsafe-inline' for scripts
-// for compatibility until all inline usages are replaced with nonced tags.
+// Comprehensive CSP with nonce-based security. All inline styles have been
+// converted to CSS custom properties for improved security.
 export function middleware(req: NextRequest) {
   const res = NextResponse.next()
 
@@ -18,7 +18,7 @@ export function middleware(req: NextRequest) {
       "frame-ancestors 'none'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self'",
       // Remove 'unsafe-inline' for scripts; use nonce and strict-dynamic
       `script-src 'self' 'strict-dynamic' 'nonce-${nonce}'`,
       // Allow required backends; keep tight

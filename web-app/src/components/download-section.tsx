@@ -1,37 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Monitor, Smartphone, Tablet, CheckCircle } from "lucide-react";
+import { Download, Smartphone, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { DownloadButtons } from "@/components/downloads/download-buttons";
 
-const platforms = [
-  {
-    icon: Monitor,
-    name: "Windows",
-    description: "Windows 10/11 (64-bit)",
-    size: "~120 MB",
-    downloadUrl: "#",
-    // Mark as coming soon in production until Windows artifact is published
-    comingSoon: true,
-  },
-  {
-    icon: Monitor,
-    name: "macOS",
-    description: "macOS 10.15+ (Intel & Apple Silicon)",
-    size: "~140 MB",
-    // Uses the newly uploaded DMG asset from the v1.0.0 release
-    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/Ottokode_1.0.0_x64.dmg",
-    comingSoon: false,
-  },
-  {
-    icon: Monitor,
-    name: "Linux",
-    description: "Ubuntu 18.04+ / Debian 10+",
-    size: "~130 MB",
-    downloadUrl: "#",
-    // Mark as coming soon in production until Linux artifact is published
-    comingSoon: true,
-  }
-];
+// Platform cards removed in favor of dynamic GitHub-release driven buttons
 
 const features = [
   "AI-powered code completion",
@@ -58,37 +31,15 @@ export function DownloadSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Download Options */}
           <div className="space-y-6">
-            <div className="grid gap-4">
-              {platforms.map((platform, index) => (
-                <Card key={index} className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-border/50">
-                  <CardContent className="p-6 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-white p-2.5">
-                        <platform.icon className="h-full w-full text-black" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{platform.name}</h3>
-                        <p className="text-sm text-muted-foreground">{platform.description}</p>
-                        <p className="text-xs text-muted-foreground">{platform.size}</p>
-                      </div>
-                    </div>
-                    {platform.comingSoon ? (
-                      <Button variant="outline" disabled className="group-hover:scale-105 transition-transform">
-                        <Download className="h-4 w-4 mr-2" />
-                        Coming Soon
-                      </Button>
-                    ) : (
-                      <a href={platform.downloadUrl} target="_blank" rel="noopener noreferrer" download>
-                        <Button variant="hero" className="group-hover:scale-105 transition-transform">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </a>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="border-border/50">
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg mb-1">Get the latest release</h3>
+                  <p className="text-sm text-muted-foreground">We automatically link the newest macOS, Windows, and Linux builds from GitHub Releases.</p>
+                </div>
+                <DownloadButtons />
+              </CardContent>
+            </Card>
 
             <div className="text-center pt-6">
               <p className="text-sm text-muted-foreground mb-4">

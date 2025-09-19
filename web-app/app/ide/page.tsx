@@ -23,6 +23,10 @@ import { AIChat } from '@/components/ide/ai-chat';
 import { useAuth } from '@/components/auth/auth-provider';
 import { UserMenu } from '@/components/auth/user-menu';
 
+// Force dynamic rendering to avoid SSR issues with Supabase client
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 export default function IDEPage() {
   const { user, loading } = useAuth();
   const router = useRouter();

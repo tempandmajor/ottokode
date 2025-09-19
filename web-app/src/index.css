@@ -126,3 +126,71 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Animation delay utilities for CSP compliance */
+  .animate-bounce-delay-100 {
+    animation: bounce 1s infinite;
+    animation-delay: 0.1s;
+  }
+
+  .animate-bounce-delay-200 {
+    animation: bounce 1s infinite;
+    animation-delay: 0.2s;
+  }
+
+  /* Dynamic padding utilities for file explorer */
+  .pl-file-depth-0 { padding-left: 8px; }
+  .pl-file-depth-1 { padding-left: 24px; }
+  .pl-file-depth-2 { padding-left: 40px; }
+  .pl-file-depth-3 { padding-left: 56px; }
+  .pl-file-depth-4 { padding-left: 72px; }
+  .pl-file-depth-5 { padding-left: 88px; }
+  .pl-file-depth-6 { padding-left: 104px; }
+  .pl-file-depth-7 { padding-left: 120px; }
+  .pl-file-depth-8 { padding-left: 136px; }
+  .pl-file-depth-9 { padding-left: 152px; }
+
+  /* Progress bar transform utilities */
+  .progress-0 { transform: translateX(-100%); }
+  .progress-10 { transform: translateX(-90%); }
+  .progress-20 { transform: translateX(-80%); }
+  .progress-30 { transform: translateX(-70%); }
+  .progress-40 { transform: translateX(-60%); }
+  .progress-50 { transform: translateX(-50%); }
+  .progress-60 { transform: translateX(-40%); }
+  .progress-70 { transform: translateX(-30%); }
+  .progress-80 { transform: translateX(-20%); }
+  .progress-90 { transform: translateX(-10%); }
+  .progress-100 { transform: translateX(0%); }
+
+  /* CSS custom properties for dynamic values */
+  .progress-transform {
+    transform: translateX(calc(-100% + var(--progress-value, 0) * 1%));
+  }
+
+  /* Chart color utilities */
+  .chart-indicator {
+    background-color: var(--indicator-color);
+    border-color: var(--indicator-color);
+  }
+
+  .chart-legend-dot {
+    background-color: var(--legend-color);
+  }
+
+  /* Sidebar width utilities */
+  .sidebar-vars {
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
+  }
+
+  .sidebar-mobile-vars {
+    --sidebar-width: 18rem;
+  }
+
+  /* Skeleton width utilities */
+  .skeleton-dynamic {
+    width: var(--skeleton-width);
+  }
+}

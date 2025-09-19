@@ -12,8 +12,9 @@ console.log('🔨 Building web-app for Tauri...');
 process.env.TAURI_BUILD = 'true';
 
 try {
-  // Run the build with the environment variable set
-  execSync('npm run export', {
+  // Run Next build and export directly to ensure a static bundle for Tauri
+  // This does not depend on the package.json "export" script configuration
+  execSync('npx next build && npx next export', {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
     env: {
