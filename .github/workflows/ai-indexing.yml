@@ -1,0 +1,349 @@
+name: AI Repository Indexing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'web-app/src/**'
+      - 'web-app/app/**'
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.jsx'
+      - '**.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'web-app/src/**'
+      - 'web-app/app/**'
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.jsx'
+      - '**.md'
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC to re-index the entire repo
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Indexing mode'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental
+          - full
+      filter_path:
+        description: 'Optional filter path (e.g., web-app)'
+        required: false
+        type: string
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+jobs:
+  index-repository:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[skip-indexing]') }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for comprehensive indexing
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine indexing mode
+        id: mode
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+            echo "filter_path=${{ github.event.inputs.filter_path }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "mode=full" >> $GITHUB_OUTPUT
+            echo "filter_path=" >> $GITHUB_OUTPUT
+          else
+            # For push/PR events, determine changed files for incremental indexing
+            echo "mode=incremental" >> $GITHUB_OUTPUT
+            echo "filter_path=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files (for incremental indexing)
+        id: changes
+        if: steps.mode.outputs.mode == 'incremental'
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, get files changed in the PR
+            git diff --name-only origin/${{ github.base_ref }}..HEAD > changed_files.txt
+          else
+            # For pushes, get files changed in the last commit
+            git diff --name-only HEAD~1..HEAD > changed_files.txt
+          fi
+
+          # Filter for relevant file types
+          grep -E '\.(ts|tsx|js|jsx|md)$' changed_files.txt > relevant_files.txt || true
+
+          if [[ -s relevant_files.txt ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed files to index:"
+            cat relevant_files.txt
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No relevant files changed for indexing"
+          fi
+
+      - name: Index repository (full)
+        if: steps.mode.outputs.mode == 'full'
+        run: |
+          echo "Starting full repository indexing..."
+
+          # Use the direct indexing script with service key
+          FILTER_PATH="${{ steps.mode.outputs.filter_path }}"
+          if [[ -n "$FILTER_PATH" ]]; then
+            echo "Indexing with filter path: $FILTER_PATH"
+            FILTER_ARG="--filter-path '$FILTER_PATH'"
+          else
+            FILTER_ARG=""
+          fi
+
+          # Create a temporary indexing script
+          cat > index_script.js << 'EOF'
+          const { createClient } = require('@supabase/supabase-js');
+          const fs = require('fs');
+          const path = require('path');
+          const crypto = require('crypto');
+
+          const supabaseUrl = process.env.SUPABASE_URL;
+          const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+          if (!supabaseUrl || !supabaseKey) {
+            console.error('Missing Supabase credentials');
+            process.exit(1);
+          }
+
+          const supabase = createClient(supabaseUrl, supabaseKey);
+
+          async function callIndexFunction(files) {
+            try {
+              const { data, error } = await supabase.functions.invoke('index-repo', {
+                body: {
+                  mode: 'files',
+                  files: files,
+                  filterPath: process.env.FILTER_PATH || null
+                }
+              });
+
+              if (error) {
+                console.error('Indexing error:', error);
+                throw error;
+              }
+
+              console.log('Indexing successful:', data);
+              return data;
+            } catch (error) {
+              console.error('Failed to call index function:', error);
+              throw error;
+            }
+          }
+
+          function getRelevantFiles(dir, baseDir = '') {
+            const files = [];
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+            for (const entry of entries) {
+              const fullPath = path.join(dir, entry.name);
+              const relativePath = path.join(baseDir, entry.name);
+
+              // Skip node_modules, .git, dist, build directories
+              if (entry.isDirectory() && !['node_modules', '.git', 'dist', 'build', '.next'].includes(entry.name)) {
+                files.push(...getRelevantFiles(fullPath, relativePath));
+              } else if (entry.isFile() && /\.(ts|tsx|js|jsx|md)$/.test(entry.name)) {
+                try {
+                  const content = fs.readFileSync(fullPath, 'utf8');
+                  // Skip very large files (>100KB)
+                  if (content.length < 100000) {
+                    files.push({
+                      path: relativePath,
+                      content: content
+                    });
+                  }
+                } catch (error) {
+                  console.warn(`Skipping ${relativePath}: ${error.message}`);
+                }
+              }
+            }
+
+            return files;
+          }
+
+          async function main() {
+            console.log('Collecting files for indexing...');
+            const files = getRelevantFiles('.');
+            console.log(`Found ${files.length} files to index`);
+
+            // Process files in batches of 10 to avoid timeout
+            const batchSize = 10;
+            let totalIndexed = 0;
+
+            for (let i = 0; i < files.length; i += batchSize) {
+              const batch = files.slice(i, i + batchSize);
+              console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(files.length/batchSize)}`);
+
+              try {
+                const result = await callIndexFunction(batch);
+                totalIndexed += result.indexed_chunks || 0;
+              } catch (error) {
+                console.error(`Batch ${Math.floor(i/batchSize) + 1} failed:`, error);
+                // Continue with next batch
+              }
+
+              // Add small delay between batches
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            console.log(`Indexing completed. Total chunks indexed: ${totalIndexed}`);
+          }
+
+          main().catch(console.error);
+          EOF
+
+          # Run the indexing script
+          FILTER_PATH="${{ steps.mode.outputs.filter_path }}" node index_script.js
+
+      - name: Index changed files (incremental)
+        if: steps.mode.outputs.mode == 'incremental' && steps.changes.outputs.has_changes == 'true'
+        run: |
+          echo "Starting incremental indexing for changed files..."
+
+          # Create script to index only changed files
+          cat > index_changed.js << 'EOF'
+          const { createClient } = require('@supabase/supabase-js');
+          const fs = require('fs');
+
+          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+          async function indexChangedFiles() {
+            const changedFiles = fs.readFileSync('relevant_files.txt', 'utf8')
+              .split('\n')
+              .filter(line => line.trim())
+              .map(filepath => {
+                try {
+                  const content = fs.readFileSync(filepath, 'utf8');
+                  return { path: filepath, content };
+                } catch (error) {
+                  console.warn(`Could not read ${filepath}: ${error.message}`);
+                  return null;
+                }
+              })
+              .filter(Boolean);
+
+            if (changedFiles.length === 0) {
+              console.log('No files to index');
+              return;
+            }
+
+            console.log(`Indexing ${changedFiles.length} changed files...`);
+
+            try {
+              const { data, error } = await supabase.functions.invoke('index-repo', {
+                body: {
+                  mode: 'files',
+                  files: changedFiles,
+                  filterPath: null
+                }
+              });
+
+              if (error) throw error;
+
+              console.log(`Successfully indexed ${data.indexed_chunks} chunks from ${data.files_processed} files`);
+            } catch (error) {
+              console.error('Incremental indexing failed:', error);
+              throw error;
+            }
+          }
+
+          indexChangedFiles().catch(console.error);
+          EOF
+
+          node index_changed.js
+
+      - name: Update index status
+        if: always()
+        run: |
+          # Record the indexing run in the database
+          cat > update_status.js << 'EOF'
+          const { createClient } = require('@supabase/supabase-js');
+
+          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+          async function updateStatus() {
+            try {
+              const { error } = await supabase
+                .from('ai_index_status')
+                .upsert({
+                  id: 1,
+                  last_run: new Date().toISOString(),
+                  last_commit: process.env.GITHUB_SHA,
+                  workflow_run_id: process.env.GITHUB_RUN_ID,
+                  indexing_mode: '${{ steps.mode.outputs.mode }}',
+                  success: '${{ job.status }}' === 'success'
+                });
+
+              if (error) {
+                console.error('Failed to update status:', error);
+              } else {
+                console.log('Index status updated successfully');
+              }
+            } catch (error) {
+              console.error('Status update error:', error);
+            }
+          }
+
+          updateStatus();
+          EOF
+
+          node update_status.js
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request' && steps.changes.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **AI Indexing Complete**\n\nThe repository has been indexed for AI-powered context-aware suggestions. Changed files have been processed and embedded for improved code completion.'
+            })
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## AI Indexing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode**: ${{ steps.mode.outputs.mode }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ steps.mode.outputs.filter_path }}" != "" ]]; then
+            echo "- **Filter Path**: ${{ steps.mode.outputs.filter_path }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ steps.mode.outputs.mode }}" == "incremental" ]]; then
+            echo "- **Changed Files**: ${{ steps.changes.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Repository indexing helps power AI-driven context-aware code suggestions in the IDE." >> $GITHUB_STEP_SUMMARY

@@ -33,6 +33,12 @@ export function FileExplorer({
   const [creatingFile, setCreatingFile] = useState<{ parentId: string | null; type: 'file' | 'folder' } | null>(null);
   const [newFileName, setNewFileName] = useState('');
 
+  // Helper function to get padding class for CSP compliance
+  const getPaddingClass = (depth: number) => {
+    const clampedDepth = Math.min(Math.max(depth, 0), 9);
+    return `pl-file-depth-${clampedDepth}`;
+  };
+
   const toggleFolder = (folderId: string) => {
     const newExpanded = new Set(expandedFolders);
     if (newExpanded.has(folderId)) {
@@ -86,10 +92,9 @@ export function FileExplorer({
     return (
       <div key={file.id}>
         <div
-          className={`flex items-center py-1 px-2 hover:bg-muted/50 cursor-pointer group ${
+          className={`flex items-center py-1 px-2 hover:bg-muted/50 cursor-pointer group ${getPaddingClass(depth)} ${
             isSelected ? 'bg-ai-primary/10 border-r-2 border-ai-primary' : ''
           }`}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
           onClick={() => {
             if (file.type === 'folder') {
               toggleFolder(file.id);
@@ -152,8 +157,7 @@ export function FileExplorer({
 
         {creatingFile?.parentId === file.id && (
           <div
-            className="flex items-center py-1 px-2"
-            style={{ paddingLeft: `${(depth + 1) * 16 + 8}px` }}
+            className={`flex items-center py-1 px-2 ${getPaddingClass(depth + 1)}`}
           >
             <File className="h-4 w-4 text-gray-400 mr-2" />
             <Input

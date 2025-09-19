@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 import { SecureAIService } from '@/services/ai/SecureAIService';
+import { retrieveSimilarChunks } from '@/services/context/retriever';
+import { embedText } from '@/services/context/embedding';
 
 interface MonacoEditorProps {
   value: string;
@@ -72,11 +74,35 @@ export function MonacoEditor({
           const controller = new AbortController();
           pendingRequests.set(key, controller);
 
-          // Compose prompt from context
-          const prompt = `Suggest the next few lines for this ${ctx.language} code. Only return code without explanations.\n\nBefore:\n\n${ctx.before}\n\nAfter (future context for alignment):\n\n${ctx.after}`;
+          // Check if context-aware suggestions are enabled via feature flag
+          const contextAware = process.env.NEXT_PUBLIC_CONTEXT_AWARE === '1';
+          let contextChunks = '';
+
+          if (contextAware) {
+            try {
+              // Generate embedding for current context to find similar code
+              const queryText = ctx.before.slice(-500) + ' ' + ctx.after.slice(0, 500);
+              const queryEmbedding = await embedText(queryText);
+
+              // Retrieve top-3 similar chunks from the codebase
+              const similarChunks = await retrieveSimilarChunks(queryEmbedding, 3);
+
+              if (similarChunks.length > 0) {
+                contextChunks = '\n\nSimilar code patterns from codebase:\n\n' +
+                  similarChunks.map(chunk =>
+                    `// From ${chunk.file_path}:\n${chunk.content.slice(0, 300)}...`
+                  ).join('\n\n');
+              }
+            } catch (error) {
+              console.warn('Context retrieval failed:', error);
+            }
+          }
+
+          // Compose prompt with optional context
+          const prompt = `Suggest the next few lines for this ${ctx.language} code. Only return code without explanations.${contextChunks}\n\nCurrent context:\n\nBefore:\n\n${ctx.before}\n\nAfter (future context for alignment):\n\n${ctx.after}`;
 
           const result = await SecureAIService.chat([
-            { role: 'system', content: 'You are a code completion engine. Return only code without backticks.' },
+            { role: 'system', content: `You are a code completion engine. ${contextAware ? 'Use the provided codebase patterns to suggest contextually relevant completions. ' : ''}Return only code without backticks.` },
             { role: 'user', content: prompt }
           ], 'local', { max_tokens: 128, temperature: 0.2 });
 

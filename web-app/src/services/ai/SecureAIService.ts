@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 
 export type ChatRole = 'system' | 'user' | 'assistant'
 export interface ChatMessage { role: ChatRole; content: string }
@@ -14,7 +14,7 @@ export interface ChatResult {
 export class SecureAIService {
   private static async getAuthHeader() {
     try {
-      const supabase = getSupabaseClient()
+      const supabase = createClient()
       const { data } = await supabase.auth.getSession()
       const access = data?.session?.access_token
       const headers: Record<string, string> = {}

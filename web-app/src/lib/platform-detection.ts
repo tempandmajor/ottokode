@@ -1,5 +1,7 @@
 'use client';
 
+import { logger } from './logger';
+
 /**
  * Detects if the application is running in a Tauri desktop environment
  */
@@ -43,7 +45,7 @@ export async function initializePlatform() {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
 
       // Set up desktop-specific configurations
-      console.log('Initializing Ottokode Desktop App');
+      logger.info('Initializing Ottokode Desktop App');
 
       // You can add more desktop-specific initialization here
       return {
@@ -51,11 +53,11 @@ export async function initializePlatform() {
         window: getCurrentWindow()
       };
     } catch (error) {
-      console.warn('Failed to initialize Tauri APIs:', error);
+      logger.warn('Failed to initialize Tauri APIs', error);
       return { type: 'desktop', error };
     }
   } else {
-    console.log('Initializing Ottokode Web App');
+    logger.info('Initializing Ottokode Web App');
     return { type: 'web' };
   }
 }

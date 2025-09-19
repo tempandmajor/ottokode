@@ -1,8 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
 // Create a mock client for desktop builds or when Supabase is not configured
 const mockClient = {
   auth: {
@@ -23,21 +20,39 @@ const mockClient = {
 // Lazily create the client to avoid build-time evaluation errors
 let _client: any | null = null;
 
-export function getSupabaseClient() {
+function getSupabaseClient() {
+  // Always return mock client during build time or if URL contains placeholder
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+    return mockClient;
+  }
+
+  if (url?.includes('placeholder') || key?.includes('placeholder')) {
+    return mockClient;
+  }
+
   if (_client) return _client;
+
   try {
-    const isValidUrl = !!supabaseUrl && /^https:\/\/.+supabase\.co$/i.test(supabaseUrl) && !/placeholder/i.test(supabaseUrl);
-    const isValidKey = !!supabaseAnonKey && !/placeholder/i.test(supabaseAnonKey);
+    const isValidUrl = !!url && /^https:\/\/.+supabase\.co$/i.test(url);
+    const isValidKey = !!key && key.length > 10;
+
     if (isValidUrl && isValidKey) {
-      _client = createClient(supabaseUrl, supabaseAnonKey);
+      _client = createClient(url, key);
       return _client;
     }
   } catch (e) {
     // fall through to mock
   }
+
   _client = mockClient;
   return _client;
 }
+
+// Export the function as createClient for consistent naming
+export { getSupabaseClient as createClient };
 
 // Database Types (shared with desktop app)
 export interface Database {

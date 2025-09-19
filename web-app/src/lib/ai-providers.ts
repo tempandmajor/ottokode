@@ -4,6 +4,7 @@
  */
 
 import { validateEnvironment, getAvailableAIProviders } from './env-validation';
+import { logger } from './logger';
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -245,13 +246,13 @@ export class AIService {
 
       // Add other providers as needed
 
-      console.log('🤖 AI Providers initialized:', {
+      logger.ai('AI Providers initialized', {
         available: this.providers.filter(p => p.isAvailable).map(p => p.name),
         total: this.providers.length,
       });
 
     } catch (error) {
-      console.warn('⚠️ Error initializing AI providers:', error);
+      logger.warn('Error initializing AI providers', error);
     }
   }
 
@@ -259,7 +260,7 @@ export class AIService {
     const availableProviders = this.providers.filter(p => p.isAvailable);
 
     if (availableProviders.length === 0) {
-      console.log('🤖 No AI providers available, using mock responses');
+      logger.ai('No AI providers available, using mock responses');
       return this.fallbackProvider.generateResponse(messages);
     }
 
@@ -268,13 +269,13 @@ export class AIService {
       try {
         return await provider.generateResponse(messages);
       } catch (error) {
-        console.warn(`❌ ${provider.name} failed:`, error);
+        logger.warn(`${provider.name} provider failed`, error);
         continue;
       }
     }
 
     // If all providers fail, use mock
-    console.log('🤖 All AI providers failed, using mock responses');
+    logger.ai('All AI providers failed, using mock responses');
     return this.fallbackProvider.generateResponse(messages);
   }
 
@@ -289,5 +290,26 @@ export class AIService {
   }
 }
 
-// Singleton instance
-export const aiService = new AIService();
+// Lazy singleton instance - only created when first accessed
+let _aiService: AIService | null = null;
+
+export function getAIService(): AIService {
+  if (!_aiService) {
+    _aiService = new AIService();
+  }
+  return _aiService;
+}
+
+// For backwards compatibility, but this will only work at runtime
+// Use lazy getters to avoid any evaluation during build
+export const aiService = {
+  get generateResponse() {
+    return (...args: Parameters<AIService['generateResponse']>) => getAIService().generateResponse(...args);
+  },
+  get getAvailableProviders() {
+    return () => getAIService().getAvailableProviders();
+  },
+  get hasRealProviders() {
+    return () => getAIService().hasRealProviders();
+  },
+};

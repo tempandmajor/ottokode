@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase";
 import { SecureAIService } from "@/services/ai/SecureAIService";
 
 /**
@@ -17,7 +17,7 @@ export function UsageBadge() {
   useEffect(() => {
     const init = async () => {
       try {
-        const supabase = getSupabaseClient();
+        const supabase = createClient();
         const { data } = await supabase.auth.getSession();
         const isAuthed = !!data?.session?.user;
         if (!isAuthed) {

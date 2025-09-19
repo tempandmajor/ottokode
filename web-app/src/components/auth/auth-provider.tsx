@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError, AuthChangeEvent } from '@supabase/supabase-js';
-import { getSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +22,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = getSupabaseClient();
+    // Skip Supabase initialization during SSR
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+
     // Get initial session with error handling
     supabase.auth.getSession()
       .then(({ data: { session }, error }: { data: { session: Session | null }; error: AuthError | null }) => {
@@ -86,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -95,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name?: string) => {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -109,12 +116,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     await supabase.auth.signOut();
   };
 
   const signInWithGithub = async () => {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
