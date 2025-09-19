@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AIMessage, AIProvider, AIModel } from '../types/ai';
 import { aiProviderService } from '../services/ai/AIProviderService';
+import { secureAIService } from '../services/ai/SecureAIService';
 import { mcpRegistry } from '../services/mcp/MCPRegistry';
 import './AIChat.css';
 
@@ -18,11 +19,13 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState('openai');
-  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
-  const [includeMCP, setIncludeMCP] = useState(true);
-  const [streamingEnabled, setStreamingEnabled] = useState(true);
+  const [selectedProvider, setSelectedProvider] = useState('local');
+  const [selectedModel, setSelectedModel] = useState('ottokode-assistant');
+  const [includeMCP, setIncludeMCP] = useState(false);
+  const [streamingEnabled, setStreamingEnabled] = useState(false);
   const [currentCost, setCurrentCost] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [usageLimits, setUsageLimits] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [providers, setProviders] = useState<AIProvider[]>([]);
@@ -30,6 +33,7 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
 
   useEffect(() => {
     loadProviders();
+    checkAuthentication();
   }, []);
 
   useEffect(() => {
@@ -40,15 +44,43 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
     updateAvailableModels();
   }, [selectedProvider, providers]);
 
-  const loadProviders = () => {
+  const loadProviders = async () => {
     const allProviders = aiProviderService.getProviders();
-    setProviders(allProviders);
-    
-    // Set default selections
-    const configuredProviders = aiProviderService.getConfiguredProviders();
-    if (configuredProviders.length > 0) {
-      setSelectedProvider(configuredProviders[0].name);
-    }
+
+    // Add secure providers
+    const secureProviders = await secureAIService.getAvailableProviders();
+
+    // Always ensure local provider is available
+    const localProvider: AIProvider = {
+      name: 'local',
+      displayName: 'Ottokode AI (Free)',
+      models: [{
+        id: 'ottokode-assistant',
+        name: 'Ottokode Assistant',
+        provider: 'local',
+        contextLength: 4000,
+        costPer1KTokens: { input: 0, output: 0 },
+        capabilities: {
+          chat: true,
+          completion: true,
+          codeGeneration: true,
+          functionCalling: false,
+          vision: false,
+          reasoning: true
+        }
+      }],
+      isConfigured: true,
+      supportsStreaming: false,
+      supportsCodeCompletion: true,
+      supportsFunctionCalling: false
+    };
+
+    const mergedProviders = [localProvider, ...allProviders];
+    setProviders(mergedProviders);
+
+    // Set default to local provider
+    setSelectedProvider('local');
+    setSelectedModel('ottokode-assistant');
   };
 
   const updateAvailableModels = () => {
@@ -79,71 +111,49 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const provider = providers.find(p => p.name === selectedProvider);
-      if (!provider?.isConfigured) {
-        throw new Error(`Provider ${selectedProvider} is not configured. Please configure it in settings.`);
+      // Use secure AI service for all requests
+      const response = await secureAIService.chat({
+        provider: selectedProvider as any,
+        model: selectedModel,
+        messages: [...messages, userMessage],
+        options: {
+          maxTokens: 2000,
+          temperature: 0.7,
+          stream: false
+        }
+      });
+
+      const assistantMessage: AIMessage = {
+        role: 'assistant',
+        content: response.content,
+        timestamp: response.timestamp,
+        tokens: response.tokens,
+        cost: response.cost || 0
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+
+      if (assistantMessage.cost) {
+        setCurrentCost(prev => prev + assistantMessage.cost!);
       }
 
-      let assistantMessage: AIMessage;
+      // Update usage limits
+      await loadUsageLimits();
 
-      if (streamingEnabled) {
-        // Streaming response
-        const streamingMessage: AIMessage = {
-          role: 'assistant',
-          content: '',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, streamingMessage]);
+    } catch (error) {
+      let errorContent = `Error: ${error}`;
 
-        await aiProviderService.chat(
-          selectedProvider,
-          selectedModel,
-          [...messages, userMessage],
-          {
-            streaming: true,
-            includeMCP,
-            onStream: (response) => {
-              if (!response.done) {
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  lastMessage.content += response.content;
-                  return newMessages;
-                });
-              } else {
-                // Final message with usage info
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  lastMessage.tokens = response.usage?.totalTokens;
-                  lastMessage.cost = response.usage?.cost;
-                  return newMessages;
-                });
-                if (response.usage?.cost) {
-                  setCurrentCost(prev => prev + response.usage!.cost);
-                }
-              }
-            }
-          }
-        );
-      } else {
-        // Non-streaming response
-        assistantMessage = await aiProviderService.chat(
-          selectedProvider,
-          selectedModel,
-          [...messages, userMessage],
-          { includeMCP }
-        );
-
-        setMessages(prev => [...prev, assistantMessage]);
-        if (assistantMessage.cost) {
-          setCurrentCost(prev => prev + assistantMessage.cost!);
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication required')) {
+          errorContent = '🔐 **Authentication Required**\n\nTo use AI features, please sign in to your account. This enables:\n• Usage tracking and limits\n• Access to premium AI models\n• Conversation history\n\nClick the sign-in button in the top right corner to continue.';
+        } else if (error.message.includes('Usage limit exceeded')) {
+          errorContent = '📊 **Usage Limit Reached**\n\nYou\'ve reached your daily AI usage limit. Limits reset every 24 hours.\n\n**Free Tier Limits:**\n• 50,000 tokens per day\n• $1.00 cost limit per day\n\nUpgrade your account for higher limits and priority access.';
         }
       }
-    } catch (error) {
+
       const errorMessage: AIMessage = {
         role: 'assistant',
-        content: `Error: ${error}`,
+        content: errorContent,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -181,13 +191,31 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
     setInput(example);
   };
 
+  const checkAuthentication = async () => {
+    const authStatus = await secureAIService.isAuthenticated();
+    setIsAuthenticated(authStatus);
+
+    if (authStatus) {
+      await loadUsageLimits();
+    }
+  };
+
+  const loadUsageLimits = async () => {
+    try {
+      const limits = await secureAIService.getUsageLimits();
+      setUsageLimits(limits);
+    } catch (error) {
+      console.warn('Could not load usage limits:', error);
+    }
+  };
+
   const examplePrompts = [
-    "Create a Stripe customer for john@example.com",
-    "List my recent Vercel deployments",
-    "Query users table from Supabase",
-    "Show me the analytics for my project",
-    "Help me refactor this React component",
-    "Generate a TypeScript interface for this API"
+    "Help me create a React component",
+    "Explain async/await in JavaScript",
+    "Show me TypeScript best practices",
+    "How do I handle errors in Node.js?",
+    "Generate a REST API endpoint",
+    "Debug this code for me"
   ];
 
   return (
@@ -195,7 +223,17 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
       <div className="chat-header">
         <div className="chat-title">
           <h3>AI Assistant</h3>
-          <span className="cost-indicator">Cost: {formatCost(currentCost)}</span>
+          <div className="status-indicators">
+            <span className="cost-indicator">Cost: {formatCost(currentCost)}</span>
+            {isAuthenticated && usageLimits && (
+              <span className="usage-indicator">
+                Tokens: {(usageLimits.dailyTokenLimit - usageLimits.remainingTokens).toLocaleString()}/{usageLimits.dailyTokenLimit.toLocaleString()}
+              </span>
+            )}
+            {!isAuthenticated && (
+              <span className="auth-indicator">⚠️ Not signed in</span>
+            )}
+          </div>
         </div>
         <div className="chat-controls">
           <button onClick={clearChat} className="clear-btn" title="Clear chat">
@@ -208,14 +246,14 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
       <div className="chat-settings">
         <div className="setting-group">
           <label>Provider:</label>
-          <select 
-            value={selectedProvider} 
+          <select
+            value={selectedProvider}
             onChange={(e) => setSelectedProvider(e.target.value)}
             disabled={isLoading}
           >
             {providers.filter(p => p.isConfigured).map(provider => (
               <option key={provider.name} value={provider.name}>
-                {provider.displayName}
+                {provider.displayName} {provider.name === 'local' ? '(Free)' : isAuthenticated ? '(Premium)' : '(Requires Sign In)'}
               </option>
             ))}
           </select>
@@ -242,9 +280,9 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
               type="checkbox"
               checked={includeMCP}
               onChange={(e) => setIncludeMCP(e.target.checked)}
-              disabled={isLoading}
+              disabled={isLoading || selectedProvider === 'local'}
             />
-            Enable MCP Tools
+            Enable MCP Tools {selectedProvider === 'local' ? '(Premium only)' : ''}
           </label>
         </div>
 
@@ -340,9 +378,15 @@ export const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
         </button>
       </div>
 
-      {!providers.some(p => p.isConfigured) && (
+      {!isAuthenticated && selectedProvider !== 'local' && (
         <div className="config-warning">
-          ⚠️ No AI providers configured. Please configure at least one provider in the Setup Guide.
+          🔐 Sign in required for premium AI providers. Using free Ottokode AI assistant.
+        </div>
+      )}
+
+      {isAuthenticated && usageLimits && usageLimits.remainingTokens < 1000 && (
+        <div className="usage-warning">
+          ⚠️ You're approaching your daily usage limit. {usageLimits.remainingTokens} tokens remaining.
         </div>
       )}
     </div>

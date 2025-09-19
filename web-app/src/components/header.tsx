@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Code, LogIn, Download } from "lucide-react";
 import Link from "next/link";
+import { UsageBadge } from "@/components/ai/usage-badge";
 
 export function Header() {
   return (
@@ -29,8 +30,9 @@ export function Header() {
           </Link>
         </nav>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <ThemeToggle />
+          <UsageBadge />
           <Link href="/login">
             <Button variant="ghost" size="sm" className="hidden sm:flex">
               <LogIn className="h-4 w-4 mr-2" />

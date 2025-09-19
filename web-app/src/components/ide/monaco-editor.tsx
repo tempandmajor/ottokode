@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
+import { SecureAIService } from '@/services/ai/SecureAIService';
 
 interface MonacoEditorProps {
   value: string;
@@ -27,41 +28,72 @@ export function MonacoEditor({
   }, []);
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
-    // Configure AI-powered suggestions
-    monaco.languages.registerCompletionItemProvider(language, {
-      provideCompletionItems: (model: any, position: any) => {
-        const suggestions = [
-          {
-            label: 'console.log',
-            kind: monaco.languages.CompletionItemKind.Function,
-            insertText: 'console.log(${1:value});',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Log a value to the console'
-          },
-          {
-            label: 'function',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'function ${1:name}(${2:params}) {\n\t${3:// AI suggestion: Add function body}\n\treturn ${4:value};\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Create a new function with AI-powered suggestions'
-          },
-          {
-            label: 'async function',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'async function ${1:name}(${2:params}) {\n\ttry {\n\t\t${3:// AI suggestion: Add async logic here}\n\t\treturn await ${4:promise};\n\t} catch (error) {\n\t\tconsole.error("Error in ${1:name}:", error);\n\t\tthrow error;\n\t}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Create an async function with error handling'
-          },
-          {
-            label: 'React component',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'interface ${1:ComponentName}Props {\n\t${2:// Add props here}\n}\n\nexport function ${1:ComponentName}({ ${3:props} }: ${1:ComponentName}Props) {\n\treturn (\n\t\t<div className="${4:styling}">\n\t\t\t${5:// Component content}\n\t\t</div>\n\t);\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'Create a typed React component'
-          }
-        ];
+    // Debounced AI completion provider (uses SecureAIService via Edge Function)
+    const pendingRequests = new Map<string, AbortController>();
+    let lastReqTime = 0;
 
-        return { suggestions };
+    function getModelContext(model: any, position: any) {
+      const lineNumber = position.lineNumber;
+      const column = position.column;
+      const text = model.getValue();
+      const lines = text.split('\n');
+      const before = lines.slice(0, lineNumber - 1).join('\n') + '\n' + lines[lineNumber - 1].slice(0, column - 1);
+      const after = lines[lineNumber - 1].slice(column - 1) + '\n' + lines.slice(lineNumber).join('\n');
+      // Truncate context to keep requests small
+      const maxCtx = 4000;
+      const left = before.slice(-Math.floor(maxCtx * 0.7));
+      const right = after.slice(0, Math.floor(maxCtx * 0.3));
+      return { before: left, after: right, language };
+    }
+
+    function toSnippet(text: string) {
+      // Convert plain text into a Monaco snippet; escape $ and backticks
+      const escaped = text.replace(/\$/g, '\\$').replace(/`/g, '\\`');
+      return escaped;
+    }
+
+    monaco.languages.registerCompletionItemProvider(language, {
+      triggerCharacters: ['.', ' ', '(', ')', '[', ']', '{', '}', '=', '>', '<', ':', ';', '\n'],
+      provideCompletionItems: async (model: any, position: any) => {
+        try {
+          // Simple debounce: avoid spamming requests if typing rapidly
+          const now = Date.now();
+          if (now - lastReqTime < 200) {
+            return { suggestions: [] };
+          }
+          lastReqTime = now;
+
+          const ctx = getModelContext(model, position);
+
+          // Cancel any pending request for this model
+          const key = model.uri.toString();
+          const prev = pendingRequests.get(key);
+          if (prev) prev.abort();
+          const controller = new AbortController();
+          pendingRequests.set(key, controller);
+
+          // Compose prompt from context
+          const prompt = `Suggest the next few lines for this ${ctx.language} code. Only return code without explanations.\n\nBefore:\n\n${ctx.before}\n\nAfter (future context for alignment):\n\n${ctx.after}`;
+
+          const result = await SecureAIService.chat([
+            { role: 'system', content: 'You are a code completion engine. Return only code without backticks.' },
+            { role: 'user', content: prompt }
+          ], 'local', { max_tokens: 128, temperature: 0.2 });
+
+          if (controller.signal.aborted) return { suggestions: [] };
+          const text = (result?.text || '').trim();
+          if (!text) return { suggestions: [] };
+
+          const item = {
+            label: 'AI completion',
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: toSnippet(text),
+            range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+          };
+          return { suggestions: [item] };
+        } catch (e) {
+          return { suggestions: [] };
+        }
       }
     });
 

@@ -17,8 +17,10 @@ static WS_SERVER: std::sync::OnceLock<Arc<WebSocketServer>> = std::sync::OnceLoc
 async fn start_websocket_server() -> Result<String, String> {
     let server = WS_SERVER.get_or_init(|| Arc::new(WebSocketServer::new()));
 
-    match server.start(3001).await {
-        Ok(_) => Ok("WebSocket server started on port 3001".to_string()),
+    // Use a port that does not conflict with the Next.js dev server (3001)
+    let ws_port: u16 = 3010;
+    match server.start(ws_port).await {
+        Ok(_) => Ok(format!("WebSocket server started on port {}", ws_port)),
         Err(e) => Err(format!("Failed to start WebSocket server: {}", e)),
     }
 }

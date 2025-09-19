@@ -8,22 +8,28 @@ const platforms = [
     icon: Monitor,
     name: "Windows",
     description: "Windows 10/11 (64-bit)",
-    size: "~127 MB",
-    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-windows-x64.exe"
+    size: "~120 MB",
+    downloadUrl: "#",
+    // Mark as coming soon in production until Windows artifact is published
+    comingSoon: true,
   },
   {
     icon: Monitor,
     name: "macOS",
     description: "macOS 10.15+ (Intel & Apple Silicon)",
-    size: "~142 MB",
-    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-macos-universal.dmg"
+    size: "~140 MB",
+    // Uses the newly uploaded DMG asset from the v1.0.0 release
+    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/Ottokode_1.0.0_x64.dmg",
+    comingSoon: false,
   },
   {
     icon: Monitor,
     name: "Linux",
     description: "Ubuntu 18.04+ / Debian 10+",
-    size: "~134 MB",
-    downloadUrl: "https://github.com/tempandmajor/ottokode/releases/latest/download/ottokode-linux-x64.AppImage"
+    size: "~130 MB",
+    downloadUrl: "#",
+    // Mark as coming soon in production until Linux artifact is published
+    comingSoon: true,
   }
 ];
 
@@ -66,12 +72,19 @@ export function DownloadSection() {
                         <p className="text-xs text-muted-foreground">{platform.size}</p>
                       </div>
                     </div>
-                    <a href={platform.downloadUrl} download>
-                      <Button variant="hero" className="group-hover:scale-105 transition-transform">
+                    {platform.comingSoon ? (
+                      <Button variant="outline" disabled className="group-hover:scale-105 transition-transform">
                         <Download className="h-4 w-4 mr-2" />
-                        Download
+                        Coming Soon
                       </Button>
-                    </a>
+                    ) : (
+                      <a href={platform.downloadUrl} target="_blank" rel="noopener noreferrer" download>
+                        <Button variant="hero" className="group-hover:scale-105 transition-transform">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </a>
+                    )}
                   </CardContent>
                 </Card>
               ))}

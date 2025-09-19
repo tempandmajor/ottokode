@@ -59,15 +59,79 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      # macOS: create keychain and import Apple cert if secrets are provided
+      - name: macOS codesign setup
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        env:
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security list-keychains -s build.keychain login.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          if [ -n "${MAC_CERT_P12:-}" ] && [ -n "${MAC_CERT_PASSWORD:-}" ]; then
+            echo "Importing Apple Developer ID Application certificate"
+            echo "$MAC_CERT_P12" | base64 --decode > certificate.p12
+            security import certificate.p12 -k build.keychain -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security || true
+            security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+            rm -f certificate.p12
+          else
+            echo "No macOS signing certificate provided. Proceeding unsigned."
+          fi
+          if [ -n "${APPLE_API_KEY_ID:-}" ] && [ -n "${APPLE_API_ISSUER_ID:-}" ] && [ -n "${APPLE_API_KEY:-}" ]; then
+            mkdir -p ~/private_keys
+            echo "$APPLE_API_KEY" > ~/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          else
+            echo "No Apple API key provided. Notarization will be skipped."
+          fi
+
       - name: Install frontend dependencies
         run: npm ci
+
+      - name: Install web-app dependencies
+        working-directory: web-app
+        run: npm ci
+
+      # Windows: import code signing certificate if provided
+      - name: Windows codesign setup
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          WIN_CERT_PFX: ${{ secrets.WIN_CERT_PFX }}
+          WIN_CERT_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
+        run: |
+          Set-StrictMode -Version Latest
+          if ($env:WIN_CERT_PFX -and $env:WIN_CERT_PASSWORD) {
+            Write-Host "Importing Windows code signing certificate"
+            $bytes = [System.Convert]::FromBase64String($env:WIN_CERT_PFX)
+            $pfxPath = "$PWD\codesign.pfx"
+            [System.IO.File]::WriteAllBytes($pfxPath, $bytes)
+            certutil -p $env:WIN_CERT_PASSWORD -user -importPFX $pfxPath NoRoot
+            Remove-Item $pfxPath -Force
+          } else {
+            Write-Host "No Windows code signing certificate provided. Proceeding unsigned."
+          }
 
       - name: Build the desktop app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Tauri key for updater signing
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          # Apple notarization via API key (if provided)
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Codesign will use imported keychain on macOS; Windows uses imported cert
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Branchcode AI ${{ github.ref_name }}'
@@ -96,3 +160,47 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      # macOS only: staple notarization ticket (if notarized)
+      - name: Staple notarization ticket (macOS)
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for dmg in src-tauri/target/release/bundle/dmg/*.dmg; do
+            echo "Stapling $dmg"
+            xcrun stapler staple "$dmg" || true
+            xcrun stapler validate "$dmg" || true
+          done
+
+      # Post-build verification (macOS only)
+      - name: Verify macOS app signature
+        if: matrix.platform == 'macos-latest'
+        run: |
+          # Find the built app
+          APP_PATH=$(find src-tauri/target -name "*.app" -type d | head -1)
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -1)
+
+          if [ -n "$APP_PATH" ]; then
+            echo "🔍 Verifying app signature: $APP_PATH"
+            codesign -dv --verbose=4 "$APP_PATH" || echo "⚠️ App signature verification failed"
+            spctl -a -vv -t install "$APP_PATH" || echo "⚠️ Gatekeeper assessment failed"
+          fi
+
+          if [ -n "$DMG_PATH" ]; then
+            echo "🔍 Verifying DMG signature: $DMG_PATH"
+            codesign -dv --verbose=4 "$DMG_PATH" || echo "⚠️ DMG signature verification failed"
+            xcrun stapler validate "$DMG_PATH" && echo "✅ DMG notarization verified" || echo "⚠️ DMG notarization check failed"
+          fi
+
+      # Cleanup sensitive files
+      - name: Cleanup
+        if: always()
+        run: |
+          # Remove Apple API key
+          rm -f ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+          # Remove custom keychain on macOS
+          if [ "${{ matrix.platform }}" = "macos-latest" ]; then
+            security delete-keychain build.keychain || true
+          fi
