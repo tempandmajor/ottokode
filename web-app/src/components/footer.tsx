@@ -70,6 +70,7 @@ export function Footer() {
           <div className="flex space-x-6 text-sm text-muted-foreground mt-4 md:mt-0">
             <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
             <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
+            <a href="/user-agreement" className="hover:text-foreground transition-colors">User Agreement</a>
             <a href="/about" className="hover:text-foreground transition-colors">About</a>
             <a href="/support" className="hover:text-foreground transition-colors">Support</a>
           </div>

@@ -34,6 +34,49 @@
   background: #3c3c3c;
 }
 
+/* Enhanced chat status indicators */
+.status-indicators {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+
+.usage-indicator {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.auth-indicator {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.usage-warning {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+  border-left: 4px solid #f59e0b;
+}
+
+.config-warning {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+  border-left: 4px solid #3b82f6;
+}
+
 .ai-chat-settings {
   padding: 16px;
   border-bottom: 1px solid #333;

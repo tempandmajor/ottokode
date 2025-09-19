@@ -26,7 +26,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' *.vercel.app *.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https:; connect-src 'self' *.supabase.co *.anthropic.com *.openai.com wss://*.supabase.co;"
+          "value": "default-src 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' *.vercel.app *.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' *.supabase.co *.anthropic.com *.openai.com wss://*.supabase.co;"
         }
       ]
     },
@@ -63,7 +63,7 @@
   "rewrites": [
     {
       "source": "/docs/:path*",
-      "destination": "https://docs.ottokode.ai/:path*"
+      "destination": "https://docs.ottokode.com/:path*"
     }
   ]
 }

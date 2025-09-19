@@ -2,11 +2,11 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Ottokode",
   "version": "1.0.0",
-  "identifier": "com.ottokode.app",
+  "identifier": "com.ottokode.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "cd web-app && TAURI_BUILD=true npm run build",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd web-app && TAURI_BUILD=true npm run export",
     "frontendDist": "../web-app/out"
   },
   "app": {
@@ -28,11 +28,12 @@
         "visible": true,
         "closable": true,
         "minimizable": true,
-        "maximizable": true
+        "maximizable": true,
+        "url": "desktop"
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' http://localhost:3001 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' http://localhost:3001 ws://localhost:3001 wss://localhost:3001 ws://127.0.0.1:3010 wss://127.0.0.1:3010 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://gbugafddunddrvkvgifl.supabase.co https://*.stripe.com wss://gbugafddunddrvkvgifl.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
     }
   },
   "bundle": {
@@ -41,7 +42,7 @@
     "category": "DeveloperTool",
     "copyright": "Copyright © 2024 Ottokode. All rights reserved.",
     "publisher": "Ottokode",
-    "homepage": "https://ottokode.ai",
+    "homepage": "https://ottokode.com",
     "externalBin": [],
     "resources": [],
     "longDescription": "Ottokode is an AI-powered IDE for modern development. Build, debug, and deploy code faster with intelligent AI assistance, real-time collaboration features, and powerful development tools for software engineering.",

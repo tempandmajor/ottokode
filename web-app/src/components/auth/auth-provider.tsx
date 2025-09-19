@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { User, Session, AuthError, AuthChangeEvent } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -22,36 +22,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const supabase = getSupabaseClient();
+    // Get initial session with error handling
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }: { data: { session: Session | null }; error: AuthError | null }) => {
+        if (error) {
+          console.error('Error getting session:', error);
+          throw error;
+        }
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error('Auth initialization error:', error);
+        setLoading(false);
+        // Don't throw here to prevent app crash, but user will see auth issues
+      });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
       // Create user profile if it doesn't exist
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data: existingUser, error: selectError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
 
-        if (!existingUser) {
-          await supabase.from('users').insert({
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-            color: getRandomColor()
-          });
+          if (selectError && selectError.code !== 'PGRST116') {
+            console.error('Error checking existing user:', selectError);
+            return;
+          }
+
+          if (!existingUser) {
+            const { error: insertError } = await supabase.from('users').insert({
+              id: session.user.id,
+              email: session.user.email!,
+              name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+              color: getRandomColor()
+            });
+
+            if (insertError) {
+              console.error('Error creating user profile:', insertError);
+              // Continue anyway - the app can work without the profile
+            }
+          }
+        } catch (error) {
+          console.error('Error handling user profile:', error);
+          // Continue anyway - authentication still works
         }
       }
     });
@@ -60,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -68,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name?: string) => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -81,10 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    const supabase = getSupabaseClient();
     await supabase.auth.signOut();
   };
 
   const signInWithGithub = async () => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {

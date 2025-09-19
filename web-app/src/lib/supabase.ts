@@ -1,11 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xyzcompany.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5emNvbXBhbnkiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0OTQyNjI3MiwiZXhwIjoxOTY1MDAyMjcyfQ.nBx9ZkJLgKBsGDLc9MjVSMw_Q-4pNvDv5XslJSrKKBE';
-
-// For desktop builds, we'll use placeholder values
-// This will trigger for all production builds without real Supabase config
-const isPlaceholder = supabaseUrl.includes('xyzcompany');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Create a mock client for desktop builds or when Supabase is not configured
 const mockClient = {
@@ -24,8 +20,24 @@ const mockClient = {
   })
 } as any;
 
-// Always use mock client for desktop/production builds without real Supabase
-export const supabase = mockClient;
+// Lazily create the client to avoid build-time evaluation errors
+let _client: any | null = null;
+
+export function getSupabaseClient() {
+  if (_client) return _client;
+  try {
+    const isValidUrl = !!supabaseUrl && /^https:\/\/.+supabase\.co$/i.test(supabaseUrl) && !/placeholder/i.test(supabaseUrl);
+    const isValidKey = !!supabaseAnonKey && !/placeholder/i.test(supabaseAnonKey);
+    if (isValidUrl && isValidKey) {
+      _client = createClient(supabaseUrl, supabaseAnonKey);
+      return _client;
+    }
+  } catch (e) {
+    // fall through to mock
+  }
+  _client = mockClient;
+  return _client;
+}
 
 // Database Types (shared with desktop app)
 export interface Database {

@@ -52,9 +52,17 @@ export function AIChat({ onCodeSuggestion }: AIChatProps) {
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI response with realistic delay
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(input);
+    try {
+      // Use real AI service
+      const { aiService } = await import('@/lib/ai-providers');
+
+      const chatMessages = messages.concat(userMessage).map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      }));
+
+      const aiResponse = await aiService.generateResponse(chatMessages);
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -64,8 +72,23 @@ export function AIChat({ onCodeSuggestion }: AIChatProps) {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('AI response error:', error);
+
+      // Fallback to mock response
+      const aiResponse = generateAIResponse(input);
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Sorry, I'm having trouble connecting to AI services right now. Here's a helpful response: ${aiResponse.content}`,
+        codeSnippet: aiResponse.codeSnippet,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000 + Math.random() * 2000);
+    }
   };
 
   const generateAIResponse = (userInput: string): { content: string; codeSnippet?: string } => {

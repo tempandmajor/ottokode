@@ -1,0 +1,1 @@
+"use strict";exports.id=529,exports.ids=[529],exports.modules={9529:(e,n,r)=>{var p,a,o,s;r.d(n,{openUrl:()=>i}),"function"==typeof SuppressedError&&SuppressedError;async function t(e,n={},r){return window.__TAURI_INTERNALS__.invoke(e,n,r)}async function i(e,n){await t("plugin:opener|open_url",{url:e,with:n})}new WeakMap,new WeakMap,new WeakMap,new WeakMap,new WeakMap}};
