@@ -79,23 +79,23 @@
       "deb": {
         "depends": ["libwebkit2gtk-4.0-37", "libgtk-3-0", "libayatana-appindicator3-1"],
         "files": {
-          "/usr/share/applications/": "assets/ottokode.desktop",
-          "/usr/share/pixmaps/": "icons/128x128.png"
+          "/usr/share/applications/ottokode.desktop": "assets/ottokode.desktop",
+          "/usr/share/pixmaps/ottokode.png": "icons/128x128.png"
         },
         "desktopTemplate": "assets/ottokode.desktop"
       },
       "appimage": {
         "bundleMediaFramework": true,
         "files": {
-          "/usr/share/applications/": "assets/ottokode.desktop",
-          "/usr/share/pixmaps/": "icons/128x128.png"
+          "/usr/share/applications/ottokode.desktop": "assets/ottokode.desktop",
+          "/usr/share/pixmaps/ottokode.png": "icons/128x128.png"
         }
       },
       "rpm": {
         "depends": ["webkit2gtk3", "gtk3", "libappindicator-gtk3"],
         "files": {
-          "/usr/share/applications/": "assets/ottokode.desktop",
-          "/usr/share/pixmaps/": "icons/128x128.png"
+          "/usr/share/applications/ottokode.desktop": "assets/ottokode.desktop",
+          "/usr/share/pixmaps/ottokode.png": "icons/128x128.png"
         },
         "desktopTemplate": "assets/ottokode.desktop"
       }
