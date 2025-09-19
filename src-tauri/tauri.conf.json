@@ -59,22 +59,11 @@
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
       "timestampUrl": "http://timestamp.sectigo.com",
-      "wix": {
-        "language": ["en-US"],
-        "template": "main.wxs",
-        "fragmentPaths": ["./wix/"],
-        "componentGroupRefs": ["CustomGroup"],
-        "componentRefs": ["myComponent"],
-        "featureGroupRefs": ["myFeatureGroup"],
-        "featureRefs": ["myFeature"],
-        "mergeRefs": ["MyMergeRef"]
-      },
       "nsis": {
         "displayLanguageSelector": true,
         "installerIcon": "icons/icon.ico",
         "installMode": "perMachine",
-        "languages": ["English"],
-        "template": "installer.nsi"
+        "languages": ["English"]
       }
     },
     "macOS": {
