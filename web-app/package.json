@@ -16,7 +16,7 @@
     "test": "echo 'No tests specified' && exit 0",
     "clean": "rm -rf .next out",
     "preview": "npm run build && npm run start",
-    "export": "next build && next export",
+    "export": "next build",
     "check-deps": "npm audit && npm outdated",
     "update-deps": "npm update",
     "prepare": "husky install || true"
@@ -78,6 +78,7 @@
     "@tauri-apps/plugin-opener": "^2.0.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.0.0",
     "husky": "^8.0.3",
