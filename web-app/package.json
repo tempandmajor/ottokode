@@ -22,7 +22,6 @@
     "prepare": "husky install || true"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.62.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -75,16 +74,15 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-opener": "^2.0.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
-    "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.0.0",
     "husky": "^8.0.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
-    "@tauri-apps/api": "^2.0.0",
-    "@tauri-apps/plugin-opener": "^2.0.0",
     "webpack-bundle-analyzer": "^4.10.1"
   }
 }
