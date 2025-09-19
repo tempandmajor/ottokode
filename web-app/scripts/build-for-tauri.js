@@ -12,9 +12,9 @@ console.log('🔨 Building web-app for Tauri...');
 process.env.TAURI_BUILD = 'true';
 
 try {
-  // Run Next build and export directly to ensure a static bundle for Tauri
-  // This does not depend on the package.json "export" script configuration
-  execSync('npx next build && npx next export', {
+  // For Next.js 14 with App Router, we just need to build
+  // The static export is handled by next.config.js configuration
+  execSync('npx next build', {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
     env: {
@@ -24,6 +24,7 @@ try {
   });
 
   console.log('✅ Web-app build for Tauri completed successfully!');
+  console.log('📁 Static files available in ./out directory');
 } catch (error) {
   console.error('❌ Web-app build failed:', error.message);
   process.exit(1);
