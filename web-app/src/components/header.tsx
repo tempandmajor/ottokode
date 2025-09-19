@@ -28,6 +28,23 @@ export function Header() {
           <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
             Docs
           </Link>
+          <Link href="/whats-new" className="text-muted-foreground hover:text-foreground transition-colors">
+            What&apos;s New
+          </Link>
+          <Link href="/getting-started" className="text-muted-foreground hover:text-foreground transition-colors">
+            Getting Started
+          </Link>
+          <Link href="/settings/ai" className="text-muted-foreground hover:text-foreground transition-colors">
+            Settings
+          </Link>
+          <a
+            href="https://github.com/tempandmajor/ottokode/issues/new/choose"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Feedback
+          </a>
         </nav>
 
         <div className="flex items-center space-x-3">

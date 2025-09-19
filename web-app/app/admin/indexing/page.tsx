@@ -38,17 +38,33 @@ export default function AdminIndexingPage() {
   ])
   const [filterPath, setFilterPath] = useState('admin-test')
 
-  const checkAdminStatus = useCallback(async () => {
+  const checkAdminStatus = useCallback(async function checkAdminStatus() {
     if (!user) {
       setLoading(false)
       return
     }
 
-    // Simple admin check - you can enhance this with proper role-based auth
-    const adminEmails = ['your-admin-email@domain.com'] // Replace with actual admin emails
-    const isUserAdmin = adminEmails.includes(user.email || '') || (user.email?.endsWith('@ottokode.com') ?? false)
+    // Robust admin check: allowlist domain via env or users.is_admin flag in DB
+    const adminDomain = process.env.NEXT_PUBLIC_ADMIN_DOMAIN?.toLowerCase()
+    let admin = false
 
-    setIsAdmin(!!isUserAdmin)
+    if (adminDomain && (user.email || '').toLowerCase().endsWith(`@${adminDomain}`)) {
+      admin = true
+    } else {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (!error && data?.is_admin === true) admin = true
+      } catch (e) {
+        // ignore, will fall back to false
+      }
+    }
+
+    setIsAdmin(admin)
     setLoading(false)
   }, [user])
 

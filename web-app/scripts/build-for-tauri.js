@@ -12,9 +12,9 @@ console.log('🔨 Building web-app for Tauri...');
 process.env.TAURI_BUILD = 'true';
 
 try {
-  // For Next.js 14 with App Router, we just need to build
-  // The static export is handled by next.config.js configuration
-  execSync('npx next build', {
+  // Produce a static export for Tauri. If next.config.js has output:'export',
+  // next export will be a no-op but we run it to guarantee ./out exists.
+  execSync('npx next build && npx next export', {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
     env: {

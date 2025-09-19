@@ -13,6 +13,8 @@ interface MonacoEditorProps {
   language?: string;
   readOnly?: boolean;
   onMount?: (editor: any, monaco: any) => void;
+  filePath?: string;
+  onRefactorRequest?: (filePath: string, content: string, selectedText?: string) => void;
 }
 
 export function MonacoEditor({
@@ -20,7 +22,9 @@ export function MonacoEditor({
   onChange,
   language = 'typescript',
   readOnly = false,
-  onMount
+  onMount,
+  filePath,
+  onRefactorRequest
 }: MonacoEditorProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -171,6 +175,24 @@ export function MonacoEditor({
     // Set theme based on current theme
     const editorTheme = theme === 'dark' ? 'ai-dark' : 'ai-light';
     monaco.editor.setTheme(editorTheme);
+
+    // Add context menu action for AI refactoring
+    if (onRefactorRequest && filePath && !readOnly) {
+      editor.addAction({
+        id: 'ai-refactor',
+        label: '🧠 Ask AI to refactor (Beta)',
+        contextMenuGroupId: 'modification',
+        contextMenuOrder: 1.5,
+        run: (editor: any) => {
+          const selection = editor.getSelection();
+          const selectedText = selection && !selection.isEmpty()
+            ? editor.getModel()?.getValueInRange(selection)
+            : undefined;
+
+          onRefactorRequest(filePath, editor.getValue(), selectedText);
+        }
+      });
+    }
 
     // Configure editor options
     editor.updateOptions({
