@@ -17,6 +17,7 @@
     "clean": "rm -rf .next out",
     "preview": "npm run build && npm run start",
     "export": "next build",
+    "build:tauri": "node scripts/build-for-tauri.js",
     "check-deps": "npm audit && npm outdated",
     "update-deps": "npm update",
     "prepare": "husky install || true"

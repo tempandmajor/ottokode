@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:3001",
-    "beforeBuildCommand": "cd web-app && TAURI_BUILD=true npm run export",
+    "beforeBuildCommand": "cd web-app && npm run build:tauri",
     "frontendDist": "../web-app/out"
   },
   "app": {
