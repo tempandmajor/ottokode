@@ -17,16 +17,19 @@ export class SecureAIService {
       const supabase = getSupabaseClient()
       const { data } = await supabase.auth.getSession()
       const access = data?.session?.access_token
-      return access ? { Authorization: `Bearer ${access}` } : {}
+      const headers: Record<string, string> = {}
+      if (access) headers.Authorization = `Bearer ${access}`
+      return headers
     } catch {
-      return {}
+      return {} as Record<string, string>
     }
   }
 
   static async chat(messages: ChatMessage[], provider: Provider = 'local', options?: { max_tokens?: number; temperature?: number }): Promise<ChatResult> {
+    const auth = await this.getAuthHeader()
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(await this.getAuthHeader()),
+      ...Object.fromEntries(Object.entries(auth).filter(([_, v]) => v !== undefined))
     }
 
     // Use env public URL if provided, otherwise fall back to relative path (when served behind Supabase)

@@ -197,6 +197,7 @@ jobs:
       # Cleanup sensitive files
       - name: Cleanup
         if: always()
+        shell: bash
         run: |
           # Remove Apple API key
           rm -f ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
