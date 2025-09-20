@@ -23,9 +23,9 @@ export function Header() {
           <Image
             src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
             alt="Ottokode"
-            width={32}
-            height={32}
-            className="h-8 w-8"
+            width={40}
+            height={40}
+            className="h-10 w-10"
           />
         </Link>
 
