@@ -121,7 +121,7 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
     - name: Deploy to Vercel (if configured)
-      if: ${{ secrets.VERCEL_TOKEN }}
+      if: ${{ secrets.VERCEL_TOKEN != '' }}
       run: |
         cd web-app
         npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
