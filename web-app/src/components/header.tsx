@@ -22,20 +22,11 @@ export function Header() {
           <a href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
             Features
           </a>
-          <a href="/#download" className="text-muted-foreground hover:text-foreground transition-colors">
-            Download
-          </a>
-          <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
-            Docs
-          </Link>
           <Link href="/whats-new" className="text-muted-foreground hover:text-foreground transition-colors">
             What&apos;s New
           </Link>
           <Link href="/getting-started" className="text-muted-foreground hover:text-foreground transition-colors">
             Getting Started
-          </Link>
-          <Link href="/settings/ai" className="text-muted-foreground hover:text-foreground transition-colors">
-            Settings
           </Link>
           <a
             href="https://github.com/tempandmajor/ottokode/issues/new/choose"
