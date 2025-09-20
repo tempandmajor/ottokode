@@ -131,7 +131,7 @@ async fn handle_connection(
     ws_sender.send(Message::Text(welcome_json)).await?;
 
     // Handle incoming messages from extension
-    let connections_clone = Arc::clone(&connections);
+    let _connections_clone = Arc::clone(&connections);
     let global_sender_clone = global_sender.clone();
     let connection_id_clone = connection_id.clone();
 

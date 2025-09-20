@@ -3,7 +3,9 @@
  * Handles authorization for administrative functions
  */
 
-import { supabase } from '../supabase';
+import { createClient } from '../../lib/supabase';
+
+const supabase = createClient();
 
 export interface AdminUser {
   id: string;
