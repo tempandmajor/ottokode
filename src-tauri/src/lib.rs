@@ -185,6 +185,7 @@ fn apply_unified_diff(original: &str, diff: &str) -> Result<String, String> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct HunkInfo {
     old_start: usize,
     old_count: usize,
