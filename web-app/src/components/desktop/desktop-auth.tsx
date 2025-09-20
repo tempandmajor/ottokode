@@ -9,10 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/components/auth/auth-provider';
-import { Code, Github, Globe, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Github, Globe, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { useTheme } from '@/components/theme-provider';
 
 export function DesktopAuth() {
   const { signIn, signUp, signInWithGithub } = useAuth();
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -109,11 +112,14 @@ export function DesktopAuth() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Code className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Ottokode
-            </span>
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
+              alt="Ottokode"
+              width={40}
+              height={40}
+              className="h-10 w-10"
+            />
           </div>
           <h1 className="text-xl font-semibold text-foreground">Welcome to Ottokode Desktop</h1>
           <p className="text-sm text-muted-foreground mt-2">

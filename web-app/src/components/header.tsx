@@ -37,8 +37,8 @@ export function Header() {
           <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
             Docs
           </Link>
-          <Link href="/whats-new" className="text-muted-foreground hover:text-foreground transition-colors">
-            What&apos;s New
+          <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            Pricing
           </Link>
         </nav>
 
@@ -80,11 +80,11 @@ export function Header() {
               Features
             </a>
             <Link
-              href="/whats-new"
+              href="/pricing"
               className="block text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              What&apos;s New
+              Pricing
             </Link>
             <Link
               href="/docs"

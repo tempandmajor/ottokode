@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/components/auth/auth-provider';
 import { UserMenu } from '@/components/auth/user-menu';
 import {
-  Code,
   FolderOpen,
   GitBranch,
   Plus,
@@ -26,6 +25,8 @@ import {
   Globe,
   ChevronRight
 } from 'lucide-react';
+import Image from 'next/image';
+import { useTheme } from '@/components/theme-provider';
 
 interface Project {
   id: string;
@@ -100,6 +101,7 @@ const PROJECT_TEMPLATES: ProjectTemplate[] = [
 
 export function DesktopWelcome() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
   const [recentProjects] = useState<Project[]>([
     {
       id: '1',
@@ -191,11 +193,14 @@ export function DesktopWelcome() {
       <div className="border-b bg-card">
         <div className="flex h-14 items-center justify-between px-6">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Code className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Ottokode
-              </span>
+            <div className="flex items-center">
+              <Image
+                src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
+                alt="Ottokode"
+                width={32}
+                height={32}
+                className="h-8 w-8"
+              />
             </div>
             <Badge variant="outline" className="border-primary/20 text-primary">
               Desktop

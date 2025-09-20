@@ -1,17 +1,24 @@
-import { Code, Github, Twitter, Mail } from "lucide-react";
+import { Github, Twitter, Mail } from "lucide-react";
+import Image from "next/image";
+import { useTheme } from "@/components/theme-provider";
 
 export function Footer() {
+  const { theme } = useTheme();
+
   return (
     <footer className="border-t border-border/50 bg-background/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Code className="h-6 w-6 text-foreground" />
-              <span className="text-lg font-bold text-foreground">
-                Ottokode
-              </span>
+            <div className="flex items-center">
+              <Image
+                src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
+                alt="Ottokode"
+                width={32}
+                height={32}
+                className="h-8 w-8"
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               The AI-powered IDE that makes development faster, smarter, and more enjoyable.
