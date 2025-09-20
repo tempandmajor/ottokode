@@ -38,16 +38,13 @@ export function DownloadButtons() {
     let cancelled = false;
     async function fetchLatest() {
       try {
-        // Use GitHub API for latest release of tempandmajor/ottokode
-        const res = await fetch("https://api.github.com/repos/tempandmajor/ottokode/releases/latest", {
-          headers: { "Accept": "application/vnd.github+json" },
-          cache: "no-store"
-        });
+        // Fetch via server-side proxy to avoid CSP and CORS issues
+        const res = await fetch("/api/releases/latest", { cache: "no-store" });
         if (!res.ok) throw new Error(`GitHub API HTTP ${res.status}`);
         const data = await res.json();
         if (!cancelled) setRelease({ tag_name: data.tag_name, assets: data.assets ?? [] });
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Failed to load releases");
+        if (!cancelled) setError("Failed to fetch release info. Please use the Releases page.");
       }
     }
     fetchLatest();
