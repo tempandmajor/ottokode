@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   keywords: ["AI IDE", "code completion", "developer tools", "artificial intelligence", "programming", "code editor", "software development"],
   authors: [{ name: "Ottokode" }],
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', type: 'image/x-icon' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.svg',
+  },
   openGraph: {
     title: "Ottokode - AI-Powered Development Environment",
     description: "Experience the future of coding with AI-powered assistance",
