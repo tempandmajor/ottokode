@@ -119,7 +119,7 @@ export default function GettingStartedPage() {
 
         {/* Next Steps */}
         <div>
-          <h2 className="text-2xl font-bold text-center mb-8">What's Next?</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">What&apos;s Next?</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6">
