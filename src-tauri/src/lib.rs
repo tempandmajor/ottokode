@@ -2,10 +2,8 @@ mod websocket_server;
 
 use websocket_server::{WebSocketServer, get_websocket_status, send_to_browser_extension};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use std::path::Path;
 use std::fs;
-use std::io::Write;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -272,7 +270,7 @@ pub fn run() {
         ])
         .setup(|app| {
             // Start WebSocket server on app startup
-            let app_handle = app.handle();
+            let _app_handle = app.handle();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = start_websocket_server().await {
                     eprintln!("Failed to start WebSocket server: {}", e);

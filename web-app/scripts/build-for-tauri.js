@@ -12,9 +12,9 @@ console.log('🔨 Building web-app for Tauri...');
 process.env.TAURI_BUILD = 'true';
 
 try {
-  // Produce a static export for Tauri. If next.config.js has output:'export',
-  // next export will be a no-op but we run it to guarantee ./out exists.
-  execSync('npx next build && npx next export', {
+  // Produce a static export for Tauri using the modern output: 'export' config
+  // The output: 'export' in next.config.js will automatically generate ./out
+  execSync('npx next build', {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
     env: {
