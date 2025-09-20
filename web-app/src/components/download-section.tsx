@@ -35,7 +35,7 @@ export function DownloadSection() {
               <CardContent className="p-6">
                 <div className="mb-4">
                   <h3 className="font-semibold text-lg mb-1">Get the latest release</h3>
-                  <p className="text-sm text-muted-foreground">We automatically link the newest macOS, Windows, and Linux builds from GitHub Releases.</p>
+                  <p className="text-sm text-muted-foreground">We automatically link the newest macOS builds from GitHub Releases. Windows and Linux support coming soon.</p>
                 </div>
                 <DownloadButtons />
               </CardContent>

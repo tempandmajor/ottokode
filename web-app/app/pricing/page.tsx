@@ -12,74 +12,19 @@ const pricingPlans = [
     name: "Free",
     price: "$0",
     period: "forever",
-    description: "Perfect for individual developers and personal projects",
+    description: "Full-featured development environment for everyone",
     features: [
-      "Basic AI code completion",
-      "Up to 3 projects",
-      "Standard themes",
-      "Community support",
-      "Basic git integration",
-      "Limited AI queries (100/month)"
+      "Complete code editor",
+      "Multi-language support",
+      "Git integration",
+      "Chat interface for AI assistance",
+      "File management",
+      "Syntax highlighting",
+      "Theme customization",
+      "Desktop and web versions"
     ],
-    buttonText: "Get Started",
-    popular: false
-  },
-  {
-    name: "Pro",
-    price: "$19",
-    period: "per month",
-    description: "Ideal for professional developers and small teams",
-    features: [
-      "Advanced AI code completion",
-      "Unlimited projects",
-      "Premium themes & customization",
-      "Priority support",
-      "Advanced git features",
-      "Unlimited AI queries",
-      "Code review assistance",
-      "Custom extensions",
-      "Team collaboration (up to 5 members)"
-    ],
-    buttonText: "Start Pro Trial",
+    buttonText: "Download Now",
     popular: true
-  },
-  {
-    name: "Team",
-    price: "$49",
-    period: "per month",
-    description: "For growing teams that need advanced collaboration",
-    features: [
-      "Everything in Pro",
-      "Team workspaces",
-      "Advanced collaboration tools",
-      "Team analytics & insights",
-      "SSO integration",
-      "Custom integrations",
-      "Dedicated support",
-      "Up to 20 team members",
-      "Advanced security features"
-    ],
-    buttonText: "Contact Sales",
-    popular: false
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "pricing",
-    description: "For large organizations with specific requirements",
-    features: [
-      "Everything in Team",
-      "Unlimited team members",
-      "On-premise deployment",
-      "Custom AI models",
-      "Advanced security & compliance",
-      "24/7 dedicated support",
-      "Custom training & onboarding",
-      "Service level agreements",
-      "API access & white-labeling"
-    ],
-    buttonText: "Contact Sales",
-    popular: false
   }
 ];
 
@@ -99,17 +44,16 @@ export default function PricingPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From individual developers to large enterprises, we have a plan that scales with your needs.
-              Start free and upgrade as you grow.
+              Ottokode is completely free and open source. No subscriptions, no limits, no hidden costs.
             </p>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid lg:grid-cols-4 gap-8 mb-16">
+          {/* Pricing Card */}
+          <div className="flex justify-center mb-16">
             {pricingPlans.map((plan, index) => (
               <Card
                 key={index}
-                className={`relative ${plan.popular ? 'border-ai-primary shadow-lg scale-105' : 'border-border'}`}
+                className="relative border-ai-primary shadow-lg max-w-md"
               >
                 {plan.popular && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-ai-primary text-ai-primary-foreground">
@@ -158,41 +102,37 @@ export default function PricingPage() {
 
             <div className="space-y-6">
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">Can I change plans anytime?</h3>
+                <h3 className="text-lg font-semibold mb-2">Is Ottokode really free?</h3>
                 <p className="text-muted-foreground">
-                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately,
-                  and billing is prorated accordingly.
+                  Yes, Ottokode is completely free and open source. There are no hidden costs, subscriptions, or premium features.
                 </p>
               </div>
 
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">Is there a free trial for paid plans?</h3>
+                <h3 className="text-lg font-semibold mb-2">How do you make money if it's free?</h3>
                 <p className="text-muted-foreground">
-                  Yes, all paid plans come with a 14-day free trial. No credit card required to start your trial.
+                  Ottokode is a passion project focused on providing great developer tools. We may explore optional paid services in the future.
                 </p>
               </div>
 
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">What payment methods do you accept?</h3>
+                <h3 className="text-lg font-semibold mb-2">Can I use my own AI providers?</h3>
                 <p className="text-muted-foreground">
-                  We accept all major credit cards (Visa, MasterCard, American Express) and PayPal.
-                  Enterprise customers can also pay via bank transfer.
+                  Yes! You can configure your own AI providers (OpenAI, Anthropic, Google) in the settings to enable AI-powered features.
                 </p>
               </div>
 
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">Can I cancel anytime?</h3>
+                <h3 className="text-lg font-semibold mb-2">What platforms are supported?</h3>
                 <p className="text-muted-foreground">
-                  Absolutely. You can cancel your subscription at any time with no cancellation fees.
-                  Your plan remains active until the end of your billing period.
+                  Currently focusing on macOS desktop with a web version available. Windows and Linux support may be added in the future.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">Do you offer educational discounts?</h3>
+                <h3 className="text-lg font-semibold mb-2">Is my code secure?</h3>
                 <p className="text-muted-foreground">
-                  Yes, we offer special pricing for students and educational institutions.
-                  Contact our sales team for more information about educational discounts.
+                  Yes, your code stays on your machine. AI features only send code to your configured providers when you explicitly use them.
                 </p>
               </div>
             </div>
