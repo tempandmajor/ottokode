@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, User, Zap, Settings, Code, ChevronRight } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { Header } from "@/components/header";
 
 export default function GettingStartedPage() {
   const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto max-w-4xl py-16 px-6">
+      <Header />
+      <div className="container mx-auto max-w-4xl py-16 px-6 pt-24">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4">
@@ -63,8 +65,8 @@ export default function GettingStartedPage() {
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <Link href="/ide">
-                <Button size="lg" variant="secondary" className="w-full">
-                  <Code className="h-4 w-4 mr-2" />
+                <Button size="lg" variant="default" className="w-full text-white">
+                  <Code className="h-4 w-4 mr-2 text-white" />
                   Launch Web IDE
                 </Button>
               </Link>

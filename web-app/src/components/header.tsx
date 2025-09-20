@@ -19,7 +19,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center">
           <Image
             src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
             alt="Ottokode"
@@ -27,9 +27,6 @@ export function Header() {
             height={32}
             className="h-8 w-8"
           />
-          <span className="text-xl font-bold text-foreground">
-            Ottokode
-          </span>
         </Link>
 
         {/* Desktop Navigation */}
