@@ -113,9 +113,13 @@ export class SecurityMiddleware {
       ],
       'script-src-elem': [
         "'self'",
+        "'strict-dynamic'",
+        "'unsafe-inline'",
         // Inline <script> blocks are governed by script-src; this covers external script elements
         'https://vercel.live',
         'https://va.vercel-scripts.com',
+        'https://*.ottokode.com',
+        'https://www.ottokode.com',
       ],
       'style-src': [
         "'self'",
