@@ -35,7 +35,7 @@ jobs:
         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
     - name: Set secrets
-      if: ${{ secrets.OPENAI_API_KEY && secrets.ANTHROPIC_API_KEY }}
+      if: ${{ secrets.OPENAI_API_KEY != '' && secrets.ANTHROPIC_API_KEY != '' }}
       run: |
         PROJECT_REF="${{ secrets.SUPABASE_PROJECT_REF }}"
         if [ -z "$PROJECT_REF" ]; then
