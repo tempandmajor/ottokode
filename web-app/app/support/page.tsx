@@ -329,7 +329,7 @@ export default function SupportPage() {
                       />
                     </div>
 
-                    <Button type="submit" className="bg-ai-primary hover:bg-ai-primary/90">
+                    <Button type="submit" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
                       <Send className="h-4 w-4 mr-2" />
                       Send Message
                     </Button>

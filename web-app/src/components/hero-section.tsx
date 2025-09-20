@@ -28,8 +28,8 @@ export function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/ide">
-                <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-ai-primary-foreground shadow-ai">
-                  <Play className="h-5 w-5 mr-2" />
+                <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white shadow-ai">
+                  <Play className="h-5 w-5 mr-2 text-white" />
                   Try Web IDE
                 </Button>
               </Link>

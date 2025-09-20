@@ -267,7 +267,7 @@ export default function ExtensionsPage() {
                     Add new features, themes, or integrate with your favorite tools.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button className="bg-ai-primary hover:bg-ai-primary/90">
+                    <Button className="bg-ai-primary hover:bg-ai-primary/90 text-white">
                       View Documentation
                     </Button>
                     <Button variant="outline">

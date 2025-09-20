@@ -90,8 +90,8 @@ export default function AboutPage() {
             productivity, and collaboration in software development.
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90">
-              <Mail className="h-5 w-5 mr-2" />
+            <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
+              <Mail className="h-5 w-5 mr-2 text-white" />
               Contact Us
             </Button>
             <Button size="lg" variant="outline">
@@ -302,7 +302,7 @@ export default function AboutPage() {
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/ide">
-              <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90">
+              <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
                 Try Web IDE
               </Button>
             </Link>

@@ -261,7 +261,7 @@ export default function HelpPage() {
                     get the most out of Ottokode.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button className="bg-ai-primary hover:bg-ai-primary/90">
+                    <Button className="bg-ai-primary hover:bg-ai-primary/90 text-white">
                       Contact Support
                     </Button>
                     <Button variant="outline">
