@@ -98,7 +98,7 @@ export class SecurityMiddleware {
   private static buildCSPHeader(nonce: string, request: NextRequest): string {
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isVercel = process.env.VERCEL === '1';
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://gbugafddunddrvkvgifl.supabase.co';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gbugafddunddrvkvgifl.supabase.co';
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
 
     const cspPolicies = {
