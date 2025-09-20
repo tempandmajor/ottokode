@@ -17,6 +17,7 @@ pub struct WebSocketMessage {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ExtensionConnection {
     pub id: String,
     pub connected_at: std::time::SystemTime,
@@ -72,6 +73,7 @@ impl WebSocketServer {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn send_to_extension(
         &self,
         extension_id: &str,
@@ -84,6 +86,7 @@ impl WebSocketServer {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn get_connected_extensions(&self) -> Vec<String> {
         let connections = self.connections.lock().await;
         connections.keys().cloned().collect()
