@@ -79,7 +79,7 @@ export default function SupportPage() {
   const faqs = [
     {
       question: "How do I get started with Ottokode?",
-      answer: "Simply create a free account and start using our web IDE immediately. No installation required! For the desktop version, download the app from our homepage and follow the setup wizard."
+      answer: "Download and start your 14-day free trial immediately. No installation required for the web IDE! For the desktop version, download the app from our homepage and follow the setup wizard."
     },
     {
       question: "What programming languages are supported?",
@@ -102,8 +102,8 @@ export default function SupportPage() {
       answer: "Create an organization account to invite team members. You can share projects, collaborate in real-time, and manage permissions. See our Team Collaboration guide for details."
     },
     {
-      question: "What's included in the free plan?",
-      answer: "The free plan includes access to the web IDE, basic AI suggestions (limited), file management, and community support. Upgrade for unlimited AI usage and advanced features."
+      question: "What's included in the free trial?",
+      answer: "The 14-day free trial includes full access to all features: web IDE, unlimited AI suggestions, file management, and priority support. After the trial, choose a plan that fits your needs."
     },
     {
       question: "How do I cancel my subscription?",

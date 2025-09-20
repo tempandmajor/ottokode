@@ -9,22 +9,55 @@ import { Check, Star } from "lucide-react";
 
 const pricingPlans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Full-featured development environment for everyone",
+    name: "Starter",
+    price: "$9",
+    period: "per month",
+    description: "Perfect for individual developers getting started",
     features: [
       "Complete code editor",
       "Multi-language support",
       "Git integration",
-      "Chat interface for AI assistance",
+      "Basic AI assistance (limited)",
       "File management",
       "Syntax highlighting",
-      "Theme customization",
-      "Desktop and web versions"
+      "Community support"
     ],
-    buttonText: "Download Now",
+    buttonText: "Start Free Trial",
+    popular: false
+  },
+  {
+    name: "Professional",
+    price: "$29",
+    period: "per month",
+    description: "Ideal for professional developers and freelancers",
+    features: [
+      "Everything in Starter",
+      "Unlimited AI assistance",
+      "Advanced code completion",
+      "Priority support",
+      "Theme customization",
+      "Desktop and web versions",
+      "Advanced debugging tools"
+    ],
+    buttonText: "Start Free Trial",
     popular: true
+  },
+  {
+    name: "Team",
+    price: "$99",
+    period: "per month",
+    description: "For teams that need collaboration features",
+    features: [
+      "Everything in Professional",
+      "Team collaboration",
+      "Shared workspaces",
+      "Team analytics",
+      "Admin controls",
+      "SSO integration",
+      "Dedicated support"
+    ],
+    buttonText: "Contact Sales",
+    popular: false
   }
 ];
 
@@ -44,16 +77,16 @@ export default function PricingPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Ottokode is completely free and open source. No subscriptions, no limits, no hidden costs.
+              Choose the plan that fits your development needs. All plans include a 14-day free trial.
             </p>
           </div>
 
-          {/* Pricing Card */}
-          <div className="flex justify-center mb-16">
+          {/* Pricing Cards */}
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
             {pricingPlans.map((plan, index) => (
               <Card
                 key={index}
-                className="relative border-ai-primary shadow-lg max-w-md"
+                className={`relative ${plan.popular ? 'border-ai-primary shadow-lg scale-105' : 'border-border'}`}
               >
                 {plan.popular && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-ai-primary text-ai-primary-foreground">
@@ -102,23 +135,23 @@ export default function PricingPage() {
 
             <div className="space-y-6">
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">Is Ottokode really free?</h3>
+                <h3 className="text-lg font-semibold mb-2">Can I try before I buy?</h3>
                 <p className="text-muted-foreground">
-                  Yes, Ottokode is completely free and open source. There are no hidden costs, subscriptions, or premium features.
+                  Yes! All plans include a 14-day free trial. You can explore all features before committing to a subscription.
                 </p>
               </div>
 
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">How do you make money if it's free?</h3>
+                <h3 className="text-lg font-semibold mb-2">Can I change plans anytime?</h3>
                 <p className="text-muted-foreground">
-                  Ottokode is a passion project focused on providing great developer tools. We may explore optional paid services in the future.
+                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.
                 </p>
               </div>
 
               <div className="border-b border-border pb-6">
-                <h3 className="text-lg font-semibold mb-2">Can I use my own AI providers?</h3>
+                <h3 className="text-lg font-semibold mb-2">What payment methods do you accept?</h3>
                 <p className="text-muted-foreground">
-                  Yes! You can configure your own AI providers (OpenAI, Anthropic, Google) in the settings to enable AI-powered features.
+                  We accept all major credit cards and PayPal. Enterprise customers can also pay via invoice.
                 </p>
               </div>
 

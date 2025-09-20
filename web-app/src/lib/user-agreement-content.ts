@@ -48,7 +48,7 @@ We do not sell your personal data or store your source code permanently.`
 • Subscription fees are billed in advance
 • You may cancel your subscription at any time
 • Refunds are provided according to our refund policy
-• Free trial limitations may apply`
+• Trial period provides full access to all features`
     },
     {
       title: "8. INTELLECTUAL PROPERTY",
