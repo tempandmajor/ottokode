@@ -33,10 +33,12 @@ export function HeroSection() {
                   Try Web IDE
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent">
-                <Download className="h-5 w-5 mr-2" />
-                Download Desktop
-              </Button>
+              <Link href="/desktop">
+                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent">
+                  <Download className="h-5 w-5 mr-2" />
+                  Download Desktop
+                </Button>
+              </Link>
             </div>
           </div>
 

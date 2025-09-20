@@ -54,7 +54,7 @@ export function FeaturesSection() {
                 <div className="h-12 w-12 rounded-lg bg-white p-2.5 mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="h-full w-full text-black" />
                 </div>
-                <CardTitle className="group-hover:text-white transition-colors">
+                <CardTitle className="group-hover:text-ai-primary transition-colors">
                   {feature.title}
                 </CardTitle>
               </CardHeader>

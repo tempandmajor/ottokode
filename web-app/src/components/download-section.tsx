@@ -24,7 +24,7 @@ export function DownloadSection() {
             Download Ottokode
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get started with a modern, clean IDE designed for productivity. Try free for 14 days.
+            Get started with a modern, clean IDE designed for productivity.
           </p>
         </div>
 
@@ -66,10 +66,10 @@ export function DownloadSection() {
               ))}
             </div>
 
-            <div className="bg-white/10 border border-white/20 rounded-xl p-6 mt-8">
-              <h4 className="font-semibold mb-2">🎉 Launch Special</h4>
+            <div className="bg-muted/50 border border-border rounded-xl p-6 mt-8">
+              <h4 className="font-semibold mb-2">🚀 Ready to Start</h4>
               <p className="text-sm text-muted-foreground">
-                Start with a 14-day free trial. No credit card required to download and try.
+                Download and start coding immediately. No setup required.
               </p>
             </div>
           </div>
