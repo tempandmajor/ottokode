@@ -7,6 +7,9 @@ on:
       - 'supabase/functions/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,7 +25,11 @@ jobs:
 
     - name: Deploy Functions
       run: |
-        PROJECT_REF="${{ secrets.SUPABASE_PROJECT_REF || 'gbugafddunddrvkvgifl' }}"
+        PROJECT_REF="${{ secrets.SUPABASE_PROJECT_REF }}"
+        if [ -z "$PROJECT_REF" ]; then
+          echo "Error: SUPABASE_PROJECT_REF secret is required"
+          exit 1
+        fi
         supabase functions deploy ai-chat --project-ref "$PROJECT_REF"
         supabase functions deploy propose-diff --project-ref "$PROJECT_REF"
         supabase functions deploy index-repo --project-ref "$PROJECT_REF"
@@ -32,7 +39,11 @@ jobs:
     - name: Set secrets
       if: ${{ secrets.OPENAI_API_KEY != '' && secrets.ANTHROPIC_API_KEY != '' }}
       run: |
-        PROJECT_REF="${{ secrets.SUPABASE_PROJECT_REF || 'gbugafddunddrvkvgifl' }}"
+        PROJECT_REF="${{ secrets.SUPABASE_PROJECT_REF }}"
+        if [ -z "$PROJECT_REF" ]; then
+          echo "Error: SUPABASE_PROJECT_REF secret is required"
+          exit 1
+        fi
         supabase secrets set OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" --project-ref "$PROJECT_REF"
         supabase secrets set ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" --project-ref "$PROJECT_REF"
         supabase secrets set GOOGLE_AI_API_KEY="${{ secrets.GOOGLE_AI_API_KEY }}" --project-ref "$PROJECT_REF"

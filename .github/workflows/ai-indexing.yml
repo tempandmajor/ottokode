@@ -41,15 +41,18 @@ on:
         required: false
         type: string
 
-env:
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   index-repository:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, '[skip-indexing]') }}
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - name: Checkout repository

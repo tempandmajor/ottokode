@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   test-web-app:
     runs-on: ubuntu-latest
@@ -39,8 +43,8 @@ jobs:
         cd web-app
         npm run build
       env:
-        VITE_SUPABASE_URL: https://gbugafddunddrvkvgifl.supabase.co
-        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidWdhZmRkdW5kZHJ2a3ZnaWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyMTIyNzgsImV4cCI6MjA0MTc4ODI3OH0.VXxY7Nc6QNJYfX8FU-nJF8nHtjhYX5vPGq8KnVu9X7o
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
   test-tauri:
     runs-on: ${{ matrix.platform }}
@@ -83,8 +87,8 @@ jobs:
         cd src-tauri
         cargo build
       env:
-        VITE_SUPABASE_URL: https://gbugafddunddrvkvgifl.supabase.co
-        VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidWdhZmRkdW5kZHJ2a3ZnaWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyMTIyNzgsImV4cCI6MjA0MTc4ODI3OH0.VXxY7Nc6QNJYfX8FU-nJF8nHtjhYX5vPGq8KnVu9X7o
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
   security-audit:
     runs-on: ubuntu-latest

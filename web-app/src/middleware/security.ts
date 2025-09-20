@@ -105,34 +105,27 @@ export class SecurityMiddleware {
       'default-src': ["'self'"],
       'script-src': [
         "'self'",
-        `'nonce-${nonce}'`,
-        "'strict-dynamic'",
-        // For Next.js and Vercel, we need to allow unsafe-inline and unsafe-eval
-        ...(isDevelopment || isVercel ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
-        'https://vercel.live', // Vercel analytics
-        'https://va.vercel-scripts.com', // Vercel analytics
-        'https://cdnjs.cloudflare.com',
-        'https://cdn.jsdelivr.net',
+        // Pragmatic unblock: allow inline scripts (Next bootstrap) and eval only in dev/Vercel
+        "'unsafe-inline'",
+        ...(isDevelopment || isVercel ? ["'unsafe-eval'"] : []),
+        'https://vercel.live',
+        'https://va.vercel-scripts.com',
       ],
       'script-src-elem': [
         "'self'",
-        `'nonce-${nonce}'`,
-        "'strict-dynamic'",
-        ...(isDevelopment || isVercel ? ["'unsafe-inline'"] : []),
+        // Inline <script> blocks are governed by script-src; this covers external script elements
         'https://vercel.live',
         'https://va.vercel-scripts.com',
       ],
       'style-src': [
         "'self'",
-        "'unsafe-inline'", // Required for Next.js styled-jsx and dynamic styles
-        `'nonce-${nonce}'`,
+        "'unsafe-inline'", // Required for styled-jsx and dynamic styles
         'https://fonts.googleapis.com',
         'https://cdnjs.cloudflare.com',
       ],
       'style-src-elem': [
         "'self'",
         "'unsafe-inline'",
-        `'nonce-${nonce}'`,
         'https://fonts.googleapis.com',
       ],
       'font-src': [
