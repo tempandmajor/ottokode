@@ -113,9 +113,8 @@ export class SecurityMiddleware {
       ],
       'script-src-elem': [
         "'self'",
-        "'strict-dynamic'",
         "'unsafe-inline'",
-        // Inline <script> blocks are governed by script-src; this covers external script elements
+        // Remove strict-dynamic to allow unsafe-inline to work for Next.js
         'https://vercel.live',
         'https://va.vercel-scripts.com',
         'https://*.ottokode.com',
