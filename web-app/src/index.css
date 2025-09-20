@@ -17,10 +17,10 @@ All colors MUST be HSL.
     
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    
-    --primary: 262 83% 58%;
+
+    --primary: 0 0% 13.3%; /* #222222 in light mode */
     --primary-foreground: 210 40% 98%;
-    
+
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
     
@@ -35,15 +35,15 @@ All colors MUST be HSL.
     
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --ring: 0 0% 13.3%; /* #222222 in light mode */
     
     --radius: 0.75rem;
     
-    /* AI-themed design tokens */
-    --ai-primary: 262 83% 58%;
+    /* AI-themed design tokens - Light mode uses #222222 instead of purple */
+    --ai-primary: 0 0% 13.3%; /* #222222 */
     --ai-primary-foreground: 210 40% 98%;
     --ai-secondary: 220 14.3% 15%;
-    --ai-glow: 262 83% 58%;
+    --ai-glow: 0 0% 13.3%; /* #222222 */
     
     /* Shadows */
     --shadow-ai: 0 20px 40px -12px hsl(var(--ai-primary) / 0.3);
@@ -71,8 +71,8 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Dark mode - true black background for IDE feel */
-    --background: 0 0% 4%;
+    /* Dark mode - #222222 background */
+    --background: 0 0% 13.3%; /* #222222 */
     --foreground: 210 40% 98%;
     
     --card: 240 6% 8%;
