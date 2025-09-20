@@ -4,8 +4,8 @@ import { Brain, Zap, Shield, Code2, GitBranch, Palette } from "lucide-react";
 const features = [
   {
     icon: Brain,
-    title: "AI Code Completion",
-    description: "Intelligent suggestions that understand your context and coding patterns for faster development."
+    title: "Code Assistance",
+    description: "Built-in chat interface for coding help and guidance from external AI providers when configured."
   },
   {
     icon: Zap,
@@ -20,7 +20,7 @@ const features = [
   {
     icon: Code2,
     title: "Multi-Language",
-    description: "Support for 50+ programming languages with syntax highlighting and intelligent parsing."
+    description: "Support for popular programming languages with syntax highlighting and code editing features."
   },
   {
     icon: GitBranch,
@@ -43,7 +43,7 @@ export function FeaturesSection() {
             Supercharge Your Development
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Built for modern developers who demand speed, intelligence, and reliability in their tools.
+            Built for modern developers who demand speed, simplicity, and reliability in their tools.
           </p>
         </div>
 

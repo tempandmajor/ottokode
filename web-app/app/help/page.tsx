@@ -37,14 +37,14 @@ const helpCategories = [
   },
   {
     icon: Code,
-    title: "AI Features",
-    description: "Maximize AI-powered development",
+    title: "Development Features",
+    description: "Maximize development productivity",
     color: "bg-ai-primary",
     articles: [
-      "AI Code Completion",
-      "AI Chat Assistant",
-      "Code Review AI",
-      "Smart Refactoring"
+      "Code Assistance",
+      "Chat Interface",
+      "Code Review Tools",
+      "Refactoring Tools"
     ]
   },
   {
@@ -74,18 +74,18 @@ const helpCategories = [
 ];
 
 const popularArticles = [
-  "How to set up AI code completion",
+  "How to set up code assistance",
   "Troubleshooting installation issues",
   "Keyboard shortcuts reference",
   "Setting up team workspaces",
   "Customizing themes and colors",
-  "Using the AI chat assistant"
+  "Using the chat interface"
 ];
 
 const faqItems = [
   {
-    question: "How do I activate AI code completion?",
-    answer: "AI code completion is enabled by default. Make sure you're logged in to your Ottokode account and have an active subscription. You can toggle it in Settings > AI Features > Code Completion."
+    question: "How do I activate code assistance?",
+    answer: "Code assistance features are available in the editor. Basic syntax highlighting and completion are built-in. For advanced AI-powered features, you can configure external AI providers in Settings > AI Settings."
   },
   {
     question: "Why is my IDE running slowly?",
@@ -93,7 +93,7 @@ const faqItems = [
   },
   {
     question: "Can I use Ottokode offline?",
-    answer: "Basic editing features work offline, but AI-powered features require an internet connection. Your work is automatically saved locally and synced when you reconnect."
+    answer: "Basic editing features work offline, but external AI features require an internet connection. Your work is automatically saved locally and synced when you reconnect."
   },
   {
     question: "How do I report a bug?",

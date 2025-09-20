@@ -21,7 +21,7 @@ export default function AboutPage() {
     {
       name: "Alex Rodriguez",
       role: "CEO & Co-Founder",
-      bio: "Former Google AI researcher with 10+ years in ML and developer tools",
+      bio: "Former Google engineer with 10+ years in software development and developer tools",
       image: "/placeholder.svg",
       social: {
         twitter: "#",
@@ -42,8 +42,8 @@ export default function AboutPage() {
     },
     {
       name: "Marcus Thompson",
-      role: "Head of AI",
-      bio: "PhD in Computer Science, former OpenAI researcher specializing in code generation",
+      role: "Head of Engineering",
+      bio: "PhD in Computer Science, experienced software architect specializing in development environments",
       image: "/placeholder.svg",
       social: {
         twitter: "#",
@@ -57,7 +57,7 @@ export default function AboutPage() {
     {
       year: "2023",
       title: "Company Founded",
-      description: "Started with a vision to democratize AI-powered development"
+      description: "Started with a vision to democratize modern development"
     },
     {
       year: "2024",
@@ -67,7 +67,7 @@ export default function AboutPage() {
     {
       year: "2024",
       title: "Series A Funding",
-      description: "Raised $10M to accelerate AI model development"
+      description: "Raised $10M to accelerate platform development"
     },
     {
       year: "2024",
@@ -86,7 +86,7 @@ export default function AboutPage() {
             Building the Future of Development
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            We&apos;re on a mission to empower every developer with AI-powered tools that enhance creativity,
+            We&apos;re on a mission to empower every developer with modern development tools that enhance creativity,
             productivity, and collaboration in software development.
           </p>
           <div className="flex justify-center gap-4">
@@ -111,7 +111,7 @@ export default function AboutPage() {
                 <Target className="h-12 w-12 text-ai-primary mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-4">Our Mission</h3>
                 <p className="text-muted-foreground">
-                  To democratize AI-powered development tools and make advanced coding assistance
+                  To democratize modern development tools and make powerful development environments
                   accessible to developers of all skill levels worldwide.
                 </p>
               </CardContent>
@@ -122,7 +122,7 @@ export default function AboutPage() {
                 <Award className="h-12 w-12 text-ai-secondary mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-4">Our Vision</h3>
                 <p className="text-muted-foreground">
-                  A world where AI amplifies human creativity in software development,
+                  A world where modern tools amplify human creativity in software development,
                   enabling faster innovation and better solutions for global challenges.
                 </p>
               </CardContent>
@@ -134,7 +134,7 @@ export default function AboutPage() {
                 <h3 className="text-xl font-semibold mb-4">Our Values</h3>
                 <p className="text-muted-foreground">
                   Innovation, transparency, developer-first approach, and commitment to
-                  ethical AI that respects privacy and intellectual property.
+                  user privacy and intellectual property protection.
                 </p>
               </CardContent>
             </Card>
@@ -148,7 +148,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Passionate engineers and researchers building the next generation of development tools
+              Passionate engineers building the next generation of development tools
             </p>
           </div>
 
@@ -221,7 +221,7 @@ export default function AboutPage() {
             </div>
             <div>
               <div className="text-4xl font-bold text-ai-secondary mb-2">1M+</div>
-              <div className="text-muted-foreground">Code Suggestions</div>
+              <div className="text-muted-foreground">Lines of Code</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-ai-glow mb-2">99.9%</div>
@@ -296,9 +296,9 @@ export default function AboutPage() {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-ai-primary/10 to-ai-secondary/10">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Experience AI-Powered Development?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Experience Modern Development?</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of developers who are already building the future with Ottokode
+            Join thousands of developers who are already building with confidence using Ottokode
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/ide">

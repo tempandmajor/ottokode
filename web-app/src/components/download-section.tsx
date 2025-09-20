@@ -7,12 +7,12 @@ import { DownloadButtons } from "@/components/downloads/download-buttons";
 // Platform cards removed in favor of dynamic GitHub-release driven buttons
 
 const features = [
-  "AI-powered code completion",
+  "Code assistance chat interface",
   "Multi-language support",
   "Git integration",
-  "Extension marketplace",
-  "Cloud sync",
-  "Collaborative editing"
+  "Extension support",
+  "File management",
+  "Syntax highlighting"
 ];
 
 export function DownloadSection() {
@@ -24,7 +24,7 @@ export function DownloadSection() {
             Download Ottokode
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get started with the most intelligent IDE available. Free for individual developers.
+            Get started with a modern, clean IDE designed for productivity. Free for individual developers.
           </p>
         </div>
 

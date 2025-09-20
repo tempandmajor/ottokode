@@ -154,7 +154,7 @@ export default function CommunityPage() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Connect with thousands of developers, share your projects, get help, and contribute
-              to the future of AI-powered development tools.
+              to the future of modern development tools.
             </p>
           </div>
 

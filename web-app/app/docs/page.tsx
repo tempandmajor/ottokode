@@ -36,7 +36,7 @@ const docCategories = [
   },
   {
     title: "AI Features",
-    description: "Master AI-powered development",
+    description: "Master modern development",
     icon: Zap,
     color: "bg-ai-primary",
     docs: [

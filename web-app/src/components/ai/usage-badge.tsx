@@ -6,12 +6,12 @@ import { SecureAIService } from "@/services/ai/SecureAIService";
 
 /**
  * Lightweight usage/plan indicator.
- * - If not authenticated: shows "Free (Local AI)"
+ * - If not authenticated: shows "Free Account"
  * - If authenticated: shows "Signed in • Premium available"
  * - If a recent premium call was made, we can show daily usage if the edge function returns it.
  */
 export function UsageBadge() {
-  const [label, setLabel] = useState<string>("Free (Local AI)");
+  const [label, setLabel] = useState<string>("Free Account");
   const [sub, setSub] = useState<string>("");
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function UsageBadge() {
         const { data } = await supabase.auth.getSession();
         const isAuthed = !!data?.session?.user;
         if (!isAuthed) {
-          setLabel("Free (Local AI)");
+          setLabel("Free Account");
           setSub("");
           return;
         }

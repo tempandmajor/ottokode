@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
             </p>
             <p className="mb-6">
               At Ottokode, we take your privacy seriously. This Privacy Policy explains how we collect,
-              use, disclose, and safeguard your information when you use our AI-powered development environment.
+              use, disclose, and safeguard your information when you use our modern development environment.
             </p>
           </div>
 

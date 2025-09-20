@@ -139,7 +139,7 @@ export function Button({
       content: `{
   "name": "ottokode-project",
   "version": "1.0.0",
-  "description": "AI-powered development project",
+  "description": "modern development project",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -159,7 +159,7 @@ export function Button({
       type: 'file',
       content: `# Ottokode Project
 
-This is an AI-powered development project created with Ottokode IDE.
+This is an modern development project created with Ottokode IDE.
 
 ## Features
 

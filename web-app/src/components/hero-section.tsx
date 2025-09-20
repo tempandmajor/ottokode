@@ -12,18 +12,18 @@ export function HeroSection() {
           <div className="space-y-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-sm text-foreground mb-4">
               <Sparkles className="h-4 w-4 mr-2" />
-              AI-Powered Development
+              Modern Development
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-foreground via-ai-primary to-ai-secondary bg-clip-text text-transparent leading-tight">
-              Code with AI
+              Code with
               <br />
-              <span className="text-ai-glow">Intelligence</span>
+              <span className="text-ai-glow">Confidence</span>
             </h1>
 
             <p className="text-xl text-muted-foreground max-w-lg leading-relaxed">
-              Experience the future of development with Ottokode. Intelligent code completion,
-              real-time collaboration, and AI-powered debugging in one powerful IDE.
+              A powerful IDE designed for modern developers. Clean interface,
+              fast performance, and extensible architecture in one reliable editor.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

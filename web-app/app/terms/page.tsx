@@ -15,7 +15,7 @@ export default function TermsOfService() {
             </p>
             <p className="mb-6">
               Welcome to Ottokode. These Terms of Service (&quot;Terms&quot;) govern your use of our
-              AI-powered development environment and related services.
+              modern development environment and related services.
             </p>
           </div>
 
