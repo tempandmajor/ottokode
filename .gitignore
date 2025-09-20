@@ -28,3 +28,7 @@ web-app/.env.*
 *.njsproj
 *.sln
 *.sw?
+
+# Next.js build artifacts (web-app)
+web-app/.next/
+web-app/out/
