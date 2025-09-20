@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use websocket_server::{get_websocket_status, send_to_browser_extension, WebSocketServer};
+use tracing::Level;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -269,6 +270,23 @@ fn apply_hunk(content: &str, hunk_lines: &[&str], _hunk_info: &HunkInfo) -> Resu
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Initialize Sentry for error tracking
+    let _guard = sentry::init((
+        std::env::var("SENTRY_DSN").unwrap_or_default(),
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            environment: Some(if cfg!(debug_assertions) { "development" } else { "production" }.into()),
+            debug: cfg!(debug_assertions),
+            sample_rate: if cfg!(debug_assertions) { 1.0 } else { 0.1 },
+            ..Default::default()
+        },
+    ));
+
+    // Initialize tracing
+    tracing_subscriber::fmt()
+        .with_max_level(if cfg!(debug_assertions) { Level::DEBUG } else { Level::INFO })
+        .init();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_http::init())

@@ -38,7 +38,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["dmg", "app"],
     "category": "DeveloperTool",
     "copyright": "Copyright © 2024 Ottokode. All rights reserved.",
     "publisher": "Ottokode",

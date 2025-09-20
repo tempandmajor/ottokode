@@ -223,8 +223,8 @@ export class PatchAuditService {
       };
     }
 
-    const uniqueFiles = new Set(data.map(d => d.file_path)).size;
-    const stats = data.reduce((acc, entry) => {
+    const uniqueFiles = new Set(data.map((d: any) => d.file_path)).size;
+    const stats = data.reduce((acc: any, entry: any) => {
       switch (entry.action) {
         case 'propose':
           acc.totalProposals++;

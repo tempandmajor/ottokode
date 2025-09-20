@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, Settings, LogOut, CreditCard, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from './auth-provider';
 
 export function UserMenu() {
@@ -49,21 +50,29 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          Profile
+        <DropdownMenuItem asChild>
+          <Link href="/settings/profile" className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CreditCard className="mr-2 h-4 w-4" />
-          Billing
+        <DropdownMenuItem asChild>
+          <Link href="/settings/billing" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Billing
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <HelpCircle className="mr-2 h-4 w-4" />
-          Help & Support
+        <DropdownMenuItem asChild>
+          <Link href="/help" className="flex items-center">
+            <HelpCircle className="mr-2 h-4 w-4" />
+            Help & Support
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>

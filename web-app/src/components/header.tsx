@@ -1,10 +1,14 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Code, LogIn, Download } from "lucide-react";
 import Link from "next/link";
 import { UsageBadge } from "@/components/ai/usage-badge";
+import { UserMenu } from "@/components/auth/user-menu";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export function Header() {
+  const { user } = useAuth();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -41,12 +45,15 @@ export function Header() {
         <div className="flex items-center space-x-3">
           <ThemeToggle />
           <UsageBadge />
-          <Link href="/login">
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <LogIn className="h-4 w-4 mr-2" />
-              Sign In
-            </Button>
-          </Link>
+          {!user && (
+            <Link href="/login">
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            </Link>
+          )}
+          {user && <UserMenu />}
           <a href="/#download">
             <Button variant="hero" size="sm">
               <Download className="h-4 w-4 mr-2" />

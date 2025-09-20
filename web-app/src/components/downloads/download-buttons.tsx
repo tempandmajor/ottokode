@@ -52,39 +52,28 @@ export function DownloadButtons() {
   }, []);
 
   const mac = pickAsset(release?.assets ?? [], "macos");
-  const win = pickAsset(release?.assets ?? [], "windows");
-  const lin = pickAsset(release?.assets ?? [], "linux");
 
   return (
     <div className="flex flex-col gap-2">
       {error && <p className="text-sm text-red-500">{error}</p>}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="flex justify-center">
         <a
-          className="inline-flex items-center justify-center rounded-md border px-3 py-2 hover:bg-muted"
+          className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 text-lg font-semibold"
           href={mac?.browser_download_url ?? "https://github.com/tempandmajor/ottokode/releases"}
           target="_blank"
           rel="noreferrer"
         >
           Download for macOS {release?.tag_name ? `(${release.tag_name})` : ""}
         </a>
-        <a
-          className="inline-flex items-center justify-center rounded-md border px-3 py-2 hover:bg-muted"
-          href={win?.browser_download_url ?? "https://github.com/tempandmajor/ottokode/releases"}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Download for Windows {release?.tag_name ? `(${release.tag_name})` : ""}
-        </a>
-        <a
-          className="inline-flex items-center justify-center rounded-md border px-3 py-2 hover:bg-muted"
-          href={lin?.browser_download_url ?? "https://github.com/tempandmajor/ottokode/releases"}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Download for Linux {release?.tag_name ? `(${release.tag_name})` : ""}
-        </a>
       </div>
-      <p className="text-xs text-muted-foreground">Looking for other builds? See all assets on the release page.</p>
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">
+          Currently available for macOS only. Windows and Linux support coming soon.
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Looking for other versions? <a href="https://github.com/tempandmajor/ottokode/releases" className="underline" target="_blank" rel="noreferrer">See all releases</a>
+        </p>
+      </div>
     </div>
   );
 }
