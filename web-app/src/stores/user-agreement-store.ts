@@ -10,6 +10,7 @@ interface UserAgreementState {
   acceptedAt: string | null;
   showAgreementModal: boolean;
   isDesktopApp: boolean;
+  hasHydrated: boolean;
 }
 
 interface UserAgreementActions {
@@ -32,6 +33,7 @@ export const useUserAgreementStore = create<UserAgreementStore>()(
       acceptedAt: null,
       showAgreementModal: false,
       isDesktopApp: false,
+      hasHydrated: false,
 
       // Actions
       acceptAgreement: () => {
@@ -89,6 +91,14 @@ export const useUserAgreementStore = create<UserAgreementStore>()(
         acceptedVersion: state.acceptedVersion,
         acceptedAt: state.acceptedAt,
       }) as Partial<UserAgreementStore>,
+      onRehydrateStorage: () => (state: any, error: any) => {
+        if (!error) {
+          // After hydration, mark as hydrated
+          setTimeout(() => {
+            useUserAgreementStore.setState({ hasHydrated: true });
+          }, 0);
+        }
+      },
     }
   ) as any)
 );

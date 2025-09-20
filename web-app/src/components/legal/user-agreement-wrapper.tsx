@@ -23,12 +23,13 @@ export function UserAgreementWrapper({
     acceptAgreement,
     showAgreement,
     hideAgreement,
-    setIsDesktopApp
+    setIsDesktopApp,
+    hasHydrated
   } = useUserAgreementStore();
 
-  const [isInitialized, setIsInitialized] = useState(false);
-
   useEffect(() => {
+    if (!hasHydrated) return; // Wait for hydration
+
     setIsDesktopApp(isDesktop);
 
     // Check if we need to show the agreement
@@ -38,9 +39,7 @@ export function UserAgreementWrapper({
       // For desktop apps, show the agreement immediately if not accepted
       showAgreement(true);
     }
-
-    setIsInitialized(true);
-  }, [isDesktop, checkAgreementStatus, showAgreement, setIsDesktopApp]);
+  }, [isDesktop, checkAgreementStatus, showAgreement, setIsDesktopApp, hasHydrated]);
 
   const handleAcceptAgreement = () => {
     acceptAgreement();
@@ -69,8 +68,8 @@ export function UserAgreementWrapper({
     }
   };
 
-  // Don't render children until we've checked the agreement status
-  if (!isInitialized) {
+  // Don't render children until hydration is complete
+  if (!hasHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
