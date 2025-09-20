@@ -75,36 +75,36 @@ All colors MUST be HSL.
     --background: 0 0% 13.3%; /* #222222 */
     --foreground: 210 40% 98%;
     
-    --card: 240 6% 8%;
+    --card: 0 0% 13.3%; /* #222222 */
     --card-foreground: 210 40% 98%;
-    
-    --popover: 240 6% 8%;
+
+    --popover: 0 0% 13.3%; /* #222222 */
     --popover-foreground: 210 40% 98%;
     
-    --primary: 262 83% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 40% 98%; /* White in dark mode */
+    --primary-foreground: 0 0% 13.3%;
     
-    --secondary: 240 6% 12%;
+    --secondary: 0 0% 13.3%; /* #222222 */
     --secondary-foreground: 210 40% 98%;
-    
-    --muted: 240 6% 12%;
+
+    --muted: 0 0% 13.3%; /* #222222 */
     --muted-foreground: 215 20.2% 65.1%;
-    
-    --accent: 240 6% 12%;
+
+    --accent: 0 0% 13.3%; /* #222222 */
     --accent-foreground: 210 40% 98%;
-    
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    
-    --border: 240 6% 12%;
-    --input: 240 6% 12%;
+
+    --border: 0 0% 13.3%; /* #222222 */
+    --input: 0 0% 13.3%; /* #222222 */
     --ring: 0 0% 100%;
     
     /* AI colors for dark mode */
-    --ai-primary: 262 83% 58%;
-    --ai-primary-foreground: 210 40% 98%;
+    --ai-primary: 210 40% 98%; /* White in dark mode */
+    --ai-primary-foreground: 0 0% 13.3%;
     --ai-secondary: 220 14.3% 85%;
-    --ai-glow: 262 83% 78%;
+    --ai-glow: 210 40% 98%; /* White glow in dark mode */
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
