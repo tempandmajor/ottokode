@@ -29,7 +29,8 @@ export function middleware(req: NextRequest) {
 
   // Apply security headers with Vercel-compatible settings
   const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res, {
-    enableCSP: true,
+    // On Vercel, disable app-managed CSP to avoid conflicts with platform headers
+    enableCSP: !isVercel,
     enableHSTS: isProduction && !isVercel, // Vercel handles HSTS
     enableXSS: true,
     enableFrameOptions: !isVercel, // Vercel may need frames for analytics
