@@ -60,7 +60,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -222,6 +222,9 @@ jobs:
 
           # Run the indexing script
           FILTER_PATH="${{ steps.mode.outputs.filter_path }}" node index_script.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Index changed files (incremental)
         if: steps.mode.outputs.mode == 'incremental' && steps.changes.outputs.has_changes == 'true'
@@ -279,6 +282,9 @@ jobs:
           EOF
 
           node index_changed.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Update index status
         if: always()
@@ -316,6 +322,9 @@ jobs:
           EOF
 
           node update_status.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request' && steps.changes.outputs.has_changes == 'true'
