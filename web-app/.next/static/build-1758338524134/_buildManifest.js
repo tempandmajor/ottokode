@@ -1,1 +1,0 @@
-self.__BUILD_MANIFEST=function(e){return{__rewrites:{afterFiles:[{has:void 0,source:e,destination:e}],beforeFiles:[],fallback:[]},"/_error":["static/chunks/pages/_error-7ce03bcf1df914ce.js"],sortedPages:["/_app","/_error"]}}("/api/health"),self.__BUILD_MANIFEST_CB&&self.__BUILD_MANIFEST_CB();
