@@ -120,7 +120,7 @@ jobs:
           fi
 
           # Create a temporary indexing script
-          cat > index_script.js << 'EOF'
+          cat > index_script.cjs << 'EOF'
           const { createClient } = require('@supabase/supabase-js');
           const fs = require('fs');
           const path = require('path');
@@ -221,7 +221,7 @@ jobs:
           EOF
 
           # Run the indexing script
-          FILTER_PATH="${{ steps.mode.outputs.filter_path }}" node index_script.js
+          FILTER_PATH="${{ steps.mode.outputs.filter_path }}" node index_script.cjs
 
       - name: Index changed files (incremental)
         if: steps.mode.outputs.mode == 'incremental' && steps.changes.outputs.has_changes == 'true'
@@ -229,7 +229,7 @@ jobs:
           echo "Starting incremental indexing for changed files..."
 
           # Create script to index only changed files
-          cat > index_changed.js << 'EOF'
+          cat > index_changed.cjs << 'EOF'
           const { createClient } = require('@supabase/supabase-js');
           const fs = require('fs');
 
@@ -278,13 +278,13 @@ jobs:
           indexChangedFiles().catch(console.error);
           EOF
 
-          node index_changed.js
+          node index_changed.cjs
 
       - name: Update index status
         if: always()
         run: |
           # Record the indexing run in the database
-          cat > update_status.js << 'EOF'
+          cat > update_status.cjs << 'EOF'
           const { createClient } = require('@supabase/supabase-js');
 
           const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -315,7 +315,7 @@ jobs:
           updateStatus();
           EOF
 
-          node update_status.js
+          node update_status.cjs
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request' && steps.changes.outputs.has_changes == 'true'

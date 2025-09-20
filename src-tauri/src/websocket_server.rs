@@ -1,12 +1,12 @@
 // WebSocket server for browser extension communication
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::{Mutex, broadcast};
-use tokio_tungstenite::{accept_async, tungstenite::Message};
-use futures_util::{StreamExt, SinkExt};
+use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::sync::{broadcast, Mutex};
+use tokio_tungstenite::{accept_async, tungstenite::Message};
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WebSocketMessage {
@@ -52,7 +52,9 @@ impl WebSocketServer {
                 let message_sender = message_sender.clone();
 
                 tokio::spawn(async move {
-                    if let Err(e) = handle_connection(stream, addr, connections, message_sender).await {
+                    if let Err(e) =
+                        handle_connection(stream, addr, connections, message_sender).await
+                    {
                         eprintln!("Error handling connection: {}", e);
                     }
                 });
@@ -62,12 +64,19 @@ impl WebSocketServer {
         Ok(())
     }
 
-    pub async fn broadcast_message(&self, message: WebSocketMessage) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn broadcast_message(
+        &self,
+        message: WebSocketMessage,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let _ = self.message_sender.send(message);
         Ok(())
     }
 
-    pub async fn send_to_extension(&self, extension_id: &str, message: WebSocketMessage) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn send_to_extension(
+        &self,
+        extension_id: &str,
+        message: WebSocketMessage,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let connections = self.connections.lock().await;
         if let Some(connection) = connections.get(extension_id) {
             let _ = connection.sender.send(message);
@@ -101,11 +110,14 @@ async fn handle_connection(
     // Store connection
     {
         let mut conns = connections.lock().await;
-        conns.insert(connection_id.clone(), ExtensionConnection {
-            id: connection_id.clone(),
-            connected_at: std::time::SystemTime::now(),
-            sender: conn_sender.clone(),
-        });
+        conns.insert(
+            connection_id.clone(),
+            ExtensionConnection {
+                id: connection_id.clone(),
+                connected_at: std::time::SystemTime::now(),
+                sender: conn_sender.clone(),
+            },
+        );
     }
 
     println!("Extension connected with ID: {}", connection_id);
@@ -140,7 +152,10 @@ async fn handle_connection(
             match msg {
                 Ok(Message::Text(text)) => {
                     if let Ok(ws_message) = serde_json::from_str::<WebSocketMessage>(&text) {
-                        println!("Received from extension {}: {:?}", connection_id_clone, ws_message);
+                        println!(
+                            "Received from extension {}: {:?}",
+                            connection_id_clone, ws_message
+                        );
 
                         // Handle specific message types
                         match ws_message.message_type.as_str() {

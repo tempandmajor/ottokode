@@ -1,9 +1,9 @@
 mod websocket_server;
 
-use websocket_server::{WebSocketServer, get_websocket_status, send_to_browser_extension};
-use std::sync::Arc;
-use std::path::Path;
 use std::fs;
+use std::path::Path;
+use std::sync::Arc;
+use websocket_server::{get_websocket_status, send_to_browser_extension, WebSocketServer};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -30,11 +30,15 @@ async fn start_websocket_server() -> Result<String, String> {
 async fn broadcast_to_extensions(message: serde_json::Value) -> Result<(), String> {
     if let Some(server) = WS_SERVER.get() {
         let ws_message = websocket_server::WebSocketMessage {
-            message_type: message.get("type")
+            message_type: message
+                .get("type")
                 .and_then(|v| v.as_str())
                 .unwrap_or("UNKNOWN")
                 .to_string(),
-            data: message.get("data").cloned().unwrap_or(serde_json::Value::Null),
+            data: message
+                .get("data")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null),
             timestamp: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
@@ -42,7 +46,9 @@ async fn broadcast_to_extensions(message: serde_json::Value) -> Result<(), Strin
             source: Some("desktop".to_string()),
         };
 
-        server.broadcast_message(ws_message).await
+        server
+            .broadcast_message(ws_message)
+            .await
             .map_err(|e| format!("Failed to broadcast message: {}", e))?;
     }
     Ok(())
@@ -56,7 +62,10 @@ struct ApplyPatchResult {
 }
 
 #[tauri::command]
-async fn apply_patch_with_backup(file_path: String, unified_diff: String) -> Result<ApplyPatchResult, String> {
+async fn apply_patch_with_backup(
+    file_path: String,
+    unified_diff: String,
+) -> Result<ApplyPatchResult, String> {
     let path = Path::new(&file_path);
 
     // Validate file exists
@@ -69,8 +78,8 @@ async fn apply_patch_with_backup(file_path: String, unified_diff: String) -> Res
     }
 
     // Read original content
-    let original_content = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+    let original_content =
+        fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
 
     // Create backup
     let backup_path = format!("{}.ai_backup_{}", file_path, chrono::Utc::now().timestamp());
@@ -86,7 +95,10 @@ async fn apply_patch_with_backup(file_path: String, unified_diff: String) -> Res
 
             Ok(ApplyPatchResult {
                 success: true,
-                message: format!("Patch applied successfully. Backup created at {}", backup_path),
+                message: format!(
+                    "Patch applied successfully. Backup created at {}",
+                    backup_path
+                ),
                 backup_path: Some(backup_path),
             })
         }
@@ -103,7 +115,10 @@ async fn apply_patch_with_backup(file_path: String, unified_diff: String) -> Res
 }
 
 #[tauri::command]
-async fn restore_from_backup(file_path: String, backup_path: String) -> Result<ApplyPatchResult, String> {
+async fn restore_from_backup(
+    file_path: String,
+    backup_path: String,
+) -> Result<ApplyPatchResult, String> {
     let path = Path::new(&file_path);
     let backup = Path::new(&backup_path);
 
@@ -116,16 +131,14 @@ async fn restore_from_backup(file_path: String, backup_path: String) -> Result<A
     }
 
     // Read backup content
-    let backup_content = fs::read_to_string(backup)
-        .map_err(|e| format!("Failed to read backup: {}", e))?;
+    let backup_content =
+        fs::read_to_string(backup).map_err(|e| format!("Failed to read backup: {}", e))?;
 
     // Restore the file
-    fs::write(path, backup_content)
-        .map_err(|e| format!("Failed to restore file: {}", e))?;
+    fs::write(path, backup_content).map_err(|e| format!("Failed to restore file: {}", e))?;
 
     // Remove the backup file
-    fs::remove_file(backup)
-        .map_err(|e| format!("Failed to remove backup: {}", e))?;
+    fs::remove_file(backup).map_err(|e| format!("Failed to remove backup: {}", e))?;
 
     Ok(ApplyPatchResult {
         success: true,
@@ -202,14 +215,15 @@ fn parse_hunk_header(line: &str) -> Result<HunkInfo, String> {
 
 fn parse_range(range: &str) -> Result<(usize, usize), String> {
     if let Some(comma_pos) = range.find(',') {
-        let start = range[..comma_pos].parse::<usize>()
+        let start = range[..comma_pos]
+            .parse::<usize>()
             .map_err(|_| "Invalid start line number")?;
-        let count = range[comma_pos + 1..].parse::<usize>()
+        let count = range[comma_pos + 1..]
+            .parse::<usize>()
             .map_err(|_| "Invalid line count")?;
         Ok((start, count))
     } else {
-        let start = range.parse::<usize>()
-            .map_err(|_| "Invalid line number")?;
+        let start = range.parse::<usize>().map_err(|_| "Invalid line number")?;
         Ok((start, 1))
     }
 }
