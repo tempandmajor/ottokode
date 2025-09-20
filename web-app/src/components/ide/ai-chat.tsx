@@ -241,7 +241,7 @@ const debouncedSearch = useMemo(
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center">
           <Bot className="h-4 w-4 mr-2 text-ai-primary" />
-          AI Assistant
+          Otto
         </CardTitle>
       </CardHeader>
 

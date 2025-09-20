@@ -22,6 +22,9 @@ import { FileExplorer, FileNode } from '@/components/ide/file-explorer';
 import { AIChat } from '@/components/ide/ai-chat';
 import { useAuth } from '@/components/auth/auth-provider';
 import { UserMenu } from '@/components/auth/user-menu';
+import { useTheme } from '@/components/theme-provider';
+import Image from 'next/image';
+import Link from 'next/link';
 
 // Force dynamic rendering to avoid SSR issues with Supabase client
 export const dynamic = 'force-dynamic';
@@ -30,6 +33,7 @@ export const dynamicParams = true;
 export default function IDEPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { theme } = useTheme();
   const [activeFile, setActiveFile] = useState<FileNode | null>(null);
   const [openFiles, setOpenFiles] = useState<FileNode[]>([]);
   const [files, setFiles] = useState<FileNode[]>([
@@ -174,7 +178,7 @@ This is an modern development project created with Ottokode IDE.
 2. Start development server: \`npm run dev\`
 3. Open your browser and start coding!
 
-## AI Assistant
+## Otto
 
 Use the AI chat panel to:
 - Ask questions about your code
@@ -185,12 +189,6 @@ Use the AI chat panel to:
 Happy coding! 🎉`
     }
   ]);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   const handleFileSelect = useCallback((file: FileNode) => {
     setActiveFile(file);
@@ -302,15 +300,44 @@ Happy coding! 🎉`
     // In a real IDE, this would save to the filesystem
   }, [activeFile]);
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  // Show loading or redirect if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* IDE Header */}
       <div className="border-b bg-card">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-ai-primary to-ai-secondary bg-clip-text text-transparent">
-              Ottokode IDE
-            </h1>
+            <div className="flex items-center space-x-2">
+              <Image
+                src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
+                alt="Ottokode"
+                width={28}
+                height={28}
+                className="h-7 w-7"
+              />
+              <span className="text-lg font-semibold">IDE</span>
+            </div>
             <Badge variant="outline" className="border-ai-primary/20">
               Web Version
             </Badge>
@@ -329,6 +356,12 @@ Happy coding! 🎉`
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
+            <Link href="/settings/ai">
+              <Button size="sm" variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                AI Settings
+              </Button>
+            </Link>
             <UserMenu />
           </div>
         </div>
@@ -447,7 +480,7 @@ Happy coding! 🎉`
             </div>
             <div className="flex items-center space-x-2">
               <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span>AI Assistant Ready</span>
+              <span>Otto Ready</span>
             </div>
           </div>
         </div>

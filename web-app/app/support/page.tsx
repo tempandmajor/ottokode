@@ -62,7 +62,7 @@ export default function SupportPage() {
     },
     {
       icon: FileText,
-      title: "AI Assistant",
+      title: "Otto",
       description: "AI code completion and chat",
       articles: 12,
       color: "text-purple-500"
@@ -119,7 +119,7 @@ export default function SupportPage() {
     },
     {
       status: "operational",
-      service: "AI Assistant",
+      service: "Otto",
       lastUpdate: "1 hour ago"
     },
     {

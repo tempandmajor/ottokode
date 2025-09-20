@@ -48,7 +48,7 @@ class OpenAIProvider implements AIProvider {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-5-nano',
           messages,
           max_tokens: 1000,
           temperature: 0.7,
@@ -106,7 +106,7 @@ class AnthropicProvider implements AIProvider {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
+          model: 'claude-4-sonnet',
           max_tokens: 1000,
           messages: messages.filter(m => m.role !== 'system'),
           system: messages.find(m => m.role === 'system')?.content,
