@@ -135,6 +135,11 @@ jobs:
       with:
         components: rustfmt, clippy
 
+    - name: Install system dependencies (for Rust clippy)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
     - name: Install dependencies
       run: |
         cd web-app
