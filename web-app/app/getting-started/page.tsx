@@ -47,7 +47,7 @@ export default function GettingStartedPage() {
                 </Button>
               </a>
               <p className="text-sm text-muted-foreground">
-                Available for macOS, Windows, and Linux
+                Currently available for macOS
               </p>
             </CardContent>
           </Card>

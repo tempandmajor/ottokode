@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Bot, User, Code, Lightbulb, Zap } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Send, Bot, User, Code, Lightbulb, Zap, AlertTriangle, CreditCard } from 'lucide-react';
+import { SecureAIService } from '@/services/ai/SecureAIService';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -13,6 +16,8 @@ interface Message {
   content: string;
   timestamp: Date;
   codeSnippet?: string;
+  cost?: number;
+  creditWarning?: string;
 }
 
 interface AIChatProps {
@@ -30,7 +35,9 @@ export function AIChat({ onCodeSuggestion }: AIChatProps) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [provider, setProvider] = useState<'openai' | 'anthropic' | 'google'>('openai');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -53,39 +60,96 @@ export function AIChat({ onCodeSuggestion }: AIChatProps) {
     setIsLoading(true);
 
     try {
-      // Use real AI service
-      const { aiService } = await import('@/lib/ai-providers');
-
       const chatMessages = messages.concat(userMessage).map(msg => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content
       }));
 
-      const aiResponse = await aiService.generateResponse(chatMessages);
+      const aiResponse = await SecureAIService.chat(chatMessages, provider);
+
+      if (aiResponse.error) {
+        if (aiResponse.error.includes('Insufficient credits')) {
+          toast({
+            title: "Insufficient Credits",
+            description: "You don't have enough credits for this request. Please upgrade your plan.",
+            variant: "destructive",
+            action: (
+              <Button size="sm" onClick={() => window.location.href = '/pricing'}>
+                Upgrade Plan
+              </Button>
+            )
+          });
+        } else if (aiResponse.error.includes('not available on your current plan')) {
+          toast({
+            title: "Model Upgrade Required",
+            description: "This AI model requires a higher tier plan.",
+            variant: "destructive",
+            action: (
+              <Button size="sm" onClick={() => window.location.href = '/pricing'}>
+                Upgrade Plan
+              </Button>
+            )
+          });
+        } else {
+          toast({
+            title: "AI Error",
+            description: aiResponse.error,
+            variant: "destructive"
+          });
+        }
+
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: aiResponse.error,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, errorMessage]);
+        return;
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse.content,
-        codeSnippet: aiResponse.codeSnippet,
-        timestamp: new Date()
+        content: aiResponse.text,
+        timestamp: new Date(),
+        cost: aiResponse.usage?.cost_cents ? aiResponse.usage.cost_cents / 100 : undefined,
+        creditWarning: aiResponse.creditWarning
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Show credit warning if present
+      if (aiResponse.creditWarning) {
+        toast({
+          title: "Credit Warning",
+          description: aiResponse.creditWarning,
+          action: (
+            <Button size="sm" onClick={() => window.location.href = '/pricing'}>
+              Add Credits
+            </Button>
+          )
+        });
+      }
+
     } catch (error) {
       console.error('AI response error:', error);
 
-      // Fallback to mock response
-      const aiResponse = generateAIResponse(input);
-      const assistantMessage: Message = {
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to AI service. Please try again.",
+        variant: "destructive"
+      });
+
+      const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Sorry, I'm having trouble connecting to AI services right now. Here's a helpful response: ${aiResponse.content}`,
-        codeSnippet: aiResponse.codeSnippet,
+        content: "Sorry, I'm having trouble connecting to AI services right now. Please try again.",
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }

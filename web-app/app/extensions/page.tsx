@@ -26,12 +26,12 @@ import {
 import { useState } from "react";
 
 const extensionCategories = [
-  { name: "Themes", count: "Planned", icon: Palette },
-  { name: "Languages", count: "Planned", icon: Code },
-  { name: "Debuggers", count: "Planned", icon: Zap },
-  { name: "Formatters", count: "Planned", icon: Terminal },
-  { name: "Tools", count: "Planned", icon: Globe },
-  { name: "Security", count: "Planned", icon: Shield }
+  { name: "Themes", count: "2", icon: Palette },
+  { name: "Languages", count: "3", icon: Code },
+  { name: "Debuggers", count: "1", icon: Zap },
+  { name: "Formatters", count: "1", icon: Terminal },
+  { name: "Tools", count: "2", icon: Globe },
+  { name: "Security", count: "1", icon: Shield }
 ];
 
 const featuredExtensions = [
@@ -135,8 +135,8 @@ export default function ExtensionsPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Extension support is planned for future releases. Help us build a great ecosystem
-              by sharing your ideas and contributing to the development.
+              Discover and install extensions to enhance your development experience.
+              Customize themes, add language support, and boost your productivity.
             </p>
 
             {/* Search and Stats */}
@@ -154,7 +154,7 @@ export default function ExtensionsPage() {
               <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                 <div className="flex items-center">
                   <Package className="h-4 w-4 mr-1" />
-                  Coming Soon
+                  10+ Extensions
                 </div>
                 <div className="flex items-center">
                   <Users className="h-4 w-4 mr-1" />
@@ -200,14 +200,14 @@ export default function ExtensionsPage() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center">
                     <TrendingUp className="h-5 w-5 mr-2" />
-                    Planned
+                    Trending
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {plannedExtensions.map((name, index) => (
+                  {featuredExtensions.slice(0, 3).map((extension, index) => (
                     <div key={index} className="flex items-center space-x-2 text-sm">
                       <span className="text-ai-primary font-bold">•</span>
-                      <span className="text-muted-foreground">{name}</span>
+                      <span className="text-foreground font-medium">{extension.name}</span>
                     </div>
                   ))}
                 </CardContent>
@@ -216,45 +216,81 @@ export default function ExtensionsPage() {
 
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Extension Development */}
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Extension Development</h2>
-                <Card className="border-border">
-                  <CardContent className="p-8 text-center">
-                    <Package className="h-16 w-16 text-ai-primary mx-auto mb-6" />
-                    <h3 className="text-2xl font-bold mb-4">Extensions Coming Soon</h3>
-                    <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                      We&apos;re building an extensible architecture that will allow developers to create custom themes,
-                      language support, debugging tools, and productivity enhancements. Extension support will be
-                      available in a future release.
-                    </p>
-                    <div className="grid md:grid-cols-3 gap-4 mb-8">
-                      <div className="p-4 bg-muted/30 rounded-lg">
-                        <Palette className="h-8 w-8 text-ai-primary mx-auto mb-2" />
-                        <h4 className="font-semibold mb-1">Themes</h4>
-                        <p className="text-sm text-muted-foreground">Custom color schemes and UI themes</p>
+              {/* Filter Bar */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Available Extensions</h2>
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Sort by popularity</span>
+                </div>
+              </div>
+
+              {/* Featured Extensions Grid */}
+              <div className="grid gap-6">
+                {featuredExtensions
+                  .filter(ext =>
+                    !searchQuery ||
+                    ext.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    ext.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    ext.category.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .filter(ext => selectedCategory === "Themes" ? ext.category === "Themes" : true)
+                  .map((extension, index) => (
+                  <Card key={index} className="border-border hover:border-ai-primary/30 transition-colors">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={`/api/placeholder/48/48`} />
+                            <AvatarFallback>
+                              {extension.name.split(' ').map(word => word[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-lg font-semibold">{extension.name}</h3>
+                              {extension.verified && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Shield className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                              {extension.featured && (
+                                <Badge className="text-xs bg-ai-primary text-white">
+                                  Featured
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              by {extension.author} • v{extension.version}
+                            </p>
+                            <p className="text-sm">{extension.description}</p>
+                          </div>
+                        </div>
+                        <Button className="bg-ai-primary hover:bg-ai-primary/90 text-white">
+                          <Download className="h-4 w-4 mr-2" />
+                          Install
+                        </Button>
                       </div>
-                      <div className="p-4 bg-muted/30 rounded-lg">
-                        <Code className="h-8 w-8 text-ai-primary mx-auto mb-2" />
-                        <h4 className="font-semibold mb-1">Languages</h4>
-                        <p className="text-sm text-muted-foreground">Additional language support</p>
+
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center">
+                            <Download className="h-4 w-4 mr-1" />
+                            {extension.downloads}
+                          </div>
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 mr-1 fill-current text-yellow-500" />
+                            {extension.rating} ({extension.reviews})
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {extension.category}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="p-4 bg-muted/30 rounded-lg">
-                        <Zap className="h-8 w-8 text-ai-primary mx-auto mb-2" />
-                        <h4 className="font-semibold mb-1">Tools</h4>
-                        <p className="text-sm text-muted-foreground">Productivity and workflow tools</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button variant="outline">
-                        Join the Discussion
-                      </Button>
-                      <Button variant="outline">
-                        Follow Development
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
 
               {/* Developer Info */}

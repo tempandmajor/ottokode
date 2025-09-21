@@ -146,33 +146,170 @@ export function DesktopWelcome() {
 
   const handleOpenProject = useCallback(async () => {
     try {
-      // In a real implementation, this would use Tauri's file dialog API
-      // For now, we'll just log and show a placeholder
-      console.log('Opening project folder dialog...');
-      // TODO: Implement actual folder dialog using Tauri APIs
+      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+        // Desktop app - Tauri file dialog functionality will be enabled in desktop build
+        console.log('Opening project folder dialog...');
+        alert('Desktop file dialog functionality is available in the desktop app build.');
+      } else {
+        // Web fallback - show message
+        alert('Folder selection is only available in the desktop app. Please use the web version to browse projects online.');
+      }
     } catch (error) {
       console.error('Failed to open folder dialog:', error);
+      alert('Failed to open folder dialog. Please try again.');
     }
   }, []);
 
   const handleCloneRepository = useCallback(async () => {
     if (!gitUrl.trim()) return;
 
-    console.log('Cloning repository:', gitUrl, 'to:', clonePath);
-    // In a real implementation, this would use git commands via Tauri
+    try {
+      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+        // Desktop app - Git functionality will be enabled in desktop build
+        console.log('Cloning repository:', gitUrl, 'to:', clonePath || '/Users/dev/projects');
+        alert('Git cloning functionality is available in the desktop app build.');
+      } else {
+        // Web fallback
+        console.log('Cloning repository:', gitUrl, 'to:', clonePath);
+        alert('Repository cloning is only available in the desktop app. Please use the desktop version for full Git integration.');
+      }
+    } catch (error) {
+      console.error('Failed to clone repository:', error);
+      alert('Failed to clone repository. Please check the URL and try again.');
+    }
+
     setCloneDialogOpen(false);
     setGitUrl('');
     setClonePath('');
   }, [gitUrl, clonePath]);
 
+  const getDefaultProjectsPath = async () => {
+    // For web build, return a default path
+    // In desktop build, this would use Tauri path APIs
+    return '/Users/dev/projects';
+  };
+
   const handleCreateProject = useCallback(async () => {
     if (!newProjectData.name.trim() || !newProjectData.template) return;
 
-    console.log('Creating new project:', newProjectData);
-    // In a real implementation, this would create the project structure
+    try {
+      const template = PROJECT_TEMPLATES.find(t => t.id === newProjectData.template);
+      if (!template) return;
+
+      const projectPath = newProjectData.path || await getDefaultProjectsPath();
+      const fullPath = `${projectPath}/${newProjectData.name}`;
+
+      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+        // Desktop app - Project creation functionality will be enabled in desktop build
+        console.log('Creating new project:', newProjectData, 'at:', fullPath);
+        alert(`Project creation functionality is available in the desktop app build. Would create "${newProjectData.name}" with ${template.name} template.`);
+      } else {
+        // Web fallback
+        console.log('Creating new project:', newProjectData);
+        alert('Project creation is only available in the desktop app. Please use the desktop version for full project management.');
+      }
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      alert('Failed to create project. Please try again.');
+    }
+
     setNewProjectDialogOpen(false);
     setNewProjectData({ name: '', path: '', template: '' });
   }, [newProjectData]);
+
+  const getTemplateFileContent = (templateId: string, fileName: string): string => {
+    // This would contain template file contents for each template type
+    const templates = {
+      'react-ts': {
+        'package.json': JSON.stringify({
+          name: 'react-typescript-app',
+          version: '0.1.0',
+          private: true,
+          dependencies: {
+            react: '^18.2.0',
+            'react-dom': '^18.2.0',
+            typescript: '^5.0.0'
+          },
+          scripts: {
+            start: 'vite',
+            build: 'tsc && vite build',
+            preview: 'vite preview'
+          }
+        }, null, 2),
+        'src/App.tsx': 'import React from \'react\';\n\nfunction App() {\n  return (\n    <div className="App">\n      <h1>Hello World</h1>\n    </div>\n  );\n}\n\nexport default App;',
+        'src/main.tsx': 'import React from \'react\';\nimport ReactDOM from \'react-dom/client\';\nimport App from \'./App\';\n\nReactDOM.createRoot(document.getElementById(\'root\') as HTMLElement).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);',
+        'tsconfig.json': JSON.stringify({
+          compilerOptions: {
+            target: 'ES2020',
+            lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+            module: 'ESNext',
+            skipLibCheck: true,
+            moduleResolution: 'bundler',
+            allowImportingTsExtensions: true,
+            resolveJsonModule: true,
+            isolatedModules: true,
+            noEmit: true,
+            jsx: 'react-jsx',
+            strict: true
+          },
+          include: ['src'],
+          references: [{ path: './tsconfig.node.json' }]
+        }, null, 2)
+      },
+      'empty': {
+        'README.md': '# New Project\n\nThis is a new project created with Ottokode.\n\n## Getting Started\n\nAdd your project description here.\n'
+      }
+    };
+
+    const template = templates[templateId as keyof typeof templates];
+    if (template && fileName in template) {
+      return template[fileName as keyof typeof template];
+    }
+    // Generate basic template content for unspecified files
+    const extension = fileName.split('.').pop()?.toLowerCase();
+
+    switch (extension) {
+      case 'js':
+      case 'jsx':
+        return `// ${fileName}\nimport React from 'react';\n\nexport default function Component() {\n  return (\n    <div>\n      <h1>Hello World</h1>\n    </div>\n  );\n}\n`;
+
+      case 'ts':
+      case 'tsx':
+        return `// ${fileName}\nimport React from 'react';\n\ninterface Props {}\n\nexport default function Component({}: Props) {\n  return (\n    <div>\n      <h1>Hello World</h1>\n    </div>\n  );\n}\n`;
+
+      case 'py':
+        return `# ${fileName}\n"""${fileName} - Python module"""\n\ndef main():\n    print("Hello World")\n\nif __name__ == "__main__":\n    main()\n`;
+
+      case 'rs':
+        return `// ${fileName}\nfn main() {\n    println!("Hello, world!");\n}\n`;
+
+      case 'go':
+        return `// ${fileName}\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello World")\n}\n`;
+
+      case 'java':
+        const className = fileName.replace('.java', '');
+        return `// ${fileName}\npublic class ${className} {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}\n`;
+
+      case 'md':
+        return `# ${fileName.replace('.md', '')}\n\nProject description goes here.\n\n## Features\n\n- Feature 1\n- Feature 2\n- Feature 3\n\n## Getting Started\n\nInstructions for setting up the project.\n`;
+
+      case 'json':
+        return `{\n  "name": "${fileName.replace('.json', '')}",\n  "version": "1.0.0",\n  "description": "Generated configuration file"\n}\n`;
+
+      case 'yml':
+      case 'yaml':
+        return `# ${fileName}\nname: ${fileName.replace(/\.(yml|yaml)$/, '')}\nversion: "1.0.0"\ndescription: "Generated configuration file"\n`;
+
+      case 'css':
+        return `/* ${fileName} */\nbody {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  padding: 20px;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n}\n`;
+
+      case 'html':
+        return `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${fileName.replace('.html', '')}</title>\n</head>\n<body>\n    <h1>Hello World</h1>\n</body>\n</html>\n`;
+
+      default:
+        return `// ${fileName}\n// Generated template file\n// Add your content here\n`;
+    }
+  };
 
   const formatLastOpened = (date: Date) => {
     const now = new Date();

@@ -29,7 +29,7 @@
         "closable": true,
         "minimizable": true,
         "maximizable": true,
-        "url": "desktop"
+        "url": "ide"
       }
     ],
     "security": {

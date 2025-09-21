@@ -15,32 +15,10 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // Check rate limiting (more lenient for Vercel)
-  const clientIP = req.ip || req.headers.get('x-forwarded-for') || 'anonymous'
-  const maxRequests = isVercel ? 500 : 200 // Higher limit for Vercel
-  const rateLimit = SecurityMiddleware.checkRateLimit(clientIP, maxRequests, 60000)
-
-  if (!rateLimit.allowed && isProduction && !isVercel) {
-    const response = new NextResponse('Too Many Requests', { status: 429 })
-    return SecurityMiddleware.applyRateLimitHeaders(response, rateLimit)
-  }
-
   const res = NextResponse.next()
 
-  // Apply security headers with Vercel-compatible settings
-  const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res, {
-    // On Vercel, disable app-managed CSP to avoid conflicts with platform headers
-    enableCSP: !isVercel,
-    enableHSTS: isProduction && !isVercel, // Vercel handles HSTS
-    enableXSS: true,
-    enableFrameOptions: !isVercel, // Vercel may need frames for analytics
-    enableContentTypeOptions: true,
-    enableReferrerPolicy: true,
-    enablePermissionsPolicy: !isVercel, // May interfere with Vercel features
-  })
-
-  // Apply rate limit headers
-  SecurityMiddleware.applyRateLimitHeaders(securedResponse, rateLimit)
+  // Apply security headers using shared configuration
+  const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res)
 
   return securedResponse
 }

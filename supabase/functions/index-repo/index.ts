@@ -2,8 +2,7 @@
 // Supabase Edge Function: index-repo
 // Modes:
 // - files: accepts an array of { path, content } and indexes them
-// Future:
-// - github: fetch a repository zipball by repo/ref and index (TODO)
+// - github: fetch a repository by repo/ref and index its files
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -31,6 +30,94 @@ function chunkText(text: string, maxChars = 2000): string[] {
     i = end;
   }
   return chunks;
+}
+
+async function fetchGitHubRepo(repo: string, ref: string): Promise<FileInput[]> {
+  const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
+  const headers: Record<string, string> = {
+    "Accept": "application/vnd.github.v3+json",
+    "User-Agent": "Ottokode-IndexRepo/1.0"
+  };
+
+  if (GITHUB_TOKEN) {
+    headers["Authorization"] = `Bearer ${GITHUB_TOKEN}`;
+  }
+
+  // Fetch repository tree
+  const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${ref}?recursive=1`;
+  const treeResponse = await fetch(treeUrl, { headers });
+
+  if (!treeResponse.ok) {
+    const errorText = await treeResponse.text().catch(() => "");
+    throw new Error(`GitHub API error ${treeResponse.status}: ${errorText}`);
+  }
+
+  const treeData = await treeResponse.json();
+  const files: FileInput[] = [];
+
+  // Filter for text files and reasonable size limits
+  const textExtensions = [
+    '.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.cpp', '.c', '.h', '.hpp',
+    '.cs', '.php', '.rb', '.go', '.rs', '.kt', '.swift', '.scala', '.sh',
+    '.md', '.txt', '.json', '.xml', '.html', '.css', '.scss', '.sass',
+    '.yml', '.yaml', '.toml', '.ini', '.cfg', '.conf', '.sql', '.r', '.R'
+  ];
+
+  const skipPaths = [
+    'node_modules/', '.git/', 'dist/', 'build/', 'target/', '.vscode/',
+    '.idea/', 'coverage/', '__pycache__/', '.pytest_cache/', '.mypy_cache/',
+    'vendor/', 'Pods/', 'DerivedData/', '.gradle/', 'gradlew', 'gradlew.bat'
+  ];
+
+  const maxFileSize = 100000; // 100KB limit per file
+
+  for (const item of treeData.tree || []) {
+    if (item.type !== 'blob') continue;
+
+    const path: string = item.path;
+    const size: number = item.size || 0;
+
+    // Skip if path contains excluded directories
+    if (skipPaths.some(skip => path.includes(skip))) continue;
+
+    // Skip if file is too large
+    if (size > maxFileSize) continue;
+
+    // Only process text files
+    const hasTextExtension = textExtensions.some(ext => path.toLowerCase().endsWith(ext));
+    if (!hasTextExtension) continue;
+
+    try {
+      // Fetch file content
+      const contentUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${ref}`;
+      const contentResponse = await fetch(contentUrl, { headers });
+
+      if (!contentResponse.ok) continue; // Skip files we can't fetch
+
+      const contentData = await contentResponse.json();
+
+      if (contentData.encoding === 'base64' && contentData.content) {
+        // Decode base64 content
+        const decoder = new TextDecoder();
+        const bytes = Uint8Array.from(atob(contentData.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+        const content = decoder.decode(bytes);
+
+        files.push({
+          path: path,
+          content: content
+        });
+      }
+    } catch (error) {
+      // Log error but continue with other files
+      console.warn(`Failed to fetch ${path}:`, error);
+      continue;
+    }
+
+    // Rate limiting - small delay between requests
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return files;
 }
 
 async function embedText(text: string): Promise<number[]> {
@@ -123,8 +210,13 @@ Deno.serve(async (req: Request) => {
       }
       files.push(...body.files);
     } else if (mode === "github") {
-      // TODO: implement zipball fetch and extraction for repo/ref
-      return new Response(JSON.stringify({ error: "mode=github not yet implemented" }), { status: 501 });
+      if (!body.repo) {
+        return new Response(JSON.stringify({ error: "repo required for mode=github (format: 'owner/name')" }), { status: 400 });
+      }
+
+      const ref = body.ref || "main";
+      const repoFiles = await fetchGitHubRepo(body.repo, ref);
+      files.push(...repoFiles);
     }
 
     let total = 0;
