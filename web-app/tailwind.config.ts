@@ -49,6 +49,7 @@ export default {
         },
         ai: {
           primary: "hsl(var(--ai-primary))",
+          "primary-foreground": "hsl(var(--ai-primary-foreground))",
           secondary: "hsl(var(--ai-secondary))",
           glow: "hsl(var(--ai-glow))",
         },

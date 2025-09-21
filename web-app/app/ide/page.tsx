@@ -404,9 +404,9 @@ export function debounce<T extends (...args: any[]) => any>(
               <Image
                 src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
                 alt="Ottokode"
-                width={28}
-                height={28}
-                className="h-7 w-7"
+                width={56}
+                height={56}
+                className="h-14 w-14"
               />
               <span className="text-lg font-semibold">IDE</span>
             </div>
@@ -439,7 +439,7 @@ export function debounce<T extends (...args: any[]) => any>(
             </div>
 
             {/* Primary Actions */}
-            <Button size="sm" className="bg-ai-primary hover:bg-ai-primary/90 text-white" onClick={runCode} disabled={!activeFile}>
+            <Button size="sm" className="bg-ai-primary hover:bg-ai-primary/90 text-ai-primary-foreground" onClick={runCode} disabled={!activeFile}>
               <Play className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Run</span>
             </Button>
