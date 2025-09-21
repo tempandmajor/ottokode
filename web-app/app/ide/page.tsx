@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   Code,
   Play,
@@ -14,7 +15,11 @@ import {
   Terminal,
   MessageCircle,
   FolderOpen,
-  Download
+  Download,
+  MoreHorizontal,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import { MonacoEditor } from '@/components/ide/monaco-editor';
@@ -23,6 +28,8 @@ import { AIChat } from '@/components/ide/ai-chat';
 import { useAuth } from '@/components/auth/auth-provider';
 import { UserMenu } from '@/components/auth/user-menu';
 import { useTheme } from '@/components/theme-provider';
+import { ProjectStorageService, Project } from '@/services/storage/ProjectStorageService';
+import { WebTerminalService } from '@/services/terminal/WebTerminalService';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -34,19 +41,65 @@ export default function IDEPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { theme } = useTheme();
+
+  // Project and file management
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [activeFile, setActiveFile] = useState<FileNode | null>(null);
   const [openFiles, setOpenFiles] = useState<FileNode[]>([]);
-  const [files, setFiles] = useState<FileNode[]>([
-    {
-      id: '1',
-      name: 'src',
-      type: 'folder',
-      children: [
-        {
-          id: '2',
-          name: 'main.ts',
-          type: 'file',
-          content: `// Welcome to Ottokode IDE
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [rightPanelWidth, setRightPanelWidth] = useState(384); // 24rem default
+  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Terminal state
+  const [terminalOutput, setTerminalOutput] = useState<string[]>([
+    '🚀 Ottokode Terminal initialized',
+    '📁 Working directory: /project',
+    '✨ AI assistant available - type "otto help" for commands',
+    ''
+  ]);
+  const [terminalInput, setTerminalInput] = useState('');
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const terminalInputRef = useRef<HTMLInputElement>(null);
+
+  // Services
+  const [storageService] = useState(() => new ProjectStorageService());
+  const [terminalService] = useState(() => new WebTerminalService());
+  const [files, setFiles] = useState<FileNode[]>([]);
+
+  const initializeProject = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Try to load existing projects or create a default one
+      const projects = await storageService.listProjects(user!.id);
+
+      if (projects.length > 0) {
+        // Load the most recently accessed project
+        const project = projects[0];
+        setCurrentProject(project);
+        const projectFiles = await storageService.getProjectFiles(project.id);
+        setFiles(projectFiles);
+      } else {
+        // Create a default "Welcome" project
+        const defaultProject = await storageService.createProject({
+          name: 'Welcome to Ottokode',
+          description: 'Your first AI-powered project',
+          user_id: user!.id,
+          is_public: false,
+          file_tree: []
+        });
+
+        setCurrentProject(defaultProject);
+
+        // Create default files
+        const defaultFiles: Omit<FileNode, 'id'>[] = [
+          {
+            name: 'main.ts',
+            type: 'file',
+            content: `// Welcome to Ottokode IDE
 console.log('Hello, World!');
 
 // Your AI-powered coding environment
@@ -73,12 +126,11 @@ async function fetchUser(id: string): Promise<User> {
     throw error;
   }
 }`
-        },
-        {
-          id: '3',
-          name: 'utils.ts',
-          type: 'file',
-          content: `// Utility functions
+          },
+          {
+            name: 'utils.ts',
+            type: 'file',
+            content: `// Utility functions
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -97,98 +149,34 @@ export function debounce<T extends (...args: any[]) => any>(
     timeoutId = setTimeout(() => func(...args), delay);
   };
 }`
-        },
-        {
-          id: '4',
-          name: 'components.tsx',
-          type: 'file',
-          content: `import React from 'react';
+          }
+        ];
 
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'secondary';
-  disabled?: boolean;
-}
-
-export function Button({
-  children,
-  onClick,
-  variant = 'primary',
-  disabled = false
-}: ButtonProps) {
-  const baseStyles = 'px-4 py-2 rounded-md font-medium transition-colors';
-  const variantStyles = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-  };
-
-  return (
-    <button
-      className={\`\${baseStyles} \${variantStyles[variant]}\`}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {children}
-    </button>
-  );
-}`
+        // Save default files to storage
+        for (const file of defaultFiles) {
+          await storageService.saveFile(defaultProject.id, {
+            ...file,
+            id: crypto.randomUUID()
+          });
         }
-      ]
-    },
-    {
-      id: '5',
-      name: 'package.json',
-      type: 'file',
-      content: `{
-  "name": "ottokode-project",
-  "version": "1.0.0",
-  "description": "modern development project",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "react": "^18.0.0",
-    "next": "^14.0.0",
-    "typescript": "^5.0.0"
-  }
-}`
-    },
-    {
-      id: '6',
-      name: 'README.md',
-      type: 'file',
-      content: `# Ottokode Project
 
-This is an modern development project created with Ottokode IDE.
-
-## Features
-
-- ✨ AI-powered code completion
-- 🔧 Intelligent debugging assistance
-- 🚀 Automated refactoring suggestions
-- 📝 Smart documentation generation
-
-## Getting Started
-
-1. Install dependencies: \`npm install\`
-2. Start development server: \`npm run dev\`
-3. Open your browser and start coding!
-
-## Otto
-
-Use the AI chat panel to:
-- Ask questions about your code
-- Get optimization suggestions
-- Debug issues
-- Learn new patterns
-
-Happy coding! 🎉`
+        // Reload files from storage
+        const projectFiles = await storageService.getProjectFiles(defaultProject.id);
+        setFiles(projectFiles);
+      }
+    } catch (error) {
+      console.error('Error initializing project:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  }, [storageService, user]);
+
+  // Initialize project and load files
+  useEffect(() => {
+    if (user && !loading) {
+      initializeProject();
+    }
+  }, [user, loading, initializeProject]);
 
   const handleFileSelect = useCallback((file: FileNode) => {
     setActiveFile(file);
@@ -197,65 +185,87 @@ Happy coding! 🎉`
     }
   }, [openFiles]);
 
-  const handleFileCreate = useCallback((parentId: string | null, name: string, type: 'file' | 'folder') => {
+  const handleFileCreate = useCallback(async (parentId: string | null, name: string, type: 'file' | 'folder') => {
+    if (!currentProject) return;
+
     const newFile: FileNode = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name,
       type,
       content: type === 'file' ? '// New file\n' : undefined,
       children: type === 'folder' ? [] : undefined
     };
 
-    setFiles(prev => {
-      if (!parentId) {
-        return [...prev, newFile];
-      }
+    try {
+      // Save to storage
+      await storageService.saveFile(currentProject.id, newFile);
 
-      const addToParent = (nodes: FileNode[]): FileNode[] => {
-        return nodes.map(node => {
-          if (node.id === parentId && node.type === 'folder') {
-            return {
-              ...node,
-              children: [...(node.children || []), newFile]
-            };
-          }
-          if (node.children) {
-            return {
-              ...node,
-              children: addToParent(node.children)
-            };
-          }
-          return node;
-        });
-      };
+      // Update local state
+      setFiles(prev => {
+        if (!parentId) {
+          return [...prev, newFile];
+        }
 
-      return addToParent(prev);
-    });
-  }, []);
+        const addToParent = (nodes: FileNode[]): FileNode[] => {
+          return nodes.map(node => {
+            if (node.id === parentId && node.type === 'folder') {
+              return {
+                ...node,
+                children: [...(node.children || []), newFile]
+              };
+            }
+            if (node.children) {
+              return {
+                ...node,
+                children: addToParent(node.children)
+              };
+            }
+            return node;
+          });
+        };
 
-  const handleFileDelete = useCallback((fileId: string) => {
-    setFiles(prev => {
-      const removeFile = (nodes: FileNode[]): FileNode[] => {
-        return nodes.filter(node => {
-          if (node.id === fileId) return false;
-          if (node.children) {
-            node.children = removeFile(node.children);
-          }
-          return true;
-        });
-      };
-      return removeFile(prev);
-    });
-
-    setOpenFiles(prev => prev.filter(f => f.id !== fileId));
-    if (activeFile?.id === fileId) {
-      setActiveFile(openFiles[0] || null);
+        return addToParent(prev);
+      });
+    } catch (error) {
+      console.error('Error creating file:', error);
     }
-  }, [activeFile, openFiles]);
+  }, [currentProject, storageService]);
 
-  const handleCodeChange = useCallback((newCode: string) => {
-    if (activeFile) {
-      setActiveFile({ ...activeFile, content: newCode });
+  const handleFileDelete = useCallback(async (fileId: string) => {
+    if (!currentProject) return;
+
+    try {
+      // Delete from storage
+      await storageService.deleteFile(currentProject.id, fileId);
+
+      // Update local state
+      setFiles(prev => {
+        const removeFile = (nodes: FileNode[]): FileNode[] => {
+          return nodes.filter(node => {
+            if (node.id === fileId) return false;
+            if (node.children) {
+              node.children = removeFile(node.children);
+            }
+            return true;
+          });
+        };
+        return removeFile(prev);
+      });
+
+      setOpenFiles(prev => prev.filter(f => f.id !== fileId));
+      if (activeFile?.id === fileId) {
+        setActiveFile(openFiles[0] || null);
+      }
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+  }, [activeFile, openFiles, currentProject, storageService]);
+
+  const handleCodeChange = useCallback(async (newCode: string) => {
+    if (activeFile && currentProject) {
+      const updatedFile = { ...activeFile, content: newCode };
+      setActiveFile(updatedFile);
+
       setFiles(prev => {
         const updateFile = (nodes: FileNode[]): FileNode[] => {
           return nodes.map(node => {
@@ -270,8 +280,63 @@ Happy coding! 🎉`
         };
         return updateFile(prev);
       });
+
+      // Auto-save to storage with debounce
+      try {
+        await storageService.saveFile(currentProject.id, updatedFile);
+      } catch (error) {
+        console.error('Error auto-saving file:', error);
+      }
     }
-  }, [activeFile]);
+  }, [activeFile, currentProject, storageService]);
+
+  // Terminal functionality
+  const executeCommand = useCallback(async (command: string) => {
+    if (!command.trim()) return;
+
+    const trimmedCommand = command.trim();
+    setTerminalOutput(prev => [...prev, `$ ${trimmedCommand}`]);
+    setCommandHistory(prev => [...prev, trimmedCommand]);
+
+    try {
+      if (currentProject) {
+        const result = await terminalService.executeCommand(currentProject.id, trimmedCommand);
+        setTerminalOutput(prev => [...prev, ...result.output]);
+      } else {
+        // Handle commands without a project
+        setTerminalOutput(prev => [...prev, 'Error: No project loaded']);
+      }
+    } catch (error) {
+      setTerminalOutput(prev => [...prev, `Error: ${error instanceof Error ? error.message : 'Unknown error'}`]);
+    }
+
+    setTerminalInput('');
+    setHistoryIndex(-1);
+  }, [terminalService, currentProject]);
+
+  const handleTerminalKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeCommand(terminalInput);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (historyIndex < commandHistory.length - 1) {
+        const newIndex = historyIndex + 1;
+        setHistoryIndex(newIndex);
+        setTerminalInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setTerminalInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+      } else if (historyIndex === 0) {
+        setHistoryIndex(-1);
+        setTerminalInput('');
+      }
+    }
+  }, [terminalInput, commandHistory, historyIndex, executeCommand]);
 
   const handleCodeSuggestion = useCallback((code: string) => {
     if (activeFile) {
@@ -294,11 +359,16 @@ Happy coding! 🎉`
     // In a real IDE, this would execute the code
   }, [activeFile]);
 
-  const saveFile = useCallback(() => {
-    // Simulate saving
-    console.log('Saving file...', activeFile?.name);
-    // In a real IDE, this would save to the filesystem
-  }, [activeFile]);
+  const saveFile = useCallback(async () => {
+    if (activeFile && currentProject) {
+      try {
+        await storageService.saveFile(currentProject.id, activeFile);
+        console.log('File saved successfully:', activeFile.name);
+      } catch (error) {
+        console.error('Error saving file:', error);
+      }
+    }
+  }, [activeFile, currentProject, storageService]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -307,12 +377,14 @@ Happy coding! 🎉`
   }, [user, loading, router]);
 
   // Show loading or redirect if not authenticated
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">
+            {loading ? 'Authenticating...' : 'Loading your projects...'}
+          </p>
         </div>
       </div>
     );
@@ -325,7 +397,7 @@ Happy coding! 🎉`
   return (
     <div className="min-h-screen bg-background">
       {/* IDE Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-card shadow-sm backdrop-blur-sm">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -338,49 +410,107 @@ Happy coding! 🎉`
               />
               <span className="text-lg font-semibold">IDE</span>
             </div>
+
+            {/* Project Selector */}
+            {currentProject && (
+              <div className="flex items-center space-x-2 px-3 py-1 bg-muted/50 rounded-md">
+                <FolderOpen className="h-4 w-4 text-ai-primary" />
+                <span className="text-sm font-medium text-foreground">{currentProject.name}</span>
+                <button className="text-xs text-muted-foreground hover:text-foreground">
+                  ↓
+                </button>
+              </div>
+            )}
+
             <Badge variant="outline" className="border-ai-primary/20">
               Web Version
             </Badge>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button size="sm" variant="outline" onClick={saveFile} disabled={!activeFile}>
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
-            <Button size="sm" className="bg-ai-primary hover:bg-ai-primary/90" onClick={runCode} disabled={!activeFile}>
-              <Play className="h-4 w-4 mr-2" />
-              Run
-            </Button>
-            <Button size="sm" variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Link href="/settings/ai">
-              <Button size="sm" variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                AI Settings
+            {/* Mobile Panel Toggles */}
+            <div className="flex lg:hidden">
+              <Button size="sm" variant="ghost" onClick={() => setLeftPanelOpen(!leftPanelOpen)}>
+                <FolderOpen className="h-4 w-4" />
               </Button>
-            </Link>
+              <Button size="sm" variant="ghost" onClick={() => setRightPanelOpen(!rightPanelOpen)}>
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Primary Actions */}
+            <Button size="sm" className="bg-ai-primary hover:bg-ai-primary/90 text-white" onClick={runCode} disabled={!activeFile}>
+              <Play className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Run</span>
+            </Button>
+
+            {/* Secondary Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="hidden sm:inline sm:ml-2">Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={saveFile} disabled={!activeFile}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save File
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Project
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/ai">
+                    <Settings className="h-4 w-4 mr-2" />
+                    AI Settings
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <UserMenu />
           </div>
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-3.5rem)]">
+      <div className="flex h-[calc(100vh-3.5rem)] relative">
         {/* Left Sidebar */}
-        <div className="w-80 border-r">
-          <Tabs defaultValue="files" className="h-full">
-            <TabsList className="grid w-full grid-cols-2 bg-sidebar">
-              <TabsTrigger value="files" className="text-xs">
-                <FolderOpen className="h-3 w-3 mr-1" />
-                Explorer
-              </TabsTrigger>
-              <TabsTrigger value="terminal" className="text-xs">
-                <Terminal className="h-3 w-3 mr-1" />
-                Terminal
-              </TabsTrigger>
-            </TabsList>
+        <div className={`${leftPanelOpen ? 'w-80' : 'w-0'} lg:w-80 border-r transition-all duration-300 ${leftPanelOpen ? 'block' : 'hidden lg:block'} ${!leftPanelOpen ? 'lg:w-12' : ''} bg-card/50 backdrop-blur relative shadow-lg`}>
+          {/* Toggle Button for Mobile/Tablet */}
+          {!leftPanelOpen && (
+            <button
+              onClick={() => setLeftPanelOpen(true)}
+              className="absolute top-4 right-2 z-10 p-2 bg-card border rounded-lg shadow-md lg:hidden"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
+
+          {leftPanelOpen && (
+            <>
+              {/* Close Button for Mobile */}
+              <div className="absolute top-4 left-4 z-10 lg:hidden">
+                <button
+                  onClick={() => setLeftPanelOpen(false)}
+                  className="p-2 bg-card border rounded-lg shadow-md"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <Tabs defaultValue="files" className="h-full">
+                <TabsList className="grid w-full grid-cols-2 bg-sidebar">
+                  <TabsTrigger value="files" className="text-xs">
+                    <FolderOpen className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Explorer</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="terminal" className="text-xs">
+                    <Terminal className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Terminal</span>
+                  </TabsTrigger>
+                </TabsList>
 
             <TabsContent value="files" className="h-full p-0">
               <FileExplorer
@@ -394,44 +524,80 @@ Happy coding! 🎉`
 
             <TabsContent value="terminal" className="p-4">
               <div className="space-y-3">
-                <div className="text-sm font-medium">Integrated Terminal</div>
-                <div className="bg-black rounded-md p-3 font-mono text-sm text-green-400 h-64 overflow-y-auto">
-                  <div>$ npm run dev</div>
-                  <div className="text-gray-400">Starting development server...</div>
-                  <div className="text-green-400">✓ Ready on http://localhost:3001</div>
-                  <div className="text-gray-400">✓ TypeScript compilation complete</div>
-                  <div className="text-blue-400">✓ AI assistant initialized</div>
-                  <div className="text-yellow-400">⚡ Hot reload enabled</div>
-                  <div className="cursor-blink">$ _</div>
+                <div className="text-sm font-medium flex items-center justify-between">
+                  <span>Integrated Terminal</span>
+                  <button
+                    onClick={() => setTerminalOutput(['🚀 Ottokode Terminal initialized', '📁 Working directory: /project', '✨ AI assistant available - type "otto help" for commands', ''])}
+                    className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="bg-black border rounded-md p-3 font-mono text-sm h-64 overflow-y-auto shadow-inner">
+                  <div className="space-y-1">
+                    {terminalOutput.map((line, index) => (
+                      <div key={index} className={`${
+                        line.startsWith('$') ? 'text-green-400' :
+                        line.startsWith('Error:') ? 'text-red-400' :
+                        line.includes('✓') ? 'text-green-400' :
+                        line.includes('⚡') ? 'text-yellow-400' :
+                        line.includes('🚀') || line.includes('✨') ? 'text-blue-400' :
+                        'text-gray-300'
+                      }`}>
+                        {line}
+                      </div>
+                    ))}
+                    <div className="flex items-center text-green-400">
+                      <span>$ </span>
+                      <input
+                        ref={terminalInputRef}
+                        type="text"
+                        value={terminalInput}
+                        onChange={(e) => setTerminalInput(e.target.value)}
+                        onKeyDown={handleTerminalKeyDown}
+                        className="bg-transparent outline-none text-gray-300 flex-1 ml-1"
+                        placeholder="Type a command..."
+                        autoComplete="off"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </TabsContent>
-          </Tabs>
+              </Tabs>
+            </>
+          )}
         </div>
 
         {/* Main Editor Area */}
         <div className="flex-1 flex flex-col">
           {/* File Tabs */}
-          <div className="flex items-center border-b bg-muted/30 px-4 py-2 overflow-x-auto">
+          <div className="flex items-center border-b bg-muted/30 px-4 py-2 overflow-x-auto shadow-sm">
             <div className="flex space-x-2">
-              {openFiles.map((file) => (
+              {openFiles.map((file, index) => (
                 <div
                   key={file.id}
-                  className={`bg-card border rounded-md px-3 py-1 text-sm flex items-center cursor-pointer ${
-                    activeFile?.id === file.id ? 'border-ai-primary bg-ai-primary/5' : ''
+                  className={`group bg-card border rounded-md px-3 py-1 text-sm flex items-center cursor-pointer transition-all hover:shadow-md ${
+                    activeFile?.id === file.id ? 'border-ai-primary bg-ai-primary/5 shadow-sm' : 'hover:border-ai-primary/50'
                   }`}
                   onClick={() => setActiveFile(file)}
                 >
-                  <Code className="h-3 w-3 mr-2" />
-                  {file.name}
+                  <Code className="h-3 w-3 mr-2 flex-shrink-0" />
+                  <span className="truncate max-w-[120px]">{file.name}</span>
                   <button
-                    className="ml-2 text-muted-foreground hover:text-foreground"
+                    className="ml-2 p-0.5 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
-                      closeFile(file.id);
+                      const newFiles = openFiles.filter(f => f.id !== file.id);
+                      setOpenFiles(newFiles);
+                      if (activeFile?.id === file.id && newFiles.length > 0) {
+                        setActiveFile(newFiles[Math.max(0, index - 1)]);
+                      } else if (newFiles.length === 0) {
+                        setActiveFile(null);
+                      }
                     }}
                   >
-                    ×
+                    <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
@@ -464,30 +630,100 @@ Happy coding! 🎉`
             )}
           </div>
 
-          {/* Status Bar */}
-          <div className="border-t bg-muted/50 px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center space-x-4">
-              <span>{activeFile ?
-                (activeFile.name.includes('.ts') ? 'TypeScript' :
-                 activeFile.name.includes('.js') ? 'JavaScript' :
-                 activeFile.name.includes('.css') ? 'CSS' :
-                 activeFile.name.includes('.html') ? 'HTML' :
-                 activeFile.name.includes('.json') ? 'JSON' :
-                 activeFile.name.includes('.md') ? 'Markdown' : 'Plain Text')
-                : 'No file selected'}</span>
+          {/* Enhanced Status Bar */}
+          <div className="border-t bg-gradient-to-r from-card to-muted/50 px-4 py-2 flex items-center justify-between text-xs shadow-inner">
+            <div className="flex items-center space-x-4 text-muted-foreground">
+              <span className="font-medium">
+                {activeFile ?
+                  (activeFile.name.includes('.ts') ? '⚡ TypeScript' :
+                   activeFile.name.includes('.js') ? '🟨 JavaScript' :
+                   activeFile.name.includes('.css') ? '🎨 CSS' :
+                   activeFile.name.includes('.html') ? '🌐 HTML' :
+                   activeFile.name.includes('.json') ? '📋 JSON' :
+                   activeFile.name.includes('.md') ? '📝 Markdown' : '📄 Plain Text')
+                  : '📁 No file selected'}
+              </span>
+              <div className="h-3 w-px bg-border"></div>
               <span>UTF-8</span>
-              {activeFile && <span>Lines: {(activeFile.content || '').split('\n').length}</span>}
+              {activeFile && (
+                <>
+                  <div className="h-3 w-px bg-border"></div>
+                  <span>Ln {cursorPosition.line}, Col {cursorPosition.column}</span>
+                  <div className="h-3 w-px bg-border"></div>
+                  <span className="text-ai-primary">{(activeFile.content || '').split('\n').length} lines</span>
+                  <div className="h-3 w-px bg-border"></div>
+                  <span>{(activeFile.content || '').length} chars</span>
+                </>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span>Otto Ready</span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-ai-primary font-medium">Otto Ready</span>
+              </div>
+              <div className="h-3 w-px bg-border"></div>
+              <div className="flex items-center space-x-2 text-muted-foreground">
+                <span>🔒 Secure</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right Panel - AI Chat */}
-        <div className="w-96 border-l">
-          <AIChat onCodeSuggestion={handleCodeSuggestion} />
+        <div
+          className={`${rightPanelOpen ? `w-${Math.floor(rightPanelWidth/16)}` : 'w-0'} lg:w-96 border-l transition-all duration-300 ${rightPanelOpen ? 'block' : 'hidden lg:block'} ${!rightPanelOpen ? 'lg:w-12' : ''} relative`}
+          style={{ width: rightPanelOpen ? `${rightPanelWidth}px` : undefined }}
+        >
+          {/* Toggle Button for Mobile/Tablet */}
+          {!rightPanelOpen && (
+            <button
+              onClick={() => setRightPanelOpen(true)}
+              className="absolute top-4 left-2 z-10 p-2 bg-card border rounded-lg shadow-md lg:hidden"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
+
+          {rightPanelOpen && (
+            <>
+              {/* Resize Handle */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize bg-border hover:bg-ai-primary/50 transition-colors hidden lg:block"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const startX = e.clientX;
+                  const startWidth = rightPanelWidth;
+
+                  const handleMouseMove = (e: MouseEvent) => {
+                    const newWidth = Math.max(280, Math.min(600, startWidth - (e.clientX - startX)));
+                    setRightPanelWidth(newWidth);
+                  };
+
+                  const handleMouseUp = () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                  };
+
+                  document.addEventListener('mousemove', handleMouseMove);
+                  document.addEventListener('mouseup', handleMouseUp);
+                }}
+              />
+
+              {/* Close Button for Mobile */}
+              <div className="absolute top-4 right-4 z-10 lg:hidden">
+                <button
+                  onClick={() => setRightPanelOpen(false)}
+                  className="p-2 bg-card border rounded-lg shadow-md"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="h-full pl-1">
+                <AIChat onCodeSuggestion={handleCodeSuggestion} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

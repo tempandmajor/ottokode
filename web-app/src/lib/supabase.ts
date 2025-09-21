@@ -265,6 +265,155 @@ export interface Database {
           acknowledged_at?: string | null;
         };
       };
+      projects: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          user_id: string;
+          is_public: boolean;
+          last_accessed: string;
+          file_tree: any;
+          settings: any;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          user_id: string;
+          is_public?: boolean;
+          last_accessed?: string;
+          file_tree?: any;
+          settings?: any;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          user_id?: string;
+          is_public?: boolean;
+          last_accessed?: string;
+          file_tree?: any;
+          settings?: any;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      project_files: {
+        Row: {
+          id: string;
+          project_id: string;
+          path: string;
+          name: string;
+          content: string;
+          file_type: 'file' | 'folder';
+          parent_path: string | null;
+          size: number;
+          last_modified: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          path: string;
+          name: string;
+          content?: string;
+          file_type: 'file' | 'folder';
+          parent_path?: string | null;
+          size?: number;
+          last_modified?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          path?: string;
+          name?: string;
+          content?: string;
+          file_type?: 'file' | 'folder';
+          parent_path?: string | null;
+          size?: number;
+          last_modified?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      project_collaborators: {
+        Row: {
+          id: string;
+          project_id: string;
+          user_id: string;
+          role: 'owner' | 'editor' | 'viewer';
+          invited_by: string | null;
+          invited_at: string;
+          accepted_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          user_id: string;
+          role: 'owner' | 'editor' | 'viewer';
+          invited_by?: string | null;
+          invited_at?: string;
+          accepted_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          user_id?: string;
+          role?: 'owner' | 'editor' | 'viewer';
+          invited_by?: string | null;
+          invited_at?: string;
+          accepted_at?: string | null;
+          created_at?: string;
+        };
+      };
+      terminal_sessions: {
+        Row: {
+          id: string;
+          project_id: string;
+          user_id: string;
+          session_data: any;
+          working_directory: string;
+          environment_vars: any;
+          is_active: boolean;
+          last_activity: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          user_id: string;
+          session_data?: any;
+          working_directory?: string;
+          environment_vars?: any;
+          is_active?: boolean;
+          last_activity?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          user_id?: string;
+          session_data?: any;
+          working_directory?: string;
+          environment_vars?: any;
+          is_active?: boolean;
+          last_activity?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
