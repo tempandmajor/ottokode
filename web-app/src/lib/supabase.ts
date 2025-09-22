@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 // Create a mock client for desktop builds or when Supabase is not configured
 const mockClient = {
@@ -23,7 +23,7 @@ const mockClient = {
   })
 } as any;
 
-// Lazily create the client to avoid build-time evaluation errors
+// Global singleton client to prevent multiple instances
 let _client: any | null = null;
 
 function getSupabaseClient() {
@@ -70,12 +70,20 @@ function getSupabaseClient() {
   }
 
   try {
-    _client = createClient(url, key, {
+    _client = createSupabaseClient(url, key, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
-        debug: false
+        debug: false,
+        // Use a unique storage key to prevent conflicts
+        storageKey: 'ottokode-supabase-auth'
+      },
+      // Add headers to identify this client
+      global: {
+        headers: {
+          'X-Client-Info': 'ottokode-web@1.0.0'
+        }
       }
     });
 
