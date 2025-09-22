@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 export function LoginForm() {
@@ -16,6 +16,7 @@ export function LoginForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -58,15 +59,69 @@ export function LoginForm() {
 
     if (error) {
       setError(error.message);
+      setSignupSuccess(false);
     } else {
       setError('');
-      // Show success message
-      setError('Check your email for a verification link!');
+      setSignupSuccess(true);
     }
 
     setLoading(false);
   };
 
+
+  // Show success screen after successful signup
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-ai-primary to-ai-secondary bg-clip-text text-transparent">
+              Ottokode
+            </h1>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold text-foreground">Check your email!</h2>
+                  <p className="text-muted-foreground">
+                    We&apos;ve sent a verification link to <span className="font-medium">{signupData.email}</span>
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 rounded-lg p-4 text-left space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Next steps:</span>
+                  </div>
+                  <ol className="text-sm text-muted-foreground space-y-1 ml-6 list-decimal">
+                    <li>Check your email inbox (and spam folder)</li>
+                    <li>Click the verification link in the email</li>
+                    <li>Return here to sign in to your account</li>
+                  </ol>
+                </div>
+
+                <Button
+                  onClick={() => setSignupSuccess(false)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Back to Sign In
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -136,7 +191,7 @@ export function LoginForm() {
                   </div>
 
                   {error && (
-                    <Alert variant={error.includes('Check your email') ? 'default' : 'destructive'}>
+                    <Alert variant="destructive">
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
@@ -244,7 +299,7 @@ export function LoginForm() {
                   </div>
 
                   {error && (
-                    <Alert variant={error.includes('Check your email') ? 'default' : 'destructive'}>
+                    <Alert variant="destructive">
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}

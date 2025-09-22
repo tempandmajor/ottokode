@@ -30,6 +30,7 @@ import { UserMenu } from '@/components/auth/user-menu';
 import { useTheme } from '@/components/theme-provider';
 import { ProjectStorageService, Project } from '@/services/storage/ProjectStorageService';
 import { WebTerminalService } from '@/services/terminal/WebTerminalService';
+import { ProjectStartDialog } from '@/components/project/project-start-dialog';
 import { TemplateSelectionDialog } from '@/components/project/template-selection-dialog';
 import { TemplateConfigurationDialog } from '@/components/project/template-configuration-dialog';
 import { ProjectScaffoldingService } from '@/services/project-scaffolding/ProjectScaffoldingService';
@@ -68,10 +69,12 @@ export default function IDEPage() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const terminalInputRef = useRef<HTMLInputElement>(null);
 
-  // Template system state
+  // Project start and template system state
+  const [showProjectStart, setShowProjectStart] = useState(false);
   const [showTemplateSelection, setShowTemplateSelection] = useState(false);
   const [showTemplateConfig, setShowTemplateConfig] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
 
   // Services
   const [storageService] = useState(() => new ProjectStorageService());
@@ -101,7 +104,42 @@ export default function IDEPage() {
   };
 
   const handleNewProject = () => {
+    setShowProjectStart(true);
+  };
+
+  const handleNewFromTemplate = () => {
     setShowTemplateSelection(true);
+  };
+
+  const handleCloneRepository = async (url: string) => {
+    try {
+      setIsLoading(true);
+      // TODO: Implement git clone functionality
+      console.log('Cloning repository:', url);
+      // For now, just close the dialog
+      setShowProjectStart(false);
+    } catch (error) {
+      console.error('Failed to clone repository:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoadRecent = async (projectId: string) => {
+    try {
+      setIsLoading(true);
+      const project = await storageService.getProject(projectId);
+      if (project) {
+        setCurrentProject(project);
+        const projectFiles = await storageService.getProjectFiles(project.id);
+        setFiles(projectFiles);
+      }
+      setShowProjectStart(false);
+    } catch (error) {
+      console.error('Failed to load recent project:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const initializeProject = useCallback(async () => {
@@ -110,6 +148,7 @@ export default function IDEPage() {
 
       // Try to load existing projects
       const projects = await storageService.listProjects(user!.id);
+      setRecentProjects(projects);
 
       if (projects.length > 0) {
         // Load the most recently accessed project
@@ -118,13 +157,13 @@ export default function IDEPage() {
         const projectFiles = await storageService.getProjectFiles(project.id);
         setFiles(projectFiles);
       } else {
-        // Show template selection for first-time users
-        setShowTemplateSelection(true);
+        // Show project start dialog for first-time users
+        setShowProjectStart(true);
       }
     } catch (error) {
       console.error('Failed to initialize project:', error);
-      // Show template selection as fallback
-      setShowTemplateSelection(true);
+      // Show project start dialog as fallback
+      setShowProjectStart(true);
     } finally {
       setIsLoading(false);
     }
@@ -697,6 +736,21 @@ export default function IDEPage() {
           )}
         </div>
       </div>
+
+      {/* Project Start Dialog */}
+      <ProjectStartDialog
+        open={showProjectStart}
+        onOpenChange={setShowProjectStart}
+        onNewFromTemplate={handleNewFromTemplate}
+        onCloneRepository={handleCloneRepository}
+        onLoadRecent={handleLoadRecent}
+        recentProjects={recentProjects.map(project => ({
+          id: project.id,
+          name: project.name,
+          description: project.description || undefined,
+          lastAccessed: project.last_accessed
+        }))}
+      />
 
       {/* Template Selection Dialogs */}
       <TemplateSelectionDialog
