@@ -4,16 +4,22 @@ import { createClient } from '@supabase/supabase-js';
 const mockClient = {
   auth: {
     getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-    signInWithPassword: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
-    signUp: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
+    signInWithPassword: () => Promise.resolve({
+      data: { user: null, session: null },
+      error: { message: 'Authentication is not configured. Please check your Supabase settings.' }
+    }),
+    signUp: () => Promise.resolve({
+      data: { user: null, session: null },
+      error: { message: 'Authentication is not configured. Please check your Supabase settings.' }
+    }),
     signOut: () => Promise.resolve({ error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
   },
   from: () => ({
     select: () => ({ data: [], error: null }),
-    insert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-    update: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-    delete: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
+    insert: () => Promise.resolve({ data: null, error: new Error('Database not configured') }),
+    update: () => Promise.resolve({ data: null, error: new Error('Database not configured') }),
+    delete: () => Promise.resolve({ data: null, error: new Error('Database not configured') })
   })
 } as any;
 
@@ -21,34 +27,57 @@ const mockClient = {
 let _client: any | null = null;
 
 function getSupabaseClient() {
-  // Always return mock client during build time or if URL contains placeholder
+  // Return cached client if available
+  if (_client) return _client;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // During SSR build time, return mock client to prevent build errors
   if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
-    return mockClient;
+    _client = mockClient;
+    return _client;
   }
 
-  if (url?.includes('placeholder') || key?.includes('placeholder')) {
-    return mockClient;
+  // If environment variables contain placeholders, use mock client
+  if (url?.includes('placeholder') || key?.includes('placeholder') ||
+      url?.includes('YOUR_') || key?.includes('YOUR_')) {
+    console.warn('Supabase configuration contains placeholder values. Using mock client.');
+    _client = mockClient;
+    return _client;
   }
 
-  if (_client) return _client;
+  // Validate URL and key format
+  const isValidUrl = !!url && /^https:\/\/.+\.supabase\.co$/i.test(url);
+  const isValidKey = !!key && key.length > 50; // Supabase keys are typically longer
+
+  if (!url || !key) {
+    console.warn('Supabase URL or key is missing. Using mock client.');
+    _client = mockClient;
+    return _client;
+  }
+
+  if (!isValidUrl) {
+    console.warn('Invalid Supabase URL format. Using mock client.');
+    _client = mockClient;
+    return _client;
+  }
+
+  if (!isValidKey) {
+    console.warn('Invalid Supabase key format. Using mock client.');
+    _client = mockClient;
+    return _client;
+  }
 
   try {
-    const isValidUrl = !!url && /^https:\/\/.+supabase\.co$/i.test(url);
-    const isValidKey = !!key && key.length > 10;
-
-    if (isValidUrl && isValidKey) {
-      _client = createClient(url, key);
-      return _client;
-    }
-  } catch (e) {
-    // fall through to mock
+    console.log('Creating Supabase client with URL:', url);
+    _client = createClient(url, key);
+    return _client;
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    _client = mockClient;
+    return _client;
   }
-
-  _client = mockClient;
-  return _client;
 }
 
 // Export the function as createClient for consistent naming
