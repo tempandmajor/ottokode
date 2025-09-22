@@ -24,7 +24,7 @@ export function PlatformNav({ className }: PlatformNavProps) {
         return (
           <Link
             key={route.name}
-            href={route.path}
+            href={route.path as any}
             className={cn(
               'flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
               isActive
@@ -61,7 +61,7 @@ export function SettingsNav({ className }: PlatformNavProps) {
         return (
           <Link
             key={route.name}
-            href={route.path}
+            href={route.path as any}
             className={cn(
               'flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors',
               isActive

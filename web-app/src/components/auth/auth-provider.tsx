@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, name?: string) => Promise<{ error: any }>;
+  signInWithGithub: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -114,6 +115,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
+  const signInWithGithub = async () => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -126,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signIn,
     signUp,
+    signInWithGithub,
     signOut,
   };
 
