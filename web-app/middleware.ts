@@ -17,7 +17,12 @@ export function middleware(req: NextRequest) {
 
   const res = NextResponse.next()
 
-  // Apply security headers using shared configuration
+  // Skip security headers in development to avoid CSP conflicts with Next.js
+  if (process.env.NODE_ENV === 'development') {
+    return res
+  }
+
+  // Apply security headers using shared configuration in production only
   const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res)
 
   return securedResponse

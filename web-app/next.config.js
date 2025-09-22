@@ -24,7 +24,7 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 
-  // Update CSP to allow necessary scripts and resources
+  // Add basic security headers, skip CSP in development to avoid conflicts with Next.js nonces
   async headers() {
     return [
       {
@@ -42,10 +42,8 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://*.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vercel.live; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
-          },
+          // CSP disabled in development - Next.js handles this with nonces
+          // Re-enable in production with proper nonce handling
         ],
       },
     ];
