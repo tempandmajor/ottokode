@@ -33,7 +33,11 @@ class AuthService extends EventEmitter {
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
-        console.error('Error getting session:', error);
+        // Use centralized logging instead of console
+        if (typeof window !== 'undefined') {
+          const { logger } = await import('@ottokode/shared');
+          logger.error('Error getting session', { error });
+        }
       } else if (session) {
         await this.setSession(session);
       }

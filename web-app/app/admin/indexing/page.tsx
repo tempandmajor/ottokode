@@ -122,7 +122,10 @@ export default function AdminIndexingPage() {
         throw new Error('No valid session found')
       }
 
-      const response = await fetch('https://gbugafddunddrvkvgifl.functions.supabase.co/index-repo', {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gbugafddunddrvkvgifl.supabase.co'
+      const functionUrl = supabaseUrl.replace('.supabase.co', '.functions.supabase.co')
+
+      const response = await fetch(`${functionUrl}/index-repo`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -351,14 +354,14 @@ export default function AdminIndexingPage() {
 
             <p><strong>2. Set Environment Variables:</strong></p>
             <ul className="list-disc list-inside ml-4 space-y-1">
-              <li><code>SUPABASE_URL=https://gbugafddunddrvkvgifl.supabase.co</code></li>
+              <li><code>SUPABASE_URL={process.env.NEXT_PUBLIC_SUPABASE_URL}</code></li>
               <li><code>SUPABASE_SERVICE_ROLE_KEY=your_service_key</code></li>
               <li><code>OPENAI_API_KEY=your_openai_key</code> (optional)</li>
             </ul>
 
             <p><strong>3. Test URL:</strong></p>
             <code className="block bg-muted p-2 rounded">
-              https://gbugafddunddrvkvgifl.functions.supabase.co/index-repo
+              {process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('.supabase.co', '.functions.supabase.co')}/index-repo
             </code>
           </div>
         </CardContent>

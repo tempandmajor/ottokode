@@ -240,12 +240,30 @@ export class AICodeCompletionProvider implements monaco.languages.CompletionItem
   private async findProjectRoot(): Promise<string | null> {
     try {
       // Look for common project indicators
-      // const indicators = ['package.json', 'Cargo.toml', 'go.mod', 'requirements.txt', '.git'];
-      const currentDir = '.'; // Start from current directory
+      const indicators = ['package.json', 'Cargo.toml', 'go.mod', 'requirements.txt', '.git', 'pyproject.toml', 'pom.xml', 'build.gradle'];
+      let currentDir = '.';
 
-      // For simplicity, assume current directory is project root
-      // TODO: Implement proper project root detection by checking for indicator files
-      return currentDir;
+      // Check current directory and parent directories for project indicators
+      for (let i = 0; i < 5; i++) { // Limit search depth
+        try {
+          const entries = await readDir(currentDir);
+          const hasIndicator = entries.some(entry =>
+            indicators.some(indicator => entry.name === indicator)
+          );
+
+          if (hasIndicator) {
+            return currentDir;
+          }
+
+          // Move up one directory
+          currentDir = `${currentDir}/..`;
+        } catch {
+          break; // Stop if we can't read the directory
+        }
+      }
+
+      // Fallback to current directory
+      return '.';
     } catch (error) {
       return null;
     }

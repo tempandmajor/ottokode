@@ -30,6 +30,10 @@ import { UserMenu } from '@/components/auth/user-menu';
 import { useTheme } from '@/components/theme-provider';
 import { ProjectStorageService, Project } from '@/services/storage/ProjectStorageService';
 import { WebTerminalService } from '@/services/terminal/WebTerminalService';
+import { TemplateSelectionDialog } from '@/components/project/template-selection-dialog';
+import { TemplateConfigurationDialog } from '@/components/project/template-configuration-dialog';
+import { ProjectScaffoldingService } from '@/services/project-scaffolding/ProjectScaffoldingService';
+import type { ProjectTemplate, ProjectCreationOptions } from '@ottokode/shared';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -64,16 +68,47 @@ export default function IDEPage() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const terminalInputRef = useRef<HTMLInputElement>(null);
 
+  // Template system state
+  const [showTemplateSelection, setShowTemplateSelection] = useState(false);
+  const [showTemplateConfig, setShowTemplateConfig] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
+
   // Services
   const [storageService] = useState(() => new ProjectStorageService());
   const [terminalService] = useState(() => new WebTerminalService());
   const [files, setFiles] = useState<FileNode[]>([]);
 
+  // Template system handlers
+  const handleTemplateSelect = (template: ProjectTemplate) => {
+    setSelectedTemplate(template);
+    setShowTemplateSelection(false);
+    setShowTemplateConfig(true);
+  };
+
+  const handleCreateFromTemplate = async (options: ProjectCreationOptions) => {
+    try {
+      setIsLoading(true);
+      const newProject = await ProjectScaffoldingService.createFromTemplate(user!.id, options);
+      setCurrentProject(newProject);
+      setFiles(newProject.file_tree);
+      setShowTemplateConfig(false);
+      setSelectedTemplate(null);
+    } catch (error) {
+      console.error('Failed to create project from template:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNewProject = () => {
+    setShowTemplateSelection(true);
+  };
+
   const initializeProject = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      // Try to load existing projects or create a default one
+      // Try to load existing projects
       const projects = await storageService.listProjects(user!.id);
 
       if (projects.length > 0) {
@@ -83,89 +118,13 @@ export default function IDEPage() {
         const projectFiles = await storageService.getProjectFiles(project.id);
         setFiles(projectFiles);
       } else {
-        // Create a default "Welcome" project
-        const defaultProject = await storageService.createProject({
-          name: 'Welcome to Ottokode',
-          description: 'Your first AI-powered project',
-          user_id: user!.id,
-          is_public: false,
-          file_tree: []
-        });
-
-        setCurrentProject(defaultProject);
-
-        // Create default files
-        const defaultFiles: Omit<FileNode, 'id'>[] = [
-          {
-            name: 'main.ts',
-            type: 'file',
-            content: `// Welcome to Ottokode IDE
-console.log('Hello, World!');
-
-// Your AI-powered coding environment
-function createAmazing(): string {
-  return "Let's build something incredible!";
-}
-
-// AI-powered suggestions will appear as you type
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-async function fetchUser(id: string): Promise<User> {
-  try {
-    const response = await fetch(\`/api/users/\${id}\`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch user');
-    }
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    throw error;
-  }
-}`
-          },
-          {
-            name: 'utils.ts',
-            type: 'file',
-            content: `// Utility functions
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-}`
-          }
-        ];
-
-        // Save default files to storage
-        for (const file of defaultFiles) {
-          await storageService.saveFile(defaultProject.id, {
-            ...file,
-            id: crypto.randomUUID()
-          });
-        }
-
-        // Reload files from storage
-        const projectFiles = await storageService.getProjectFiles(defaultProject.id);
-        setFiles(projectFiles);
+        // Show template selection for first-time users
+        setShowTemplateSelection(true);
       }
     } catch (error) {
-      console.error('Error initializing project:', error);
+      console.error('Failed to initialize project:', error);
+      // Show template selection as fallback
+      setShowTemplateSelection(true);
     } finally {
       setIsLoading(false);
     }
@@ -412,15 +371,27 @@ export function debounce<T extends (...args: any[]) => any>(
             </div>
 
             {/* Project Selector */}
-            {currentProject && (
-              <div className="flex items-center space-x-2 px-3 py-1 bg-muted/50 rounded-md">
-                <FolderOpen className="h-4 w-4 text-ai-primary" />
-                <span className="text-sm font-medium text-foreground">{currentProject.name}</span>
-                <button className="text-xs text-muted-foreground hover:text-foreground">
-                  ↓
-                </button>
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              {currentProject && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-muted/50 rounded-md">
+                  <FolderOpen className="h-4 w-4 text-ai-primary" />
+                  <span className="text-sm font-medium text-foreground">{currentProject.name}</span>
+                  <button className="text-xs text-muted-foreground hover:text-foreground">
+                    ↓
+                  </button>
+                </div>
+              )}
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleNewProject}
+                className="text-xs"
+              >
+                <FolderOpen className="h-3 w-3 mr-1" />
+                New Project
+              </Button>
+            </div>
 
             <Badge variant="outline" className="border-ai-primary/20">
               Web Version
@@ -726,6 +697,24 @@ export function debounce<T extends (...args: any[]) => any>(
           )}
         </div>
       </div>
+
+      {/* Template Selection Dialogs */}
+      <TemplateSelectionDialog
+        open={showTemplateSelection}
+        onOpenChange={setShowTemplateSelection}
+        onTemplateSelect={handleTemplateSelect}
+      />
+
+      <TemplateConfigurationDialog
+        open={showTemplateConfig}
+        onOpenChange={setShowTemplateConfig}
+        template={selectedTemplate}
+        onCreateProject={handleCreateFromTemplate}
+        onBack={() => {
+          setShowTemplateConfig(false);
+          setShowTemplateSelection(true);
+        }}
+      />
     </div>
   );
 }

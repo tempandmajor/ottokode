@@ -20,7 +20,7 @@ if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
     console.log('   ✅ .env file exists');
 
-    const hasSupabaseUrl = envContent.includes('VITE_SUPABASE_URL=https://gbugafddunddrvkvgifl.supabase.co');
+    const hasSupabaseUrl = envContent.includes('VITE_SUPABASE_URL=') && !envContent.includes('placeholder');
     const hasSupabaseKey = envContent.includes('VITE_SUPABASE_ANON_KEY=');
 
     if (hasSupabaseUrl) console.log('   ✅ Supabase URL configured');
@@ -113,12 +113,12 @@ console.log('   ✅ Builds successful');
 
 console.log('\n📋 NEXT STEPS:');
 console.log('1. Deploy Supabase functions:');
-console.log('   supabase functions deploy ai-chat --project-ref gbugafddunddrvkvgifl');
-console.log('   supabase functions deploy propose-diff --project-ref gbugafddunddrvkvgifl');
-console.log('   supabase functions deploy index-repo --project-ref gbugafddunddrvkvgifl');
+console.log('   supabase functions deploy ai-chat --project-ref <YOUR_PROJECT_REF>');
+console.log('   supabase functions deploy propose-diff --project-ref <YOUR_PROJECT_REF>');
+console.log('   supabase functions deploy index-repo --project-ref <YOUR_PROJECT_REF>');
 
 console.log('\n2. Apply database migration:');
-console.log('   supabase db push --project-ref gbugafddunddrvkvgifl');
+console.log('   supabase db push --project-ref <YOUR_PROJECT_REF>');
 
 console.log('\n3. Test AI features:');
 console.log('   - Start web app: cd web-app && npm run dev');
