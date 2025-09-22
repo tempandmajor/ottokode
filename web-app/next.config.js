@@ -11,8 +11,8 @@ const nextConfig = {
     // Temporarily ignore ESLint errors during build
     ignoreDuringBuilds: true,
   },
-  output: 'export',
-  distDir: 'out',
+  // output: 'export', // Disabled for development to enable middleware
+  // distDir: 'out',
   images: {
     unoptimized: true,
   },
