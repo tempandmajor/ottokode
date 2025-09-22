@@ -33,8 +33,19 @@ function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // During SSR build time, return mock client to prevent build errors
-  if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+  // Debug logging for production issues
+  if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+    console.log('Supabase client config:', {
+      hasUrl: !!url,
+      hasKey: !!key,
+      urlPreview: url ? `${url.substring(0, 30)}...` : 'undefined',
+      keyPreview: key ? `${key.substring(0, 30)}...` : 'undefined'
+    });
+  }
+
+  // Only use mock client during build time, not runtime SSR
+  if (typeof window === 'undefined' && process.env.NODE_ENV === 'production' && !url && !key) {
+    console.warn('No environment variables available during build. Using mock client.');
     _client = mockClient;
     return _client;
   }

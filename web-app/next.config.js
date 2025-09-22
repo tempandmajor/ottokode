@@ -17,11 +17,11 @@ const nextConfig = {
   // Remove trailing slash for better compatibility
   trailingSlash: false,
 
-  // Proper environment variable handling
+  // Environment variable handling - prioritize NEXT_PUBLIC_ over VITE_
   env: {
     NEXT_PUBLIC_APP_NAME: 'Ottokode',
-    NEXT_PUBLIC_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
   },
 
   // Add basic security headers, skip CSP in development to avoid conflicts with Next.js nonces
