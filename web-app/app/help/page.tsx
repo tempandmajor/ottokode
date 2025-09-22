@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   Search,
   BookOpen,
@@ -238,18 +237,18 @@ export default function HelpPage() {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
 
-            <Accordion type="single" collapsible className="space-y-4">
+            <div className="space-y-4">
               {faqItems.map((item, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border border-border rounded-lg px-6">
-                  <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                <div key={index} className="border border-border rounded-lg p-6">
+                  <h3 className="text-left font-semibold mb-3">
                     {item.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                  </h3>
+                  <p className="text-muted-foreground">
                     {item.answer}
-                  </AccordionContent>
-                </AccordionItem>
+                  </p>
+                </div>
               ))}
-            </Accordion>
+            </div>
 
             {/* Still Need Help */}
             <div className="mt-16 text-center">

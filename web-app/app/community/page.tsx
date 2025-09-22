@@ -5,7 +5,6 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Users,
   MessageSquare,
@@ -236,10 +235,11 @@ export default function CommunityPage() {
               {featuredContributors.map((contributor, index) => (
                 <Card key={index} className="text-center border-border">
                   <CardContent className="pt-6">
-                    <Avatar className="w-16 h-16 mx-auto mb-4">
-                      <AvatarImage src={contributor.avatar} alt={contributor.name} />
-                      <AvatarFallback>{contributor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-ai-primary/10 flex items-center justify-center">
+                      <span className="text-ai-primary font-semibold">
+                        {contributor.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
                     <h3 className="font-semibold text-foreground">{contributor.name}</h3>
                     <p className="text-sm text-ai-primary mb-1">{contributor.role}</p>
                     <p className="text-xs text-muted-foreground mb-2">{contributor.contributions}</p>

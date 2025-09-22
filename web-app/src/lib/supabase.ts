@@ -70,24 +70,15 @@ function getSupabaseClient() {
   }
 
   try {
-    console.log('Creating Supabase client with URL:', url);
-    console.log('Creating Supabase client with key length:', key?.length);
-    console.log('Environment check:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      keyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
-      windowDefined: typeof window !== 'undefined'
-    });
-
     _client = createClient(url, key, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
-        debug: true
+        debug: false
       }
     });
 
-    console.log('Supabase client created successfully');
     return _client;
   } catch (error) {
     console.error('Failed to create Supabase client:', error);

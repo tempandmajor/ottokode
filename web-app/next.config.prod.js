@@ -4,27 +4,27 @@ const nextConfig = {
     typedRoutes: true,
   },
   typescript: {
-    // Temporarily disable type checking to fix build issues
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    // Re-enable ESLint for better code quality
     ignoreDuringBuilds: false,
   },
+  // Enable static export for production deployment
+  output: 'export',
+  distDir: 'out',
   images: {
     unoptimized: true,
   },
-  // Remove trailing slash for better compatibility
-  trailingSlash: false,
+  trailingSlash: true,
 
-  // Proper environment variable handling
+  // Environment variables for production build
   env: {
     NEXT_PUBLIC_APP_NAME: 'Ottokode',
     NEXT_PUBLIC_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 
-  // Update CSP to allow necessary scripts and resources
+  // Add headers for security when deployed
   async headers() {
     return [
       {
@@ -41,10 +41,6 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://*.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vercel.live; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
           },
         ],
       },

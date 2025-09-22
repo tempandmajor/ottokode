@@ -265,7 +265,7 @@ export default function AdminIndexingPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label htmlFor="filterPath">Repository Path (optional)</Label>
+            <label htmlFor="filterPath" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Repository Path (optional)</label>
             <Input
               id="filterPath"
               value={filterPath}

@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Search,
   Download,
@@ -240,12 +239,11 @@ export default function ExtensionsPage() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start space-x-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={`/api/placeholder/48/48`} />
-                            <AvatarFallback>
+                          <div className="h-12 w-12 rounded-full bg-ai-primary/10 flex items-center justify-center">
+                            <span className="text-ai-primary font-semibold text-sm">
                               {extension.name.split(' ').map(word => word[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
+                            </span>
+                          </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="text-lg font-semibold">{extension.name}</h3>

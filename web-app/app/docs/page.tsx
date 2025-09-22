@@ -116,7 +116,7 @@ export default function DocsPage() {
           {/* Quick Links */}
           <div className="grid md:grid-cols-4 gap-4 mb-16">
             {quickLinks.map((link, index) => (
-              <Link key={index} href={link.href}>
+              <Link key={index} href={link.href as any}>
                 <Card className="border-border hover:border-ai-primary/50 transition-colors cursor-pointer group">
                   <CardContent className="p-4 text-center">
                     <link.icon className="h-8 w-8 text-ai-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />

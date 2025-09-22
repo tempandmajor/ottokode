@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/auth/login-form';
 import { useAuth } from '@/components/auth/auth-provider';
-import { EnvDebug } from '@/components/debug/env-debug';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -31,10 +30,5 @@ export default function LoginPage() {
     return null; // Will redirect
   }
 
-  return (
-    <>
-      <EnvDebug />
-      <LoginForm />
-    </>
-  );
+  return <LoginForm />;
 }
