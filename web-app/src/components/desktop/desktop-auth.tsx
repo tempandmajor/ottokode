@@ -14,7 +14,7 @@ import Image from 'next/image';
 import { useTheme } from '@/components/theme-provider';
 
 export function DesktopAuth() {
-  const { signIn, signUp, signInWithGithub } = useAuth();
+  const { signIn, signUp, signInWithGithub, resetPassword } = useAuth();
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -201,6 +201,30 @@ export function DesktopAuth() {
                     )}
                   </Button>
                 </form>
+
+                {/* Forgot Password */}
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    className="text-sm text-muted-foreground hover:text-foreground p-0"
+                    onClick={async () => {
+                      const email = formData.email || prompt('Enter your email address:');
+                      if (email) {
+                        setIsLoading(true);
+                        const { error } = await resetPassword(email);
+                        if (error) {
+                          setError(error.message);
+                        } else {
+                          alert('Password reset link sent! Check your email.');
+                        }
+                        setIsLoading(false);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    Forgot your password?
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">

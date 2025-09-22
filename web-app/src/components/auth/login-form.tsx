@@ -11,12 +11,14 @@ import { Eye, EyeOff, Loader2, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 export function LoginForm() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -68,6 +70,80 @@ export function LoginForm() {
     setLoading(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const { error } = await resetPassword(resetEmail);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setError('');
+      setResetSuccess(true);
+    }
+
+    setLoading(false);
+  };
+
+  // Show success screen after successful password reset
+  if (resetSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-ai-primary to-ai-secondary bg-clip-text text-transparent">
+              Ottokode
+            </h1>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                    <Mail className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold text-foreground">Check your email!</h2>
+                  <p className="text-muted-foreground">
+                    We&apos;ve sent a password reset link to <span className="font-medium">{resetEmail}</span>
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 rounded-lg p-4 text-left space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Next steps:</span>
+                  </div>
+                  <ol className="text-sm text-muted-foreground space-y-1 ml-6 list-decimal">
+                    <li>Check your email inbox (and spam folder)</li>
+                    <li>Click the password reset link in the email</li>
+                    <li>Create a new password</li>
+                    <li>Return here to sign in with your new password</li>
+                  </ol>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setResetSuccess(false);
+                    setResetEmail('');
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Back to Sign In
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // Show success screen after successful signup
   if (signupSuccess) {
@@ -211,6 +287,26 @@ export function LoginForm() {
                     )}
                   </Button>
                 </form>
+
+                {/* Forgot Password */}
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    className="text-sm text-muted-foreground hover:text-foreground p-0"
+                    onClick={() => {
+                      setResetEmail(loginData.email);
+                      // Show forgot password form
+                      const email = loginData.email || prompt('Enter your email address:');
+                      if (email) {
+                        setResetEmail(email);
+                        handleForgotPassword({ preventDefault: () => {} } as React.FormEvent);
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    Forgot your password?
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
