@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Editor, Monaco } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import { APP_CONFIG } from '../../constants/app';
+import { aiGuidelineChecker } from '../../../shared/src/services/ai-guideline-checker';
+import { CodeAnalysisResult, GuidelineViolation } from '../../../shared/src/types/documentation-guide';
 
 interface CodeEditorProps {
   file?: {
@@ -12,8 +14,10 @@ interface CodeEditorProps {
   onChange?: (content: string) => void;
   onSave?: (content: string) => void;
   onCursorChange?: (position: { line: number; column: number }) => void;
+  onAnalysisResult?: (result: CodeAnalysisResult) => void;
   readOnly?: boolean;
   theme?: 'vs-dark' | 'vs-light' | 'hc-black';
+  projectType?: string;
   collaborators?: Array<{
     id: string;
     name: string;
@@ -28,14 +32,18 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   onSave,
   onCursorChange,
+  onAnalysisResult,
   readOnly = false,
   theme = 'vs-dark',
+  projectType,
   collaborators = []
 }) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const decorationsRef = useRef<string[]>([]);
+  const guidelineDecorationsRef = useRef<string[]>([]);
+  const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleEditorDidMount = useCallback((editorInstance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editorInstance;
@@ -76,16 +84,118 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     editorInstance.onDidChangeModelContent(() => {
       const content = editorInstance.getValue();
       onChange?.(content);
+
+      // Debounced guideline analysis
+      if (analysisTimeoutRef.current) {
+        clearTimeout(analysisTimeoutRef.current);
+      }
+
+      analysisTimeoutRef.current = setTimeout(() => {
+        performGuidelineAnalysis(content);
+      }, 1000); // 1 second debounce
     });
 
-  }, [onChange, onCursorChange]);
+  }, [onChange, onCursorChange, projectType, file]);
+
+  const performGuidelineAnalysis = async (content: string) => {
+    if (!file || !projectType || !editorRef.current || !monacoRef.current) return;
+
+    try {
+      const result = await aiGuidelineChecker.analyzeCode({
+        code: content,
+        filePath: file.path,
+        language: getLanguageFromPath(file.path),
+        projectType,
+        platformGuidelines: [] // Will be populated based on project type
+      });
+
+      // Update parent component with analysis result
+      onAnalysisResult?.(result);
+
+      // Add visual indicators for violations and suggestions
+      updateGuidelineDecorations(result);
+    } catch (error) {
+      console.error('Guideline analysis failed:', error);
+    }
+  };
+
+  const updateGuidelineDecorations = (result: CodeAnalysisResult) => {
+    if (!editorRef.current || !monacoRef.current) return;
+
+    const decorations: editor.IModelDeltaDecoration[] = [];
+
+    // Add violation decorations
+    result.violations.forEach((violation) => {
+      if (violation.lineNumber) {
+        decorations.push({
+          range: new monacoRef.current!.Range(
+            violation.lineNumber,
+            1,
+            violation.lineNumber,
+            1
+          ),
+          options: {
+            isWholeLine: true,
+            className: 'guideline-violation-line',
+            glyphMarginClassName: 'guideline-violation-glyph',
+            hoverMessage: {
+              value: `**${violation.title}**\n\n${violation.description}`
+            },
+            minimap: {
+              color: '#ff6b6b',
+              position: editor.MinimapPosition.Inline
+            }
+          }
+        });
+      }
+    });
+
+    // Add suggestion decorations
+    result.suggestions.forEach((suggestion) => {
+      if (suggestion.lineNumber) {
+        decorations.push({
+          range: new monacoRef.current!.Range(
+            suggestion.lineNumber,
+            1,
+            suggestion.lineNumber,
+            1
+          ),
+          options: {
+            isWholeLine: false,
+            className: 'guideline-suggestion-line',
+            glyphMarginClassName: 'guideline-suggestion-glyph',
+            hoverMessage: {
+              value: `**💡 ${suggestion.title}**\n\n${suggestion.description}`
+            },
+            minimap: {
+              color: '#51cf66',
+              position: editor.MinimapPosition.Inline
+            }
+          }
+        });
+      }
+    });
+
+    // Apply guideline decorations
+    guidelineDecorationsRef.current = editorRef.current.deltaDecorations(
+      guidelineDecorationsRef.current,
+      decorations
+    );
+  };
 
   const setupAIFeatures = (editorInstance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     // Register AI completion provider
     monaco.languages.registerCompletionItemProvider('javascript', {
       provideCompletionItems: async (model, position) => {
-        // TODO: Integrate with AI providers for intelligent code completion
+        // AI-powered code completion with context awareness
         const word = model.getWordUntilPosition(position);
+        const context = model.getValueInRange({
+          startLineNumber: Math.max(1, position.lineNumber - 5),
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        });
+
         const range = {
           startLineNumber: position.lineNumber,
           endLineNumber: position.lineNumber,
@@ -93,18 +203,50 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           endColumn: word.endColumn
         };
 
+        // Smart suggestions based on context
+        const suggestions = [];
+
+        // Function suggestions
+        if (context.includes('function') || context.includes('const')) {
+          suggestions.push({
+            label: 'async function',
+            kind: monaco.languages.CompletionItemKind.Function,
+            insertText: 'async function ${1:name}(${2:params}) {\n\t${3}\n}',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            range: range,
+            detail: 'Async function',
+            documentation: 'Create an async function'
+          });
+        }
+
+        // Import suggestions
+        if (position.column === 1 || context.trim().endsWith('\n')) {
+          suggestions.push({
+            label: 'import',
+            kind: monaco.languages.CompletionItemKind.Module,
+            insertText: 'import { ${1} } from \'${2}\';',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            range: range,
+            detail: 'ES6 Import',
+            documentation: 'Import modules'
+          });
+        }
+
+        // React component suggestions
+        if (context.includes('React') || context.includes('jsx') || context.includes('tsx')) {
+          suggestions.push({
+            label: 'React Component',
+            kind: monaco.languages.CompletionItemKind.Class,
+            insertText: 'const ${1:ComponentName} = () => {\n\treturn (\n\t\t<div>\n\t\t\t${2}\n\t\t</div>\n\t);\n};',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            range: range,
+            detail: 'React functional component',
+            documentation: 'Create a React functional component'
+          });
+        }
+
         return {
-          suggestions: [
-            {
-              label: 'AI_SUGGESTION',
-              kind: monaco.languages.CompletionItemKind.Function,
-              insertText: 'function ${1:name}(${2:params}) {\n\t${3}\n}',
-              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              range: range,
-              detail: 'AI-generated function',
-              documentation: 'Smart function completion powered by AI'
-            }
-          ]
+          suggestions: suggestions
         };
       }
     });
@@ -140,8 +282,17 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
     // AI chat shortcut
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyA, () => {
-      // TODO: Open AI chat panel
-      console.log('AI chat shortcut triggered');
+      // Open AI chat panel with current selection as context
+      const selection = editorInstance.getSelection();
+      const selectedText = selection ? editorInstance.getModel()?.getValueInRange(selection) : '';
+
+      // Emit event to open AI chat with context
+      window.dispatchEvent(new CustomEvent('openAIChat', {
+        detail: {
+          context: selectedText,
+          action: 'explain'
+        }
+      }));
     });
 
     // Format document
@@ -341,6 +492,47 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         .collaborator-glyph {
           background-color: inherit;
           width: 3px;
+        }
+
+        .guideline-violation-line {
+          background-color: rgba(255, 107, 107, 0.1);
+          border-left: 3px solid #ff6b6b;
+        }
+
+        .guideline-violation-glyph {
+          background-color: #ff6b6b;
+          width: 4px;
+          border-radius: 2px;
+        }
+
+        .guideline-violation-glyph::before {
+          content: '⚠';
+          color: white;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+        }
+
+        .guideline-suggestion-line {
+          background-color: rgba(81, 207, 102, 0.05);
+          border-left: 2px solid #51cf66;
+        }
+
+        .guideline-suggestion-glyph {
+          background-color: #51cf66;
+          width: 3px;
+          border-radius: 2px;
+        }
+
+        .guideline-suggestion-glyph::before {
+          content: '💡';
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
         }
       `}</style>
     </div>

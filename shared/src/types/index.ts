@@ -105,3 +105,9 @@ export class NotFoundError extends AppError {
     this.name = 'NotFoundError';
   }
 }
+
+// Export project template types
+export * from './project-templates';
+
+// Export documentation guide types
+export * from './documentation-guide';
