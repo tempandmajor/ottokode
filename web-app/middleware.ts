@@ -3,6 +3,10 @@ import type { NextRequest } from 'next/server'
 import SecurityMiddleware from './src/middleware/security'
 
 export function middleware(req: NextRequest) {
+  // Temporarily disable all middleware functionality to resolve CSP issues
+  return NextResponse.next()
+
+  /*
   const isProduction = process.env.NODE_ENV === 'production'
   const isVercel = process.env.VERCEL === '1'
 
@@ -26,11 +30,16 @@ export function middleware(req: NextRequest) {
   const securedResponse = SecurityMiddleware.applySecurityHeaders(req, res)
 
   return securedResponse
+  */
 }
 
 export const config = {
+  // Temporarily disable middleware matcher to prevent any execution
+  matcher: [],
+  /*
   matcher: [
     // Apply to all app routes
     '/((?!_next/|static/|api/health|favicon.ico).*)',
   ],
+  */
 }
