@@ -31,14 +31,17 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <a href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
-            Features
-          </a>
+          <Link href="/download" className="text-muted-foreground hover:text-foreground transition-colors">
+            Download
+          </Link>
           <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
             Docs
           </Link>
           <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
             Pricing
+          </Link>
+          <Link href="/community" className="text-muted-foreground hover:text-foreground transition-colors">
+            Community
           </Link>
         </nav>
 
@@ -49,12 +52,20 @@ export function Header() {
             <ThemeToggle />
           </div>
 
-          {/* Getting Started CTA - always visible */}
-          <Link href="/getting-started">
-            <Button variant="hero" size="sm">
-              Get Started
-            </Button>
-          </Link>
+          {/* Authentication/Dashboard CTA */}
+          {user ? (
+            <Link href="/dashboard">
+              <Button variant="hero" size="sm">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/login">
+              <Button variant="hero" size="sm">
+                Sign In
+              </Button>
+            </Link>
+          )}
 
           {/* Mobile menu button */}
           <Button
@@ -72,19 +83,12 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-background border-b border-border">
           <nav className="container mx-auto px-4 py-4 space-y-3">
-            <a
-              href="/#features"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Features
-            </a>
             <Link
-              href="/pricing"
+              href="/download"
               className="block text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Pricing
+              Download
             </Link>
             <Link
               href="/docs"
@@ -93,16 +97,30 @@ export function Header() {
             >
               Docs
             </Link>
-            <hr className="border-border" />
-            <Link href="/getting-started" onClick={() => setMobileMenuOpen(false)}>
-              <Button size="sm" className="w-full">
-                Get Started
-              </Button>
+            <Link
+              href="/pricing"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Pricing
             </Link>
-            {!user && (
+            <Link
+              href="/community"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Community
+            </Link>
+            <hr className="border-border" />
+            {user ? (
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Button size="sm" className="w-full">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
               <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  <LogIn className="h-4 w-4 mr-2" />
+                <Button size="sm" className="w-full">
                   Sign In
                 </Button>
               </Link>

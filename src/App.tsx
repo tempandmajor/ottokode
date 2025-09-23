@@ -1,90 +1,185 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
+// Components
 import { LazyMonacoEditor } from './components/LazyMonacoEditor';
 import { FileTree } from './components/FileTree';
 import { SetupChecklist } from './components/SetupChecklist';
 import { EnhancedTerminal } from './components/EnhancedTerminal';
 import { StatusBar } from './components/StatusBar';
-// import { AIChat } from './components/AIChat';
 import { CostDashboard } from './components/CostDashboard';
 import { PerformanceDashboard } from './components/PerformanceDashboard';
 import { AgentDashboard } from './components/AgentDashboard';
 import { CollaborationPanel } from './components/CollaborationPanel';
 import { SecureNotepad } from './components/SecureNotepad';
-import { OllamaManager } from './components/OllamaManager';
 import { GitPanel } from './components/GitPanel';
-import { PluginMarketplace } from './components/PluginMarketplace';
 import { EnhancedAIProviderSettings } from './components/EnhancedAIProviderSettings';
 import { EnhancedAIChat } from './components/EnhancedAIChat';
 import { BillingDashboard } from './components/BillingDashboard';
 import { Auth } from './components/Auth';
+import { ErrorBoundary, FileSystemErrorBoundary, AIServiceErrorBoundary, EditorErrorBoundary } from './components/ErrorBoundary';
+
+// Store and hooks
+import { useUIStore, useEditorStore, useAuthStore, useSettingsStore, useAppStatus } from './store';
+import { useOfflineSupport } from './hooks/useOfflineSupport';
+import { useMemoizedCallback } from './hooks/usePerformance';
+
+// Services
 import { aiCodeCompletionProvider } from './services/ai/CodeCompletionProvider';
-import { authService, AuthState } from './services/auth/AuthService';
-import "./App.css";
+import { authService } from './services/auth/AuthService';
 
-interface EditorFile {
-  id: string;
-  name: string;
-  path: string;
-  content: string;
-  language: string;
-}
+// Styles
+import './App.css';
+import './components/ErrorBoundary.css';
 
-function App() {
-  const [activeFile, setActiveFile] = useState<EditorFile | null>(null);
-  const [openFiles, setOpenFiles] = useState<EditorFile[]>([]);
-  const [showSetupChecklist, setShowSetupChecklist] = useState(true);
-  const [showTerminal, setShowTerminal] = useState(false);
-  const [showAIChat, setShowAIChat] = useState(false);
-  const [showCostDashboard, setShowCostDashboard] = useState(false);
-  const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
-  const [showAgentDashboard, setShowAgentDashboard] = useState(false);
-  const [showCollaborationPanel, setShowCollaborationPanel] = useState(false);
-  const [showSecureNotepad, setShowSecureNotepad] = useState(false);
-  const [showOllamaManager, setShowOllamaManager] = useState(false);
-  const [showGitPanel, setShowGitPanel] = useState(false);
-  const [showPluginMarketplace, setShowPluginMarketplace] = useState(false);
-  const [showAIProviderSettings, setShowAIProviderSettings] = useState(false);
-  const [showBillingDashboard, setShowBillingDashboard] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
-  const [aiCompletionEnabled, setAiCompletionEnabled] = useState(true);
-  const [authState, setAuthState] = useState<AuthState>(authService.getAuthState());
+// Optimized Header Component
+const AppHeader = React.memo(() => {
+  const {
+    showSetupChecklist,
+    showTerminal,
+    showAIChat,
+    showCostDashboard,
+    showPerformanceDashboard,
+    showAgentDashboard,
+    showCollaborationPanel,
+    showSecureNotepad,
+    showGitPanel,
+    showAIProviderSettings,
+    showBillingDashboard,
+    showAuth,
+    togglePanel,
+  } = useUIStore();
 
-  useEffect(() => {
-    const unsubscribe = authService.onAuthStateChange((newState: AuthState) => {
-      setAuthState(newState);
-    });
+  const { authState } = useAuthStore();
+  const { aiCompletionEnabled, setAiCompletionEnabled } = useSettingsStore();
 
-    return unsubscribe;
-  }, []);
+  const handleToggleAICompletion = useMemoizedCallback(() => {
+    setAiCompletionEnabled(!aiCompletionEnabled);
+  }, [aiCompletionEnabled, setAiCompletionEnabled]);
 
-  const handleFileOpen = (file: EditorFile) => {
-    if (!openFiles.find(f => f.id === file.id)) {
-      setOpenFiles([...openFiles, file]);
-    }
-    setActiveFile(file);
-  };
+  return (
+    <div className="app-header">
+      <div className="app-title">AI Code IDE</div>
+      <div className="app-controls">
+        <button
+          onClick={() => togglePanel('showSetupChecklist')}
+          className="header-button"
+          aria-label="Toggle Setup Guide"
+        >
+          Setup Guide
+        </button>
+        <button
+          onClick={() => togglePanel('showTerminal')}
+          className="header-button"
+          aria-label="Toggle Terminal"
+        >
+          Terminal
+        </button>
+        <button
+          onClick={() => togglePanel('showAIChat')}
+          className="header-button"
+          aria-label="Toggle AI Assistant"
+        >
+          AI Assistant
+        </button>
+        <button
+          onClick={() => togglePanel('showCostDashboard')}
+          className="header-button"
+          aria-label="Toggle Cost Analytics"
+        >
+          Cost Analytics
+        </button>
+        <button
+          onClick={handleToggleAICompletion}
+          className={`header-button ${aiCompletionEnabled ? 'active' : ''}`}
+          title={`AI Code Completion: ${aiCompletionEnabled ? 'Enabled' : 'Disabled'}`}
+          aria-label="Toggle AI Code Completion"
+        >
+          AI Completion
+        </button>
+        <button
+          onClick={() => togglePanel('showPerformanceDashboard')}
+          className="header-button"
+          aria-label="Toggle Performance Dashboard"
+        >
+          Performance
+        </button>
+        <button
+          onClick={() => togglePanel('showAgentDashboard')}
+          className="header-button"
+          aria-label="Toggle AI Agents"
+        >
+          🤖 AI Agents
+        </button>
+        <button
+          onClick={() => togglePanel('showCollaborationPanel')}
+          className="header-button"
+          aria-label="Toggle Collaboration"
+        >
+          👥 Collaborate
+        </button>
+        <button
+          onClick={() => togglePanel('showSecureNotepad')}
+          className="header-button"
+          aria-label="Toggle Secure Notepad"
+        >
+          🔐 Notepad
+        </button>
+        <button
+          onClick={() => togglePanel('showGitPanel')}
+          className="header-button"
+          aria-label="Toggle Git Panel"
+        >
+          🔀 Git
+        </button>
+        <button
+          onClick={() => togglePanel('showAIProviderSettings')}
+          className="header-button"
+          aria-label="Toggle AI Provider Settings"
+        >
+          🔑 AI Providers
+        </button>
+        <button
+          onClick={() => togglePanel('showBillingDashboard')}
+          className="header-button"
+          aria-label="Toggle Billing Dashboard"
+        >
+          💳 Billing
+        </button>
+        <button
+          onClick={() => togglePanel('showAuth')}
+          className="header-button"
+          aria-label="Toggle Authentication"
+        >
+          {authState.user ? `👤 ${authState.user.name || authState.user.email}` : '🔐 Login'}
+        </button>
+      </div>
+    </div>
+  );
+});
 
-  const handleFileClose = (fileId: string) => {
-    const newOpenFiles = openFiles.filter(f => f.id !== fileId);
-    setOpenFiles(newOpenFiles);
-    
-    if (activeFile?.id === fileId) {
-      setActiveFile(newOpenFiles.length > 0 ? newOpenFiles[newOpenFiles.length - 1] : null);
-    }
-  };
+// Optimized Editor Area Component
+const EditorArea = React.memo(() => {
+  const { showTerminal } = useUIStore();
+  const { activeFile, openFiles, closeFile, setActiveFile, updateFileContent } = useEditorStore();
+  const { aiCompletionEnabled } = useSettingsStore();
 
-  const handleEditorChange = (value: string | undefined) => {
+  const handleEditorChange = useMemoizedCallback((value: string | undefined) => {
     if (activeFile && value !== undefined) {
-      const updatedFile = { ...activeFile, content: value };
-      setActiveFile(updatedFile);
-      setOpenFiles(openFiles.map(f => f.id === activeFile.id ? updatedFile : f));
+      updateFileContent(activeFile.id, value);
     }
-  };
+  }, [activeFile, updateFileContent]);
 
-  const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor, monaco: typeof import('monaco-editor/esm/vs/editor/editor.api')) => {
+  const handleEditorDidMount = useMemoizedCallback((
+    editor: monaco.editor.IStandaloneCodeEditor,
+    monaco: typeof import('monaco-editor/esm/vs/editor/editor.api')
+  ) => {
     // Register AI completion provider for all languages
-    const languages = ['typescript', 'javascript', 'python', 'java', 'csharp', 'cpp', 'c', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'dart', 'scala', 'shell', 'powershell', 'sql', 'html', 'css', 'scss', 'json', 'yaml', 'xml', 'markdown'];
+    const languages = [
+      'typescript', 'javascript', 'python', 'java', 'csharp', 'cpp', 'c', 'go', 'rust',
+      'php', 'ruby', 'swift', 'kotlin', 'dart', 'scala', 'shell', 'powershell', 'sql',
+      'html', 'css', 'scss', 'json', 'yaml', 'xml', 'markdown'
+    ];
 
     if (aiCompletionEnabled) {
       languages.forEach(language => {
@@ -138,249 +233,258 @@ function App() {
       tabCompletion: 'on',
       wordBasedSuggestions: 'matchingDocuments'
     });
-  };
+  }, [aiCompletionEnabled]);
+
+  const handleFileClose = useMemoizedCallback((fileId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    closeFile(fileId);
+  }, [closeFile]);
 
   return (
-    <div className="app">
-      <div className="app-header">
-        <div className="app-title">AI Code IDE</div>
-        <div className="app-controls">
-          <button 
-            onClick={() => setShowSetupChecklist(!showSetupChecklist)}
-            className="header-button"
+    <div className="editor-area">
+      <div className="editor-tabs">
+        {openFiles.map(file => (
+          <div
+            key={file.id}
+            className={`editor-tab ${activeFile?.id === file.id ? 'active' : ''}`}
+            onClick={() => setActiveFile(file)}
           >
-            Setup Guide
-          </button>
-          <button 
-            onClick={() => setShowTerminal(!showTerminal)}
-            className="header-button"
-          >
-            Terminal
-          </button>
-          <button
-            onClick={() => setShowAIChat(!showAIChat)}
-            className="header-button"
-          >
-            AI Assistant
-          </button>
-          <button
-            onClick={() => setShowCostDashboard(!showCostDashboard)}
-            className="header-button"
-          >
-            Cost Analytics
-          </button>
-          <button
-            onClick={() => setAiCompletionEnabled(!aiCompletionEnabled)}
-            className={`header-button ${aiCompletionEnabled ? 'active' : ''}`}
-            title={`AI Code Completion: ${aiCompletionEnabled ? 'Enabled' : 'Disabled'}`}
-          >
-            AI Completion
-          </button>
-          <button
-            onClick={() => setShowPerformanceDashboard(!showPerformanceDashboard)}
-            className="header-button"
-          >
-            Performance
-          </button>
-          <button
-            onClick={() => setShowAgentDashboard(!showAgentDashboard)}
-            className="header-button"
-          >
-            🤖 AI Agents
-          </button>
-          <button
-            onClick={() => setShowCollaborationPanel(!showCollaborationPanel)}
-            className="header-button"
-          >
-            👥 Collaborate
-          </button>
-          <button
-            onClick={() => setShowSecureNotepad(!showSecureNotepad)}
-            className="header-button"
-          >
-            🔐 Notepad
-          </button>
-          <button
-            onClick={() => setShowOllamaManager(!showOllamaManager)}
-            className="header-button"
-          >
-            🦙 Ollama
-          </button>
-          <button
-            onClick={() => setShowGitPanel(!showGitPanel)}
-            className="header-button"
-          >
-            🔀 Git
-          </button>
-          <button
-            onClick={() => setShowPluginMarketplace(!showPluginMarketplace)}
-            className="header-button"
-          >
-            🔌 Plugins
-          </button>
-          <button
-            onClick={() => setShowAIProviderSettings(!showAIProviderSettings)}
-            className="header-button"
-          >
-            🔑 AI Providers
-          </button>
-          <button
-            onClick={() => setShowBillingDashboard(!showBillingDashboard)}
-            className="header-button"
-          >
-            💳 Billing
-          </button>
-          <button
-            onClick={() => setShowAuth(!showAuth)}
-            className="header-button"
-          >
-{authState.user ? `👤 ${authState.user.name || authState.user.email}` : '🔐 Login'}
-          </button>
-        </div>
+            <span>{file.name}{file.isDirty ? ' •' : ''}</span>
+            <button
+              onClick={(e) => handleFileClose(file.id, e)}
+              className="tab-close"
+              aria-label={`Close ${file.name}`}
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div className="app-body">
-        {showSetupChecklist && (
-          <div className="setup-sidebar">
-            <SetupChecklist onClose={() => setShowSetupChecklist(false)} />
+      <div className="editor-container">
+        {activeFile ? (
+          <EditorErrorBoundary>
+            <LazyMonacoEditor
+              height="100%"
+              language={activeFile.language}
+              value={activeFile.content}
+              onChange={handleEditorChange}
+              onMount={handleEditorDidMount}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: true },
+                fontSize: 14,
+                wordWrap: 'on',
+                automaticLayout: true,
+              }}
+            />
+          </EditorErrorBoundary>
+        ) : (
+          <div className="editor-welcome">
+            <h2>Welcome to AI Code IDE</h2>
+            <p>Open a file from the sidebar to start coding</p>
+            <p>Check the Setup Guide for configuration steps</p>
           </div>
-        )}
-
-        <div className="file-sidebar">
-          <FileTree onFileOpen={handleFileOpen} />
-        </div>
-
-        <div className="editor-area">
-          <div className="editor-tabs">
-            {openFiles.map(file => (
-              <div 
-                key={file.id}
-                className={`editor-tab ${activeFile?.id === file.id ? 'active' : ''}`}
-                onClick={() => setActiveFile(file)}
-              >
-                <span>{file.name}</span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFileClose(file.id);
-                  }}
-                  className="tab-close"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="editor-container">
-            {activeFile ? (
-              <LazyMonacoEditor
-                height="100%"
-                language={activeFile.language}
-                value={activeFile.content}
-                onChange={handleEditorChange}
-                onMount={handleEditorDidMount}
-                theme="vs-dark"
-                options={{
-                  minimap: { enabled: true },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  automaticLayout: true,
-                }}
-              />
-            ) : (
-              <div className="editor-welcome">
-                <h2>Welcome to AI Code IDE</h2>
-                <p>Open a file from the sidebar to start coding</p>
-                <p>Check the Setup Guide for configuration steps</p>
-              </div>
-            )}
-          </div>
-
-          {showTerminal && (
-            <div className="terminal-container">
-              <EnhancedTerminal />
-            </div>
-          )}
-        </div>
-
-        {showAIChat && (
-          <div className="ai-chat-sidebar">
-            <EnhancedAIChat onClose={() => setShowAIChat(false)} />
-          </div>
-        )}
-
-        {showCostDashboard && (
-          <div className="cost-dashboard-sidebar">
-            <CostDashboard onClose={() => setShowCostDashboard(false)} />
-          </div>
-        )}
-
-        {showPerformanceDashboard && (
-          <div className="cost-dashboard-sidebar">
-            <PerformanceDashboard onClose={() => setShowPerformanceDashboard(false)} />
-          </div>
-        )}
-
-        {showAgentDashboard && (
-          <div className="agent-dashboard-sidebar">
-            <AgentDashboard onClose={() => setShowAgentDashboard(false)} />
-          </div>
-        )}
-
-        {showCollaborationPanel && (
-          <div className="collaboration-sidebar">
-            <CollaborationPanel onClose={() => setShowCollaborationPanel(false)} />
-          </div>
-        )}
-
-        {showSecureNotepad && (
-          <div className="secure-notepad-sidebar">
-            <SecureNotepad onClose={() => setShowSecureNotepad(false)} />
-          </div>
-        )}
-
-        {showOllamaManager && (
-          <div className="ollama-manager-sidebar">
-            <OllamaManager onClose={() => setShowOllamaManager(false)} />
-          </div>
-        )}
-
-        {showGitPanel && (
-          <div className="git-panel-sidebar">
-            <GitPanel onClose={() => setShowGitPanel(false)} />
-          </div>
-        )}
-
-        {showPluginMarketplace && (
-          <div className="plugin-marketplace-sidebar">
-            <PluginMarketplace onClose={() => setShowPluginMarketplace(false)} />
-          </div>
-        )}
-
-        {showAIProviderSettings && (
-          <div className="ai-provider-settings-sidebar">
-            <EnhancedAIProviderSettings onClose={() => setShowAIProviderSettings(false)} />
-          </div>
-        )}
-
-        {showBillingDashboard && (
-          <div className="billing-dashboard-sidebar">
-            <BillingDashboard onClose={() => setShowBillingDashboard(false)} />
-          </div>
-        )}
-
-        {showAuth && (
-          <Auth onClose={() => setShowAuth(false)} />
         )}
       </div>
 
-      <StatusBar 
-        activeFile={activeFile}
-        terminalVisible={showTerminal}
-      />
+      {showTerminal && (
+        <div className="terminal-container">
+          <EnhancedTerminal />
+        </div>
+      )}
     </div>
+  );
+});
+
+// Optimized Sidebar Panels Component
+const SidebarPanels = React.memo(() => {
+  const {
+    showAIChat,
+    showCostDashboard,
+    showPerformanceDashboard,
+    showAgentDashboard,
+    showCollaborationPanel,
+    showSecureNotepad,
+    showGitPanel,
+    showAIProviderSettings,
+    showBillingDashboard,
+    setPanel,
+  } = useUIStore();
+
+  const handleClose = useMemoizedCallback((panel: string) => {
+    setPanel(panel as any, false);
+  }, [setPanel]);
+
+  return (
+    <>
+      {showAIChat && (
+        <div className="ai-chat-sidebar">
+          <AIServiceErrorBoundary>
+            <EnhancedAIChat onClose={() => handleClose('showAIChat')} />
+          </AIServiceErrorBoundary>
+        </div>
+      )}
+
+      {showCostDashboard && (
+        <div className="cost-dashboard-sidebar">
+          <CostDashboard onClose={() => handleClose('showCostDashboard')} />
+        </div>
+      )}
+
+      {showPerformanceDashboard && (
+        <div className="cost-dashboard-sidebar">
+          <PerformanceDashboard onClose={() => handleClose('showPerformanceDashboard')} />
+        </div>
+      )}
+
+      {showAgentDashboard && (
+        <div className="agent-dashboard-sidebar">
+          <AIServiceErrorBoundary>
+            <AgentDashboard onClose={() => handleClose('showAgentDashboard')} />
+          </AIServiceErrorBoundary>
+        </div>
+      )}
+
+      {showCollaborationPanel && (
+        <div className="collaboration-sidebar">
+          <CollaborationPanel onClose={() => handleClose('showCollaborationPanel')} />
+        </div>
+      )}
+
+      {showSecureNotepad && (
+        <div className="secure-notepad-sidebar">
+          <SecureNotepad onClose={() => handleClose('showSecureNotepad')} />
+        </div>
+      )}
+
+      {showGitPanel && (
+        <div className="git-panel-sidebar">
+          <GitPanel onClose={() => handleClose('showGitPanel')} />
+        </div>
+      )}
+
+      {showAIProviderSettings && (
+        <div className="ai-provider-settings-sidebar">
+          <AIServiceErrorBoundary>
+            <EnhancedAIProviderSettings onClose={() => handleClose('showAIProviderSettings')} />
+          </AIServiceErrorBoundary>
+        </div>
+      )}
+
+      {showBillingDashboard && (
+        <div className="billing-dashboard-sidebar">
+          <BillingDashboard onClose={() => handleClose('showBillingDashboard')} />
+        </div>
+      )}
+    </>
+  );
+});
+
+// Network Status Indicator
+const NetworkStatus = React.memo(() => {
+  const { isOnline, pendingOperations } = useOfflineSupport();
+
+  if (isOnline && pendingOperations.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={`network-status ${isOnline ? 'online' : 'offline'}`}>
+      {isOnline ? (
+        pendingOperations.length > 0 && (
+          <span>📤 Syncing {pendingOperations.length} operations...</span>
+        )
+      ) : (
+        <span>📵 Offline - Changes will sync when reconnected</span>
+      )}
+    </div>
+  );
+});
+
+// Main App Component
+function App() {
+  const { showSetupChecklist, showAuth, setPanel } = useUIStore();
+  const { activeFile } = useEditorStore();
+  const { authState, setAuthState } = useAuthStore();
+  const { isLoading, error, setError } = useAppStatus();
+  const { showTerminal } = useUIStore();
+
+  // Initialize offline support
+  const offlineSupport = useOfflineSupport();
+
+  // Auth state synchronization
+  useEffect(() => {
+    const unsubscribe = authService.onAuthStateChange((newState) => {
+      setAuthState(newState);
+    });
+
+    return unsubscribe;
+  }, [setAuthState]);
+
+  // Error handling
+  const handleGlobalError = useMemoizedCallback((error: Error) => {
+    setError(error.message);
+    console.error('Global error:', error);
+  }, [setError]);
+
+  // Memoized components to prevent unnecessary re-renders
+  const memoizedContent = useMemo(() => (
+    <div className="app-body">
+      {showSetupChecklist && (
+        <div className="setup-sidebar">
+          <SetupChecklist onClose={() => setPanel('showSetupChecklist', false)} />
+        </div>
+      )}
+
+      <div className="file-sidebar">
+        <FileSystemErrorBoundary>
+          <FileTree />
+        </FileSystemErrorBoundary>
+      </div>
+
+      <EditorArea />
+      <SidebarPanels />
+
+      {showAuth && (
+        <Auth onClose={() => setPanel('showAuth', false)} />
+      )}
+    </div>
+  ), [showSetupChecklist, showAuth, setPanel]);
+
+  if (isLoading) {
+    return (
+      <div className="app-loading">
+        <div className="loading-spinner">⏳</div>
+        <p>Loading AI Code IDE...</p>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary onError={handleGlobalError}>
+      <div className="app" data-theme="dark">
+        <NetworkStatus />
+
+        {error && (
+          <div className="global-error">
+            <span>⚠️ {error}</span>
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
+
+        <AppHeader />
+        {memoizedContent}
+
+        <StatusBar
+          activeFile={activeFile}
+          terminalVisible={showTerminal}
+          isOnline={offlineSupport.isOnline}
+          pendingOperations={offlineSupport.pendingOperations.length}
+        />
+      </div>
+    </ErrorBoundary>
   );
 }
 
-export default App;
+export default React.memo(App);

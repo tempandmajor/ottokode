@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FileSystemService } from '../services/filesystem/FileSystemService';
+import { useEditorStore, useWorkspaceStore } from '../store';
 import './FileTree.css';
 
 interface FileNode {
@@ -17,80 +19,62 @@ interface EditorFile {
   language: string;
 }
 
-interface FileTreeProps {
-  onFileOpen: (file: EditorFile) => void;
-}
-
-export const FileTree: React.FC<FileTreeProps> = ({ onFileOpen }) => {
+export const FileTree: React.FC = () => {
+  const { openFile } = useEditorStore();
+  const { currentWorkspace, setCurrentWorkspace } = useWorkspaceStore();
   const [fileTree, setFileTree] = useState<FileNode[]>([]);
   const [loading, setLoading] = useState(false);
+  const fileSystemService = new FileSystemService();
 
-  // Sample file tree for demo
   useEffect(() => {
-    // Initialize with some sample files for demo
-    const sampleTree: FileNode[] = [
-      {
-        name: 'src',
-        path: '/demo/src',
-        isDirectory: true,
-        expanded: true,
-        children: [
-          {
-            name: 'components',
-            path: '/demo/src/components',
-            isDirectory: true,
-            expanded: false,
-            children: [
-              {
-                name: 'Button.tsx',
-                path: '/demo/src/components/Button.tsx',
-                isDirectory: false
-              },
-              {
-                name: 'Modal.tsx',
-                path: '/demo/src/components/Modal.tsx',
-                isDirectory: false
-              }
-            ]
-          },
-          {
-            name: 'App.tsx',
-            path: '/demo/src/App.tsx',
-            isDirectory: false
-          },
-          {
-            name: 'main.tsx',
-            path: '/demo/src/main.tsx',
-            isDirectory: false
-          }
-        ]
-      },
-      {
-        name: 'public',
-        path: '/demo/public',
-        isDirectory: true,
-        expanded: false,
-        children: [
-          {
-            name: 'index.html',
-            path: '/demo/public/index.html',
-            isDirectory: false
-          }
-        ]
-      },
-      {
-        name: 'package.json',
-        path: '/demo/package.json',
-        isDirectory: false
-      },
-      {
-        name: 'README.md',
-        path: '/demo/README.md',
-        isDirectory: false
-      }
-    ];
-    setFileTree(sampleTree);
+    loadWorkspaceFiles();
   }, []);
+
+  const loadWorkspaceFiles = async () => {
+    setLoading(true);
+    try {
+      // Try to load current workspace, or default to current directory
+      const workspacePath = currentWorkspace || await getCurrentWorkingDirectory();
+      if (workspacePath) {
+        const files = await fileSystemService.listDirectory(workspacePath);
+        const tree = await buildFileTree(files, workspacePath);
+        setFileTree(tree);
+        setCurrentWorkspace(workspacePath);
+      }
+    } catch (error) {
+      console.error('Failed to load workspace files:', error);
+      // Fallback to showing an empty workspace message
+      setFileTree([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentWorkingDirectory = async (): Promise<string> => {
+    try {
+      // Use Tauri API to get current working directory
+      const { invoke } = await import('@tauri-apps/api/core');
+      return await invoke('get_current_dir');
+    } catch {
+      // Fallback to a default directory
+      return process.cwd?.() || '.';
+    }
+  };
+
+  const buildFileTree = async (files: any[], basePath: string): Promise<FileNode[]> => {
+    return files.map(file => ({
+      name: file.name,
+      path: file.path,
+      isDirectory: file.children !== undefined,
+      children: file.children ? file.children.map((child: any) => ({
+        name: child.name,
+        path: child.path,
+        isDirectory: child.children !== undefined,
+        expanded: false
+      })) : undefined,
+      expanded: false
+    }));
+  };
 
   const getLanguageFromExtension = (filename: string): string => {
     const ext = filename.split('.').pop()?.toLowerCase();
@@ -132,6 +116,15 @@ export const FileTree: React.FC<FileTreeProps> = ({ onFileOpen }) => {
         return 'shell';
       default:
         return 'plaintext';
+    }
+  };
+
+  const getFileContent = async (filePath: string): Promise<string> => {
+    try {
+      return await fileSystemService.readFile(filePath);
+    } catch (error) {
+      console.error('Failed to read file:', error);
+      return `// Error reading file: ${filePath}\n// ${error}`;
     }
   };
 
@@ -246,27 +239,49 @@ console.log('Hello from ${filename}');`;
     setFileTree(updateNode(fileTree));
   };
 
-  const handleFileClick = (node: FileNode) => {
+  const handleFileClick = async (node: FileNode) => {
     if (node.isDirectory) {
       toggleExpanded(node.path);
     } else {
-      const file: EditorFile = {
-        id: node.path,
-        name: node.name,
-        path: node.path,
-        content: getSampleContent(node.name),
-        language: getLanguageFromExtension(node.name)
-      };
-      onFileOpen(file);
+      try {
+        const content = await getFileContent(node.path);
+        const file: EditorFile = {
+          id: node.path,
+          name: node.name,
+          path: node.path,
+          content,
+          language: getLanguageFromExtension(node.name)
+        };
+        openFile(file);
+      } catch (error) {
+        console.error('Failed to open file:', error);
+        // Fallback to empty content
+        const file: EditorFile = {
+          id: node.path,
+          name: node.name,
+          path: node.path,
+          content: `// Unable to load file content\n// Error: ${error}`,
+          language: getLanguageFromExtension(node.name)
+        };
+        openFile(file);
+      }
     }
   };
 
   const openFolder = async () => {
     setLoading(true);
     try {
-      // This would normally use Tauri's file system API
-      // For demo purposes, we'll use the sample tree
-      console.log('Opening folder...');
+      const { open } = await import('@tauri-apps/plugin-dialog');
+      const folderPath = await open({
+        directory: true,
+        multiple: false,
+      });
+
+      if (folderPath) {
+        const workspace = await fileSystemService.openWorkspace(folderPath as string);
+        setCurrentWorkspace(workspace.path);
+        await loadWorkspaceFiles();
+      }
     } catch (error) {
       console.error('Failed to open folder:', error);
     }

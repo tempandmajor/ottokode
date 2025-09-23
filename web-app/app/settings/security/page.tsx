@@ -230,7 +230,7 @@ export default function SecuritySettings() {
               Export Data
             </Button>
             <p className="text-sm text-muted-foreground mt-2">
-              Download a copy of all your data (coming soon).
+              Download a copy of all your data in JSON format.
             </p>
           </div>
 

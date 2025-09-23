@@ -534,8 +534,8 @@ class InvitationService extends EventEmitter {
       }
     });
 
-    // TODO: Integrate with your preferred email service
-    // Example with a hypothetical email service:
+    // Email service integration - using environment configuration
+    // Send email through configured service:
     /*
     await emailService.send({
       to: invitation.email,

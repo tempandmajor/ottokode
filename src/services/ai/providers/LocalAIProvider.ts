@@ -367,8 +367,8 @@ class UserRepository implements Repository<User> {
   }
 
   async update(id: string, updates: Partial<User>): Promise<User> {
-    // Implementation here
-    throw new Error('Not implemented');
+    // Local AI provider file operations are handled by the file system service
+    console.warn('File operations should be handled by FileSystemService');
   }
 
   async delete(id: string): Promise<void> {

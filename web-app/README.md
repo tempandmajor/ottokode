@@ -1,26 +1,41 @@
-# Welcome to your Lovable project
+# Ottokode Information Platform
 
-## Project info
+The web-based information platform for Ottokode - manage your account, billing, and access resources while coding happens on the desktop app.
 
-**URL**: https://lovable.dev/projects/e076dc16-92b1-4a27-929c-3e36bde0b725
+## Overview
 
-## How can I edit this code?
+Ottokode follows a **desktop-first development** approach:
+- **Web Platform**: Authentication, billing, documentation, community, support
+- **Desktop App**: AI-assisted coding, file management, terminals, project creation
 
-There are several ways of editing your application.
+## Architecture
 
-**Use Lovable**
+This web platform serves as an information hub similar to cursor.com or windsurf.com, providing:
+- User dashboard with usage analytics
+- Subscription and billing management
+- Documentation and community access
+- Desktop app downloads
+- Account settings and preferences
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e076dc16-92b1-4a27-929c-3e36bde0b725) and start prompting.
+## Platform Features
 
-Changes made via Lovable will be committed automatically to this repo.
+### Information Platform (Web)
+✅ **Authentication** - Login, signup, password reset
+✅ **User Dashboard** - Usage analytics and quick actions
+✅ **Billing** - Subscription management and payment history
+✅ **Documentation** - Guides and API references
+✅ **Desktop Downloads** - Platform-specific app downloads
+✅ **Community** - Forums and support channels
+✅ **Settings** - Account and preference management
 
-**Use your preferred IDE**
+### Development Features (Desktop Only)
+❌ **Web IDE** - Redirects to desktop download
+❌ **Monaco Editor** - Removed from web platform
+❌ **File Management** - Desktop app exclusive
+❌ **Project Creation** - Desktop app exclusive
+❌ **Terminal Access** - Desktop app exclusive
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Development
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.

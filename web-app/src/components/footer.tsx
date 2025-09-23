@@ -53,7 +53,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="/docs" className="hover:text-foreground transition-colors">Documentation</a></li>
               <li><a href="/docs/api" className="hover:text-foreground transition-colors">API Reference</a></li>
-              <li><a href="/extensions" className="hover:text-foreground transition-colors">Extensions</a></li>
+              <li><a href="/download" className="hover:text-foreground transition-colors">Desktop App</a></li>
               <li><a href="https://github.com/tempandmajor/ottokode" className="hover:text-foreground transition-colors">GitHub</a></li>
             </ul>
           </div>

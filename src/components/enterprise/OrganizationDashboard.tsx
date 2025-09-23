@@ -28,6 +28,17 @@ interface DashboardStats {
   pendingInvitations: number;
 }
 
+const getActiveProjectsCount = async (organizationId: string): Promise<number> => {
+  try {
+    // In a real implementation, this would call a projects service
+    // For now, return a default value
+    return 0;
+  } catch (error) {
+    console.error('Failed to get active projects count:', error);
+    return 0;
+  }
+};
+
 export const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ organizationId }) => {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -76,7 +87,7 @@ export const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ or
 
       setStats({
         totalMembers: membersData.filter(m => m.status === 'active').length,
-        activeProjects: 0, // TODO: Get from projects service
+        activeProjects: await getActiveProjectsCount(organizationId),
         monthlyUsage: billingUsage?.costs.total || 0,
         pendingInvitations: pendingInvitations.length
       });

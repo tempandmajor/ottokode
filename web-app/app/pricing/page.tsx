@@ -114,7 +114,7 @@ export default function PricingPage() {
     if (!plan.stripe_price_id_monthly) {
       return (
         <Button variant="outline" className="w-full" disabled>
-          Coming Soon
+          Enterprise Plan
         </Button>
       );
     }

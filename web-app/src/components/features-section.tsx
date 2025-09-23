@@ -30,7 +30,7 @@ const features = [
   {
     icon: Palette,
     title: "Customizable",
-    description: "Extensive themes, layouts, and extensions to match your preferred development environment."
+    description: "Customizable themes, layouts, and MCP integrations to match your preferred development environment."
   }
 ];
 

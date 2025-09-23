@@ -124,7 +124,7 @@ const changelogEntries = [
         type: "new",
         icon: Plus,
         title: "Extension Marketplace",
-        description: "Browse and install community extensions directly from the IDE."
+        description: "Enhanced MCP (Model Context Protocol) integration for better AI capabilities."
       }
     ]
   },

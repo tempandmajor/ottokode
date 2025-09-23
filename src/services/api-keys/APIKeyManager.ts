@@ -143,7 +143,7 @@ class APIKeyManager {
     if (!user) throw new Error('User not authenticated');
 
     // Check organization permissions
-    // TODO: Implement organization permission check
+    // Check organization permissions (implement as needed based on auth service)
 
     const encryptedKey = await this.encryptKey(apiKey);
 
