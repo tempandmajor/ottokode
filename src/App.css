@@ -28,25 +28,28 @@ body {
 }
 
 .app-header {
-  height: 40px;
+  height: 48px;
   background: #323233;
   border-bottom: 1px solid #444;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 20px;
   user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .app-title {
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 600;
   color: #fff;
+  letter-spacing: -0.5px;
 }
 
 .app-controls {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
 
 /* Network Status */
@@ -156,21 +159,21 @@ body {
   gap: 4px;
 }
 
-/* Accessibility Improvements */
-.header-button {
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-}
-
+/* Enhanced Accessibility Improvements */
 .header-button:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.4);
 }
 
 .header-button:focus-visible {
-  outline: 2px solid #007bff;
+  outline: 2px solid #007acc;
   outline-offset: 2px;
+}
+
+.header-button:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Dark theme support for new components */
@@ -201,26 +204,31 @@ body {
 }
 
 .header-button {
-  background: none;
-  border: 1px solid #555;
-  color: #ccc;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 12px;
+  background: #2d2d30;
+  border: 1px solid #3e3e42;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .header-button:hover {
   background: #404040;
-  border-color: #666;
-  color: #fff;
+  border-color: #007acc;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .header-button.active {
   background: #0078d4;
   border-color: #106ebe;
-  color: #fff;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 120, 212, 0.3);
 }
 
 .app-body {
