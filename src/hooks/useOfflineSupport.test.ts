@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useOfflineSupport } from './useOfflineSupport';
 import { goOffline, goOnline } from '../test/setup';
@@ -7,7 +6,7 @@ describe('useOfflineSupport', () => {
   beforeEach(() => {
     // Clear localStorage
     localStorage.clear();
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should initialize with online status', () => {

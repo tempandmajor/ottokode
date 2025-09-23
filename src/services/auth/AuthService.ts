@@ -82,7 +82,7 @@ class AuthService extends EventEmitter {
           email: session.user.email || '',
           name: session.user.user_metadata?.name || session.user.email?.split('@')[0],
           avatar_url: session.user.user_metadata?.avatar_url,
-          color: '#007acc'
+          color: '#222222'
         };
       } else {
         this.currentUser = {
@@ -155,7 +155,7 @@ class AuthService extends EventEmitter {
   }
 
   // Sign in with OAuth provider
-  public async signInWithOAuth(provider: 'github' | 'google' | 'discord'): Promise<{ error: AuthError | null }> {
+  public async signInWithOAuth(provider: 'google' | 'discord'): Promise<{ error: AuthError | null }> {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

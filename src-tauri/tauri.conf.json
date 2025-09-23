@@ -5,7 +5,7 @@
   "identifier": "com.ottokode.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:3001",
+    "devUrl": "http://localhost:3002",
     "beforeBuildCommand": "cd web-app && npm run build:tauri",
     "frontendDist": "../web-app/out"
   },
@@ -33,7 +33,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' http://localhost:3001 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' http://localhost:3001 ws://localhost:3001 wss://localhost:3001 ws://127.0.0.1:3010 wss://127.0.0.1:3010 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' http://localhost:3002 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com; connect-src 'self' http://localhost:3002 ws://localhost:3002 wss://localhost:3002 ws://127.0.0.1:3010 wss://127.0.0.1:3010 https://*.openai.com https://*.anthropic.com https://*.googleapis.com https://*.cohere.ai https://*.mistral.ai https://*.supabase.co https://*.stripe.com wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' data:; object-src 'none'; frame-src 'none';"
     }
   },
   "bundle": {

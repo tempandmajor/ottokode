@@ -17,15 +17,15 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-      <div className="container mx-auto px-4 h-24 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-28 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
             src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
             alt="Ottokode"
-            width={80}
-            height={80}
-            className="h-16 w-16"
+            width={120}
+            height={120}
+            className="h-24 w-24"
           />
         </Link>
 

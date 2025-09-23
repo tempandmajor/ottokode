@@ -33,7 +33,7 @@ export function HeroSection() {
                   Download Now
                 </Button>
               </Link>
-              <Link href="/docs">
+              <Link href="/login">
                 <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent">
                   <Play className="h-5 w-5 mr-2" />
                   Get Started

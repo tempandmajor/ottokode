@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// For Tauri desktop app - hardcoded for now, can be configured at build time
+const supabaseUrl = 'https://gbugafddunddrvkvgifl.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdidWdhZmRkdW5kZHJ2a3ZnaWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYyMTIyNzgsImV4cCI6MjA0MTc4ODI3OH0.VXxY7Nc6QNJYfX8FU-nJF8nHtjhYX5vPGq8KnVu9X7o';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.');

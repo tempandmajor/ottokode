@@ -1,94 +1,95 @@
 import '@testing-library/jest-dom';
-import { beforeEach, vi } from 'vitest';
 
 // Mock Tauri APIs for testing
 const mockTauri = {
-  invoke: vi.fn(),
-  listen: vi.fn(),
-  emit: vi.fn(),
+  invoke: jest.fn(),
+  listen: jest.fn(),
+  emit: jest.fn(),
 };
 
 const mockTauriPlugins = {
   fs: {
-    readDir: vi.fn(),
-    readTextFile: vi.fn(),
-    writeTextFile: vi.fn(),
-    exists: vi.fn(),
-    createDir: vi.fn(),
-    removeFile: vi.fn(),
-    removeDir: vi.fn(),
-    copyFile: vi.fn(),
-    renameFile: vi.fn(),
+    readDir: jest.fn(),
+    readTextFile: jest.fn(),
+    writeTextFile: jest.fn(),
+    exists: jest.fn(),
+    createDir: jest.fn(),
+    removeFile: jest.fn(),
+    removeDir: jest.fn(),
+    copyFile: jest.fn(),
+    renameFile: jest.fn(),
   },
   dialog: {
-    open: vi.fn(),
-    save: vi.fn(),
-    message: vi.fn(),
-    confirm: vi.fn(),
+    open: jest.fn(),
+    save: jest.fn(),
+    message: jest.fn(),
+    confirm: jest.fn(),
   },
 };
 
 // Global mocks
-vi.mock('@tauri-apps/api/core', () => mockTauri);
-vi.mock('@tauri-apps/plugin-fs', () => mockTauriPlugins.fs);
-vi.mock('@tauri-apps/plugin-dialog', () => mockTauriPlugins.dialog);
-vi.mock('@tauri-apps/api/event', () => ({
+jest.mock('@tauri-apps/api/core', () => mockTauri);
+jest.mock('@tauri-apps/plugin-fs', () => mockTauriPlugins.fs);
+// Skip mocking @tauri-apps/plugin-dialog as it's not installed
+jest.mock('@tauri-apps/api/event', () => ({
   listen: mockTauri.listen,
   emit: mockTauri.emit,
 }));
 
 // Mock Monaco Editor
-vi.mock('monaco-editor/esm/vs/editor/editor.api', () => ({
+jest.mock('monaco-editor/esm/vs/editor/editor.api', () => ({
   editor: {
-    create: vi.fn(() => ({
-      dispose: vi.fn(),
-      getValue: vi.fn(() => ''),
-      setValue: vi.fn(),
-      updateOptions: vi.fn(),
-      onDidChangeModelContent: vi.fn(),
+    create: jest.fn(() => ({
+      dispose: jest.fn(),
+      getValue: jest.fn(() => ''),
+      setValue: jest.fn(),
+      updateOptions: jest.fn(),
+      onDidChangeModelContent: jest.fn(),
     })),
-    createModel: vi.fn(),
-    defineTheme: vi.fn(),
-    setTheme: vi.fn(),
+    createModel: jest.fn(),
+    defineTheme: jest.fn(),
+    setTheme: jest.fn(),
   },
   languages: {
-    registerCompletionItemProvider: vi.fn(),
+    registerCompletionItemProvider: jest.fn(),
     CompletionItemKind: {},
     CompletionItemInsertTextRule: {},
   },
-  Range: vi.fn(),
-  Position: vi.fn(),
+  Range: jest.fn(),
+  Position: jest.fn(),
 }));
 
 // Mock Supabase
-vi.mock('../lib/supabase', () => ({
+jest.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(),
-      signIn: vi.fn(),
-      signOut: vi.fn(),
-      signUp: vi.fn(),
+      getSession: jest.fn(),
+      onAuthStateChange: jest.fn(),
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+      signUp: jest.fn(),
     },
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn(),
     })),
   },
 }));
 
 // Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
 Object.defineProperty(window, 'localStorage', {
-  value: {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-  },
+  value: localStorageMock,
   writable: true,
 });
 
@@ -100,10 +101,10 @@ Object.defineProperty(navigator, 'onLine', {
 
 // Reset all mocks before each test
 beforeEach(() => {
-  vi.clearAllMocks();
+  jest.clearAllMocks();
 
   // Reset localStorage mock
-  (window.localStorage.getItem as any).mockReturnValue(null);
+  (localStorageMock.getItem as jest.Mock).mockReturnValue(null);
 
   // Reset navigator.onLine
   Object.defineProperty(navigator, 'onLine', {

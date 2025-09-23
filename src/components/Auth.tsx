@@ -65,7 +65,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'github' | 'google' | 'discord') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'discord') => {
     setLoading(true);
     setError(null);
 
@@ -195,13 +195,6 @@ export const Auth: React.FC<AuthProps> = ({ onClose }) => {
             <div className="divider">or</div>
 
             <div className="oauth-buttons">
-              <button
-                onClick={() => handleOAuthSignIn('github')}
-                disabled={loading}
-                className="oauth-button github"
-              >
-                Continue with GitHub
-              </button>
               <button
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={loading}

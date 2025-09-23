@@ -33,7 +33,7 @@ export function useOfflineSupport() {
     const handleOnline = () => {
       setOnlineStatus(true);
       console.log('📶 Back online - processing pending operations');
-      processOfflineQueue();
+      // processOfflineQueue will be called after going online is detected
     };
 
     const handleOffline = () => {
@@ -51,12 +51,19 @@ export function useOfflineSupport() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [setOnlineStatus]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load pending operations from storage
   useEffect(() => {
     loadOfflineOperations();
   }, []);
+
+  // Process queue when going online
+  useEffect(() => {
+    if (isOnline && pendingOperations.length > 0 && !isProcessingQueue) {
+      processOfflineQueue();
+    }
+  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Save operations to localStorage
   const saveOfflineOperations = useCallback((operations: OfflineOperation[]) => {

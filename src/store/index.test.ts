@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+// Using Jest globals
 import { useAppStore } from './index';
 import { renderHook, act } from '@testing-library/react';
 

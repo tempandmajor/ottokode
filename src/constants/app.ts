@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
-  name: import.meta.env.VITE_APP_NAME || 'Branchcode AI',
-  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
-  domain: import.meta.env.VITE_APP_DOMAIN || 'https://branchcode.ai',
+  name: 'Ottokode',
+  version: '1.0.0',
+  domain: 'https://ottokode.com',
   description: 'Enterprise AI-powered IDE for collaborative development',
   tagline: 'Code together, powered by AI',
 
@@ -30,11 +30,11 @@ export const APP_CONFIG = {
 
   // Feature Flags
   features: {
-    enterprise: import.meta.env.VITE_ENABLE_ENTERPRISE_FEATURES === 'true',
-    collaboration: import.meta.env.VITE_ENABLE_COLLABORATION === 'true',
-    aiChat: import.meta.env.VITE_ENABLE_AI_CHAT === 'true',
-    analytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
-    debug: import.meta.env.VITE_DEBUG_MODE === 'true',
+    enterprise: true,
+    collaboration: true,
+    aiChat: true,
+    analytics: true,
+    debug: false,
   },
 
   // AI Providers
@@ -42,11 +42,11 @@ export const APP_CONFIG = {
     providers: ['openai', 'anthropic', 'google', 'cohere', 'mistral'],
     defaultProvider: 'openai',
     fallbackKeys: {
-      openai: import.meta.env.VITE_OPENAI_API_KEY,
-      anthropic: import.meta.env.VITE_ANTHROPIC_API_KEY,
-      google: import.meta.env.VITE_GOOGLE_AI_API_KEY,
-      cohere: import.meta.env.VITE_COHERE_API_KEY,
-      mistral: import.meta.env.VITE_MISTRAL_API_KEY,
+      openai: undefined,
+      anthropic: undefined,
+      google: undefined,
+      cohere: undefined,
+      mistral: undefined,
     }
   },
 
@@ -58,11 +58,11 @@ export const APP_CONFIG = {
     '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.env', '.md', '.txt'
   ],
 
-  // Theme Colors
+  // Theme Colors - Updated to match web app branding (#222222)
   colors: {
-    primary: '#007acc',
+    primary: '#222222',
     secondary: '#1e1e1e',
-    accent: '#0078d4',
+    accent: '#333333',
     success: '#107c10',
     warning: '#ffb900',
     error: '#d13438',
