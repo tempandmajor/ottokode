@@ -79,7 +79,7 @@ function DownloadContent() {
             <Info className="h-4 w-4" />
             <AlertTitle>Platform Update Notice</AlertTitle>
             <AlertDescription>
-              We&apos;ve streamlined our platform! The web IDE has been moved to focus on providing
+              We&apos;ve streamlined our platform to focus on providing
               you with a more powerful desktop experience. All coding features are now available
               exclusively in our desktop application.
             </AlertDescription>

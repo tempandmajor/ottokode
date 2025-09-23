@@ -34,8 +34,8 @@ export default function NotFound() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/">
-              <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
-                <Home className="h-5 w-5 mr-2 text-white" />
+              <Button size="lg" variant="hero">
+                <Home className="h-5 w-5 mr-2" />
                 Go Home
               </Button>
             </Link>
@@ -61,8 +61,8 @@ export default function NotFound() {
               Looking for something specific? Try these popular pages:
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <Link href="/ide" className="text-ai-primary hover:underline">
-                Web IDE
+              <Link href="/download" className="text-ai-primary hover:underline">
+                Download Desktop
               </Link>
               <Link href="/about" className="text-ai-primary hover:underline">
                 About Us

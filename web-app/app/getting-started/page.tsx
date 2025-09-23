@@ -52,26 +52,26 @@ export default function GettingStartedPage() {
             </CardContent>
           </Card>
 
-          {/* Web App */}
+          {/* Documentation */}
           <Card className="border-2 border-secondary/20 hover:border-secondary/40 transition-colors">
             <CardHeader className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
-                <Code className="h-8 w-8 text-secondary" />
+                <Book className="h-8 w-8 text-secondary" />
               </div>
-              <CardTitle className="text-2xl">Web App</CardTitle>
+              <CardTitle className="text-2xl">Documentation</CardTitle>
               <CardDescription>
-                Browser-based coding with instant access and cloud sync
+                Comprehensive guides and tutorials to get you started
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <Link href="/ide">
-                <Button size="lg" variant="default" className="w-full text-white">
-                  <Code className="h-4 w-4 mr-2 text-white" />
-                  Launch Web IDE
+              <Link href="/docs">
+                <Button size="lg" variant="hero" className="w-full">
+                  <Book className="h-4 w-4 mr-2" />
+                  View Documentation
                 </Button>
               </Link>
               <p className="text-sm text-muted-foreground">
-                No installation required
+                Learn features and best practices
               </p>
             </CardContent>
           </Card>

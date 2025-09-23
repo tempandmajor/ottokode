@@ -22,21 +22,21 @@ export function HeroSection() {
             </h1>
 
             <p className="text-xl text-muted-foreground max-w-lg leading-relaxed">
-              A powerful IDE designed for modern developers. Clean interface,
-              fast performance, and extensible architecture in one reliable editor.
+              A powerful desktop IDE designed for modern developers. Native performance,
+              AI-powered assistance, and extensible architecture in one reliable editor.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/ide">
-                <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white shadow-ai">
-                  <Play className="h-5 w-5 mr-2 text-white" />
-                  Try Web IDE
+              <Link href="/download">
+                <Button size="lg" variant="hero">
+                  <Download className="h-5 w-5 mr-2" />
+                  Download Now
                 </Button>
               </Link>
-              <Link href="/desktop">
+              <Link href="/docs">
                 <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent">
-                  <Download className="h-5 w-5 mr-2" />
-                  Download Desktop
+                  <Play className="h-5 w-5 mr-2" />
+                  Get Started
                 </Button>
               </Link>
             </div>
@@ -48,7 +48,7 @@ export function HeroSection() {
               <div className="p-6 h-full flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-ai-primary rounded-lg mb-4 mx-auto animate-glow-pulse"></div>
-                  <p className="text-muted-foreground">Interactive IDE Preview</p>
+                  <p className="text-muted-foreground">Desktop IDE Preview</p>
                 </div>
               </div>
             </div>

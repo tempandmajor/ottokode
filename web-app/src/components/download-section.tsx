@@ -24,7 +24,7 @@ export function DownloadSection() {
             Download Ottokode
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get started with a modern, clean IDE designed for productivity.
+            Get started with a modern, clean desktop IDE designed for productivity.
           </p>
         </div>
 
@@ -43,12 +43,12 @@ export function DownloadSection() {
 
             <div className="text-center pt-6">
               <p className="text-sm text-muted-foreground mb-4">
-                Or try the web version instantly
+                Need help getting started?
               </p>
-              <Link href="/ide">
+              <Link href="/docs">
                 <Button variant="outline" size="lg" className="group">
                   <Smartphone className="h-5 w-5 mr-2" />
-                  Launch Web IDE
+                  View Documentation
                 </Button>
               </Link>
             </div>

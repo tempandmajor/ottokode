@@ -90,8 +90,8 @@ export default function AboutPage() {
             productivity, and collaboration in software development.
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
-              <Mail className="h-5 w-5 mr-2 text-white" />
+            <Button size="lg" variant="hero">
+              <Mail className="h-5 w-5 mr-2" />
               Contact Us
             </Button>
             <Button size="lg" variant="outline">
@@ -301,14 +301,16 @@ export default function AboutPage() {
             Join thousands of developers who are already building with confidence using Ottokode
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/ide">
-              <Button size="lg" className="bg-ai-primary hover:bg-ai-primary/90 text-white">
-                Try Web IDE
+            <Link href="/download">
+              <Button size="lg" variant="hero">
+                Download Desktop
               </Button>
             </Link>
-            <Button size="lg" variant="outline">
-              Download Desktop
-            </Button>
+            <Link href="/docs">
+              <Button size="lg" variant="outline">
+                View Documentation
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
