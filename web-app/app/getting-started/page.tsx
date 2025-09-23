@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, User, Zap, Settings, Code, ChevronRight } from "lucide-react";
+import { Download, User, Zap, Settings, Code, ChevronRight, Book } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Header } from "@/components/header";
 
