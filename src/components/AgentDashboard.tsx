@@ -3,10 +3,11 @@ import { agentManager, Agent, AgentTask } from '../services/agents/AgentManager'
 import './AgentDashboard.css';
 
 interface AgentDashboardProps {
-  onClose: () => void;
+  onClose?: () => void;
+  className?: string;
 }
 
-export const AgentDashboard: React.FC<AgentDashboardProps> = ({ onClose }) => {
+export const AgentDashboard: React.FC<AgentDashboardProps> = ({ onClose, className }) => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [queueStatus, setQueueStatus] = useState({ pending: 0, inProgress: 0, completed: 0 });
@@ -96,10 +97,26 @@ export const AgentDashboard: React.FC<AgentDashboardProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="agent-dashboard">
+    <div className={`agent-dashboard ${className || ''}`}>
       <div className="agent-dashboard-header">
-        <h2>🤖 AI Agents</h2>
-        <button onClick={onClose} className="close-button">×</button>
+        <div className="header-left">
+          <div className="header-icon">🤖</div>
+          <div className="header-title">
+            <h2>Agent Dashboard</h2>
+            <span className="subtitle">{agents.filter(a => a.isActive).length} of {agents.length} agents active</span>
+          </div>
+        </div>
+        <div className="header-actions">
+          <button className="btn btn-ghost" onClick={() => updateData()}>
+            <span className="icon">🔄</span>
+            Refresh
+          </button>
+          {onClose && (
+            <button onClick={onClose} className="btn btn-ghost close-button">
+              <span className="icon">✕</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="agent-dashboard-tabs">
@@ -162,7 +179,18 @@ export const AgentDashboard: React.FC<AgentDashboardProps> = ({ onClose }) => {
                   </div>
                   {agent.currentTask && (
                     <div className="current-task">
-                      Working on: {agent.currentTask.substring(0, 20)}...
+                      <div className="task-header">
+                        <span className="task-label">Current Task:</span>
+                        <div className="task-progress">
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: '65%' }}></div>
+                          </div>
+                          <span className="progress-text">65%</span>
+                        </div>
+                      </div>
+                      <p className="task-description">
+                        {agent.currentTask.substring(0, 40)}...
+                      </p>
                     </div>
                   )}
                 </div>

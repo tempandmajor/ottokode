@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: process.env.TAURI_BUILD ? 'export' : undefined,
   experimental: {
     typedRoutes: true,
   },

@@ -373,9 +373,9 @@ class APIKeyManager {
       {
         provider: 'openai',
         name: 'OpenAI',
-        description: 'GPT-4, GPT-3.5, and other OpenAI models',
+        description: 'GPT-5, GPT-3.5, and other OpenAI models',
         keyFormat: 'sk-...',
-        models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+        models: ['gpt-5', 'gpt-3.5-turbo'],
         pricing: { inputTokens: 30, outputTokens: 60 },
       },
       {

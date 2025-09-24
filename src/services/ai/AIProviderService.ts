@@ -29,31 +29,19 @@ export class AIProviderService {
       displayName: 'OpenAI',
       models: [
         {
-          id: 'gpt-4o',
-          name: 'GPT-4o',
+          id: 'gpt-5',
+          name: 'GPT-5',
           provider: 'openai',
-          contextLength: 128000,
-          costPer1KTokens: { input: 0.005, output: 0.015 },
+          contextLength: 200000,
+          costPer1KTokens: { input: 0.01, output: 0.03 },
           capabilities: {
             chat: true,
             completion: true,
             codeGeneration: true,
             functionCalling: true,
             vision: true,
-            reasoning: true
-          }
-        },
-        {
-          id: 'gpt-4o-mini',
-          name: 'GPT-4o Mini',
-          provider: 'openai',
-          contextLength: 128000,
-          costPer1KTokens: { input: 0.00015, output: 0.0006 },
-          capabilities: {
-            chat: true,
-            completion: true,
-            codeGeneration: true,
-            functionCalling: true
+            reasoning: true,
+            structuredOutput: true
           }
         },
         {
@@ -81,6 +69,37 @@ export class AIProviderService {
       name: 'anthropic',
       displayName: 'Anthropic Claude',
       models: [
+        {
+          id: 'claude-opus-4.1',
+          name: 'Claude Opus 4.1',
+          provider: 'anthropic',
+          contextLength: 200000,
+          costPer1KTokens: { input: 0.015, output: 0.075 },
+          capabilities: {
+            chat: true,
+            completion: true,
+            codeGeneration: true,
+            functionCalling: true,
+            reasoning: true,
+            agenticTasks: true,
+            hybridReasoning: true
+          }
+        },
+        {
+          id: 'claude-sonnet-4',
+          name: 'Claude Sonnet 4',
+          provider: 'anthropic',
+          contextLength: 200000,
+          costPer1KTokens: { input: 0.003, output: 0.015 },
+          capabilities: {
+            chat: true,
+            completion: true,
+            codeGeneration: true,
+            functionCalling: true,
+            reasoning: true,
+            hybridReasoning: true
+          }
+        },
         {
           id: 'claude-3-5-sonnet-20241022',
           name: 'Claude 3.5 Sonnet',

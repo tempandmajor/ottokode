@@ -36,6 +36,9 @@ export interface ModelCapabilities {
   functionCalling: boolean;
   vision?: boolean;
   reasoning?: boolean;
+  agenticTasks?: boolean;
+  hybridReasoning?: boolean;
+  structuredOutput?: boolean;
 }
 
 export interface AIMessage {
@@ -44,6 +47,8 @@ export interface AIMessage {
   timestamp?: Date;
   tokens?: number;
   cost?: number;
+  structuredData?: any;
+  responseType?: string;
 }
 
 export interface AIConversation {

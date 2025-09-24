@@ -30,7 +30,7 @@ export class OpenAIProvider implements AIProvider {
     const client = this.getClient();
 
     const response = await client.chat.completions.create({
-      model: options?.model || 'gpt-4',
+      model: options?.model || 'gpt-5',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: options?.maxTokens || 1000,
       temperature: options?.temperature || 0.7,
@@ -56,7 +56,7 @@ export class OpenAIProvider implements AIProvider {
     }));
 
     const response = await client.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: openaiMessages,
       max_tokens: 1000,
       temperature: 0.7,

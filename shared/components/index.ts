@@ -20,7 +20,7 @@ export type {
   AICompletionResponse,
   AICodeSuggestion,
   AIProviderConfig
-} from '../../src/services/ai/AIService';
+} from '../../src/types/ai';
 
 // Platform-specific component factories
 export const createPlatformComponents = (platform: 'desktop' | 'web') => {

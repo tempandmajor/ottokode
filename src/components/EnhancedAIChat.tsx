@@ -1,9 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AIMessage, AIProvider, AIModel } from '../types/ai';
-import { enhancedAIService } from '../services/ai/EnhancedAIService';
-import { hybridAIService, PlatformModel, UserCredits } from '../services/ai/HybridAIService';
+import { AIMessage, AIProvider } from '../types/ai';
+import { aiService } from '../services/ai/ResponsesAIService';
 import { conversationService, AIConversation } from '../services/ai/ConversationService';
 import { authService } from '../services/auth/AuthService';
+import {
+  CodeGenerationResponse,
+  CodeReviewResponse,
+  ErrorExplanationResponse,
+  LearningResponse
+} from '../types/responses-api';
 import './EnhancedAIChat.css';
 
 interface EnhancedAIChatProps {
@@ -23,7 +28,7 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
     title: 'New Chat',
     messages: [{
       role: 'assistant',
-      content: 'Hello! I\'m your enhanced AI assistant with integrated cost tracking and conversation persistence. How can I help you today?',
+      content: 'Hello! I\'m your enhanced AI assistant with structured response capabilities. How can I help you today?',
       timestamp: new Date()
     }],
     totalCost: 0,
@@ -33,17 +38,17 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('openai');
-  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
+  const [selectedModel, setSelectedModel] = useState('gpt-5');
   const [streamingEnabled, setStreamingEnabled] = useState(true);
   const [persistConversation, setPersistConversation] = useState(true);
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2000);
-  const [useMode, setUseMode] = useState<'own_keys' | 'platform_credits' | 'auto'>('auto');
+  const [useMode, setUseMode] = useState<'general' | 'code'>('general');
+  const [responseMode, setResponseMode] = useState<'normal' | 'structured'>('normal');
+  const [structuredResponseType, setStructuredResponseType] = useState<'code_generation' | 'code_review' | 'error_explanation' | 'learning'>('code_generation');
+  const [autoSelectModel, setAutoSelectModel] = useState(false);
 
   const [providers, setProviders] = useState<AIProvider[]>([]);
-  const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
-  const [platformModels, setPlatformModels] = useState<PlatformModel[]>([]);
-  const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
   const [conversations, setConversations] = useState<AIConversation[]>([]);
   const [showConversationsList, setShowConversationsList] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,29 +57,24 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
 
   useEffect(() => {
     loadProviders();
-    loadPlatformModels();
     loadConversations();
     checkAuth();
 
     // Listen for auth changes
-    const unsubscribe = authService.onAuthStateChange((authState) => {
-      setIsAuthenticated(authState.isAuthenticated);
-      if (authState.isAuthenticated) {
-        loadConversations();
-        loadUserCredits();
-      }
+    const unsubscribe = authService.subscribe(() => {
+      checkAuth();
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [currentSession.messages]);
 
-  useEffect(() => {
-    updateAvailableModels();
-  }, [selectedProvider, providers]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const checkAuth = () => {
     const authState = authService.getAuthState();
@@ -82,83 +82,33 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
   };
 
   const loadProviders = () => {
-    const allProviders = enhancedAIService.getProviders();
+    const allProviders = aiService.getAvailableProviders();
     setProviders(allProviders);
 
-    // Set default selections from configured providers
-    const configuredProviders = enhancedAIService.getConfiguredProviders();
+    const configuredProviders = aiService.getConfiguredProviders();
     if (configuredProviders.length > 0) {
-      const defaultProvider = configuredProviders[0];
-      setSelectedProvider(defaultProvider.name);
-      if (defaultProvider.models.length > 0) {
-        setSelectedModel(defaultProvider.models[0].id);
-      }
+      setSelectedProvider(configuredProviders[0]);
     }
-  };
-
-  const loadPlatformModels = async () => {
-    await hybridAIService.loadPlatformModels();
-    const models = hybridAIService.getPlatformModels();
-    setPlatformModels(models);
-  };
-
-  const loadUserCredits = async () => {
-    if (!isAuthenticated) return;
-    await hybridAIService.loadUserCredits();
-    const credits = hybridAIService.getUserCredits();
-    setUserCredits(credits);
   };
 
   const loadConversations = async () => {
     if (!isAuthenticated) return;
 
     try {
-      const convos = await conversationService.getConversationSummaries(20);
-      setConversations(convos);
+      const userConversations = await conversationService.getUserConversations();
+      setConversations(userConversations);
     } catch (error) {
       console.error('Failed to load conversations:', error);
     }
   };
 
-  const updateAvailableModels = () => {
-    const provider = providers.find(p => p.name === selectedProvider);
-    if (provider) {
-      // Combine own keys models and platform models
-      const ownKeysModels = provider.models;
-      const providerPlatformModels = platformModels
-        .filter(m => m.provider === selectedProvider)
-        .map(m => ({
-          id: m.model_id,
-          name: `${m.display_name} (Platform)`,
-          contextLength: m.context_length,
-          costPer1KTokens: {
-            input: m.final_cost_per_1k_input_tokens,
-            output: m.final_cost_per_1k_output_tokens
-          },
-          maxTokens: 4000,
-          isPlatform: true
-        }));
-
-      const allModels = [...ownKeysModels, ...providerPlatformModels];
-      setAvailableModels(allModels);
-
-      // Update selected model if it's not available for the new provider
-      if (allModels.length > 0 && !allModels.find(m => m.id === selectedModel)) {
-        setSelectedModel(allModels[0].id);
-      }
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSend = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage: AIMessage = {
       role: 'user',
-      content: input,
+      content: input.trim(),
       timestamp: new Date()
     };
 
@@ -171,118 +121,16 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const selectedModelInfo = availableModels.find(m => m.id === selectedModel);
-      const isPlatformModel = selectedModelInfo && 'isPlatform' in selectedModelInfo && selectedModelInfo.isPlatform;
-
-      // Determine if we need to check provider configuration
-      if (!isPlatformModel) {
-        const provider = providers.find(p => p.name === selectedProvider);
-        if (!provider?.isConfigured) {
-          throw new Error(`Provider ${selectedProvider} is not configured. Please configure it in settings or use platform credits.`);
-        }
-      }
-
-      const chatMessages = [...currentSession.messages, userMessage];
-
-      if (streamingEnabled) {
-        // Streaming response
-        const streamingMessage: AIMessage = {
-          role: 'assistant',
-          content: '',
-          timestamp: new Date()
-        };
-
-        setCurrentSession(prev => ({
-          ...prev,
-          messages: [...prev.messages, streamingMessage]
-        }));
-
-        await hybridAIService.chat(
-          selectedProvider,
-          selectedModel,
-          chatMessages,
-          {
-            streaming: true,
-            maxTokens,
-            temperature,
-            persistConversation,
-            conversationId: currentSession.id,
-            useMode,
-            onStream: (response) => {
-              if (!response.done) {
-                setCurrentSession(prev => {
-                  const newMessages = [...prev.messages];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  lastMessage.content += response.content;
-                  return { ...prev, messages: newMessages };
-                });
-              } else {
-                // Update final message with token/cost info
-                setCurrentSession(prev => {
-                  const newMessages = [...prev.messages];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  lastMessage.tokens = response.usage?.totalTokens || 0;
-                  lastMessage.cost = response.usage?.cost || 0;
-
-                  return {
-                    ...prev,
-                    messages: newMessages,
-                    totalCost: prev.totalCost + (response.usage?.cost || 0),
-                    totalTokens: prev.totalTokens + (response.usage?.totalTokens || 0)
-                  };
-                });
-
-                // Reload user credits if using platform credits
-                if (isPlatformModel || useMode === 'platform_credits') {
-                  loadUserCredits();
-                }
-              }
-            }
-          }
-        );
+      if (responseMode === 'structured' && aiService.isStructuredResponseSupported()) {
+        await handleStructuredResponse(userMessage);
       } else {
-        // Non-streaming response
-        const assistantMessage = await hybridAIService.chat(
-          selectedProvider,
-          selectedModel,
-          chatMessages,
-          {
-            maxTokens,
-            temperature,
-            persistConversation,
-            conversationId: currentSession.id,
-            useMode
-          }
-        );
-
-        setCurrentSession(prev => ({
-          ...prev,
-          messages: [...prev.messages, assistantMessage],
-          totalCost: prev.totalCost + (assistantMessage.cost || 0),
-          totalTokens: prev.totalTokens + (assistantMessage.tokens || 0)
-        }));
-
-        // Reload user credits if using platform credits
-        if (isPlatformModel || useMode === 'platform_credits') {
-          loadUserCredits();
-        }
+        await handleNormalResponse(userMessage);
       }
-
-      // Generate title if it's a new conversation and we have enough messages
-      if (!currentSession.id && currentSession.messages.length === 1) {
-        const title = userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : '');
-        setCurrentSession(prev => ({ ...prev, title }));
-      }
-
-      // Reload conversations if persistence is enabled
-      if (persistConversation && isAuthenticated) {
-        loadConversations();
-      }
-
     } catch (error) {
+      console.error('Chat error:', error);
       const errorMessage: AIMessage = {
         role: 'assistant',
-        content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
         timestamp: new Date()
       };
 
@@ -295,373 +143,387 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const handleStructuredResponse = async (userMessage: AIMessage) => {
+    let structuredResponse: any;
+    const optimalModel = selectBestModelForTask(structuredResponseType, userMessage.content.length);
+
+    try {
+      switch (structuredResponseType) {
+        case 'code_generation':
+          structuredResponse = await aiService.generateCodeWithStructure(
+            userMessage.content,
+            'typescript', // Default to TypeScript, could be made configurable
+            { model: optimalModel }
+          );
+          break;
+        case 'code_review':
+          structuredResponse = await aiService.reviewCodeWithStructure(
+            userMessage.content,
+            'typescript',
+            { model: optimalModel }
+          );
+          break;
+        case 'error_explanation':
+          structuredResponse = await aiService.explainErrorWithStructure(
+            userMessage.content,
+            'typescript',
+            { model: optimalModel }
+          );
+          break;
+        case 'learning':
+          structuredResponse = await aiService.generateLearningContent(
+            userMessage.content,
+            'intermediate',
+            { model: optimalModel }
+          );
+          break;
+        default:
+          throw new Error('Unsupported structured response type');
+      }
+
+      const formattedResponse = formatStructuredResponse(structuredResponse, structuredResponseType);
+
+      const assistantMessage: AIMessage = {
+        role: 'assistant',
+        content: formattedResponse,
+        timestamp: new Date()
+      };
+
+      setCurrentSession(prev => ({
+        ...prev,
+        messages: [...prev.messages, assistantMessage]
+      }));
+
+    } catch (error) {
+      throw error;
     }
   };
 
-  const startNewConversation = () => {
+  const handleNormalResponse = async (userMessage: AIMessage) => {
+    const chatMessages = [...currentSession.messages, userMessage];
+    const optimalModel = selectBestModelForTask('general', userMessage.content.length);
+
+    try {
+      const response = await aiService.complete(chatMessages, {
+        provider: selectedProvider as AIProvider,
+        model: optimalModel,
+        temperature,
+        maxTokens,
+      });
+
+      const assistantMessage: AIMessage = {
+        role: 'assistant',
+        content: response.content,
+        timestamp: new Date()
+      };
+
+      setCurrentSession(prev => ({
+        ...prev,
+        messages: [...prev.messages, assistantMessage],
+        totalTokens: prev.totalTokens + (response.usage?.totalTokens || 0)
+      }));
+
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const formatStructuredResponse = (response: any, type: string): string => {
+    switch (type) {
+      case 'code_generation':
+        const codeResp = response as CodeGenerationResponse;
+        return `**Generated Code:**\n\n\`\`\`${codeResp.language}\n${codeResp.code}\n\`\`\`\n\n**Explanation:**\n${codeResp.explanation}\n\n**Dependencies:**\n${codeResp.dependencies.join(', ')}\n\n**Best Practices:**\n${codeResp.best_practices.map(practice => `• ${practice}`).join('\n')}`;
+
+      case 'code_review':
+        const reviewResp = response as CodeReviewResponse;
+        return `**Code Review - Overall Score: ${reviewResp.overall_score}/100**\n\n**Issues Found:**\n${
+          reviewResp.issues.map(issue => `• Line ${issue.line}: **${issue.severity.toUpperCase()}** - ${issue.message}`).join('\n')
+        }\n\n**Suggested Improvements:**\n${reviewResp.improvements.map(improvement => `• ${improvement}`).join('\n')}\n\n**Security Concerns:**\n${reviewResp.security_concerns.map(concern => `• ${concern}`).join('\n')}\n\n**Performance Tips:**\n${reviewResp.performance_tips.map(tip => `• ${tip}`).join('\n')}`;
+
+      case 'error_explanation':
+        const errorResp = response as ErrorExplanationResponse;
+        return `**Error Analysis**\n\n**Error Type:** ${errorResp.error_type}\n\n**Root Causes:**\n${errorResp.causes.map(cause => `• ${cause}`).join('\n')}\n\n**Solutions:**\n${errorResp.fixes.map((fix, index) => `${index + 1}. ${fix}`).join('\n')}\n\n**Prevention Tips:**\n${errorResp.prevention_tips.map(tip => `• ${tip}`).join('\n')}\n\n**Related Concepts:**\n${errorResp.related_concepts.map(concept => `• ${concept}`).join('\n')}`;
+
+      case 'learning':
+        const learningResp = response as LearningResponse;
+        return `**${learningResp.topic}** (${learningResp.difficulty})\n\n**Summary:**\n${learningResp.summary}\n\n**Key Points:**\n${learningResp.key_points.map(point => `• ${point}`).join('\n')}\n\n**Code Examples:**\n${learningResp.code_examples.map(example => `\`\`\`${example.language}\n${example.code}\n\`\`\`\n*${example.explanation}*`).join('\n\n')}\n\n**Practice Exercises:**\n${learningResp.exercises.map((exercise, index) => `${index + 1}. ${exercise.description}\n   *Difficulty: ${exercise.difficulty}*`).join('\n')}`;
+
+      default:
+        return JSON.stringify(response, null, 2);
+    }
+  };
+
+  const newConversation = () => {
     setCurrentSession({
       title: 'New Chat',
       messages: [{
         role: 'assistant',
-        content: 'Hello! How can I help you with your next question?',
+        content: 'Hello! I\'m your enhanced AI assistant with structured response capabilities. How can I help you today?',
         timestamp: new Date()
       }],
+      totalCost: 0,
+      totalTokens: 0
+    });
+  };
+
+  const loadConversation = (conversation: AIConversation) => {
+    setCurrentSession({
+      id: conversation.id,
+      title: conversation.title,
+      messages: conversation.messages || [],
       totalCost: 0,
       totalTokens: 0
     });
     setShowConversationsList(false);
   };
 
-  const loadConversation = async (conversationId: string) => {
-    try {
-      setIsLoading(true);
-      const conversation = await conversationService.getConversation(conversationId);
-
-      setCurrentSession({
-        id: conversation.id,
-        title: conversation.title,
-        messages: conversation.messages,
-        totalCost: conversation.total_cost,
-        totalTokens: conversation.total_tokens
-      });
-
-      setShowConversationsList(false);
-    } catch (error) {
-      console.error('Failed to load conversation:', error);
-      alert('Failed to load conversation');
-    } finally {
-      setIsLoading(false);
-    }
+  const getAvailableModels = () => {
+    const config = aiService.getProviderConfig(selectedProvider as AIProvider);
+    return config?.models || [];
   };
 
-  const deleteConversation = async (conversationId: string) => {
-    if (!confirm('Are you sure you want to delete this conversation?')) return;
-
-    try {
-      await conversationService.deleteConversation(conversationId);
-      await loadConversations();
-
-      // If we're viewing the deleted conversation, start a new one
-      if (currentSession.id === conversationId) {
-        startNewConversation();
+  const getModelDisplayInfo = (modelId: string) => {
+    // Enhanced model display with capabilities and pricing
+    const allProviders = aiService.getAvailableProviders();
+    for (const provider of allProviders) {
+      const config = aiService.getProviderConfig(provider);
+      if (config?.models?.includes(modelId)) {
+        // For now, return basic info - this would be enhanced with actual model metadata
+        const modelNames: Record<string, any> = {
+          'gpt-5': { name: 'GPT-5', provider: 'OpenAI', capabilities: ['Coding', 'Reasoning', 'Structured Output'], tier: 'Premium' },
+          'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'Anthropic', capabilities: ['Advanced Coding', 'Agentic Tasks', 'Hybrid Reasoning'], tier: 'Premium' },
+          'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'Anthropic', capabilities: ['Coding', 'Reasoning', 'Hybrid Mode'], tier: 'Standard' },
+          'claude-3-5-sonnet-20241022': { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', capabilities: ['General', 'Coding'], tier: 'Standard' },
+          'claude-3-haiku-20240307': { name: 'Claude 3 Haiku', provider: 'Anthropic', capabilities: ['Fast', 'Efficient'], tier: 'Economy' }
+        };
+        return modelNames[modelId] || { name: modelId, provider, capabilities: [], tier: 'Standard' };
       }
-    } catch (error) {
-      console.error('Failed to delete conversation:', error);
-      alert('Failed to delete conversation');
     }
+    return { name: modelId, provider: 'Unknown', capabilities: [], tier: 'Standard' };
   };
 
-  const exportConversation = async () => {
-    if (!currentSession.id) {
-      alert('Please save the conversation first');
-      return;
+  const selectBestModelForTask = (taskType: string, inputLength: number) => {
+    // Auto-select best model based on task complexity (like Cursor's Auto-Select)
+    if (!autoSelectModel) return selectedModel;
+
+    const availableModels = getAvailableModels();
+
+    // For complex coding tasks or long inputs, prefer premium models
+    if ((taskType === 'code_generation' || taskType === 'code_review' || inputLength > 1000) &&
+        availableModels.includes('claude-opus-4.1')) {
+      return 'claude-opus-4.1';
     }
 
-    try {
-      const exportData = await conversationService.exportConversation(currentSession.id);
-      const blob = new Blob([exportData], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `conversation-${currentSession.title.replace(/\s+/g, '-')}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to export conversation:', error);
-      alert('Failed to export conversation');
+    // For structured responses, prefer models with structured output capability
+    if (responseMode === 'structured' && availableModels.includes('gpt-5')) {
+      return 'gpt-5';
     }
-  };
 
-  const formatCost = (cost: number) => {
-    if (cost === 0) return '$0.00';
-    if (cost < 0.001) return '<$0.001';
-    return `$${cost.toFixed(3)}`;
-  };
+    // For general tasks, use standard models
+    if (availableModels.includes('claude-sonnet-4')) {
+      return 'claude-sonnet-4';
+    }
 
-  const getSelectedModelInfo = () => {
-    const provider = providers.find(p => p.name === selectedProvider);
-    return provider?.models.find(m => m.id === selectedModel);
+    // Fallback to current selection
+    return selectedModel;
   };
-
-  const modelInfo = getSelectedModelInfo();
 
   return (
     <div className="enhanced-ai-chat">
       <div className="chat-header">
-        <div className="chat-title-section">
-          <h3>{currentSession.title}</h3>
-          <div className="session-stats">
-            <span className="cost-indicator">Cost: {formatCost(currentSession.totalCost)}</span>
-            <span className="tokens-indicator">Tokens: {currentSession.totalTokens.toLocaleString()}</span>
-          </div>
+        <div className="header-left">
+          <h2>AI Assistant</h2>
+          <span className="model-badge">{selectedModel}</span>
         </div>
 
-        <div className="header-actions">
-          {isAuthenticated && (
-            <button
-              onClick={() => setShowConversationsList(!showConversationsList)}
-              className="conversations-btn"
-              title="Conversation history"
-            >
-              💬
-            </button>
-          )}
+        <div className="header-controls">
+          <button
+            className="icon-button"
+            onClick={() => setShowConversationsList(!showConversationsList)}
+            title="Conversation History"
+          >
+            📋
+          </button>
 
-          <button onClick={startNewConversation} className="new-chat-btn" title="New chat">
+          <button
+            className="icon-button"
+            onClick={newConversation}
+            title="New Conversation"
+          >
             ➕
           </button>
 
-          {currentSession.id && (
-            <button onClick={exportConversation} className="export-btn" title="Export conversation">
-              📥
-            </button>
-          )}
-
-          <button onClick={onClose} className="close-btn">×</button>
+          <button
+            className="icon-button close-button"
+            onClick={onClose}
+            title="Close Chat"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
-      {showConversationsList && isAuthenticated && (
+      {showConversationsList && (
         <div className="conversations-list">
-          <div className="conversations-header">
-            <h4>Recent Conversations</h4>
-            <button onClick={() => setShowConversationsList(false)}>×</button>
-          </div>
-          <div className="conversations-items">
-            {conversations.length === 0 ? (
-              <p>No conversations yet</p>
-            ) : (
-              conversations.map(conv => (
-                <div key={conv.id} className="conversation-item">
-                  <div
-                    className="conversation-info"
-                    onClick={() => loadConversation(conv.id)}
-                  >
-                    <div className="conversation-title">{conv.title}</div>
-                    <div className="conversation-meta">
-                      <span>{conv.message_count} messages</span>
-                      <span>{formatCost(conv.total_cost)}</span>
-                      <span>{new Date(conv.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => deleteConversation(conv.id)}
-                    className="delete-conversation-btn"
-                    title="Delete conversation"
-                  >
-                    🗑️
-                  </button>
+          <h3>Recent Conversations</h3>
+          {conversations.length === 0 ? (
+            <p>No conversations yet</p>
+          ) : (
+            conversations.map(conv => (
+              <div
+                key={conv.id}
+                className="conversation-item"
+                onClick={() => loadConversation(conv)}
+              >
+                <div className="conversation-title">{conv.title}</div>
+                <div className="conversation-date">
+                  {new Date(conv.updated_at).toLocaleDateString()}
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
       <div className="chat-settings">
-        {/* Credits and Mode Selection */}
-        {isAuthenticated && userCredits && (
-          <div className="credits-section">
-            <div className="credits-info">
-              <span className="credits-balance">💰 Credits: ${userCredits.available_credits.toFixed(2)}</span>
-              <span className="credits-used">Used: ${userCredits.used_credits.toFixed(2)}</span>
-            </div>
-            <div className="use-mode-selector">
-              <label>Payment Mode:</label>
-              <select
-                value={useMode}
-                onChange={(e) => setUseMode(e.target.value as 'own_keys' | 'platform_credits' | 'auto')}
-                disabled={isLoading}
-              >
-                <option value="auto">🤖 Auto (Smart Selection)</option>
-                <option value="own_keys">🔑 Use My API Keys</option>
-                <option value="platform_credits">💳 Use Platform Credits</option>
-              </select>
-            </div>
-          </div>
-        )}
+        <div className="setting-group">
+          <label>Provider:</label>
+          <select
+            value={selectedProvider}
+            onChange={(e) => setSelectedProvider(e.target.value)}
+          >
+            {providers.map(provider => (
+              <option key={provider} value={provider}>{provider}</option>
+            ))}
+          </select>
+        </div>
 
-        <div className="settings-row">
-          <div className="setting-group">
-            <label>Provider:</label>
-            <select
-              value={selectedProvider}
-              onChange={(e) => setSelectedProvider(e.target.value)}
-              disabled={isLoading}
-            >
-              {hybridAIService.getAvailableProviders().map(provider => (
-                <option key={provider.provider} value={provider.provider}>
-                  {provider.provider} {provider.hasOwnKeys ? '🔑' : ''} {provider.hasPlatformModels ? '💳' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="setting-group">
+        <div className="setting-group">
+          <div className="model-header">
             <label>Model:</label>
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              disabled={isLoading}
-            >
-              {availableModels.map(model => (
-                <option key={model.id} value={model.id}>
-                  {model.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div className="setting-group">
-            <label>Temperature:</label>
-            <input
-              type="range"
-              min="0"
-              max="2"
-              step="0.1"
-              value={temperature}
-              onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              disabled={isLoading}
-            />
-            <span>{temperature}</span>
-          </div>
-
-          <div className="setting-group">
-            <label>Max Tokens:</label>
-            <input
-              type="number"
-              min="100"
-              max="4000"
-              step="100"
-              value={maxTokens}
-              onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-
-        <div className="settings-row">
-          <div className="setting-group">
-            <label className="checkbox-label">
+            <label className="auto-select-toggle">
               <input
                 type="checkbox"
-                checked={streamingEnabled}
-                onChange={(e) => setStreamingEnabled(e.target.checked)}
-                disabled={isLoading}
+                checked={autoSelectModel}
+                onChange={(e) => setAutoSelectModel(e.target.checked)}
               />
-              Streaming Response
+              Auto-Select
             </label>
           </div>
-
-          {isAuthenticated && (
-            <div className="setting-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={persistConversation}
-                  onChange={(e) => setPersistConversation(e.target.checked)}
-                  disabled={isLoading}
-                />
-                Save Conversation
-              </label>
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className="model-selector"
+            disabled={autoSelectModel}
+          >
+            {getAvailableModels().map(model => {
+              const modelInfo = getModelDisplayInfo(model);
+              return (
+                <option key={model} value={model}>
+                  {modelInfo.name} - {modelInfo.tier} ({modelInfo.capabilities.join(', ')})
+                </option>
+              );
+            })}
+          </select>
+          {autoSelectModel && (
+            <div className="auto-select-info">
+              <small>Model will be automatically selected based on task complexity and requirements</small>
             </div>
           )}
         </div>
-      </div>
 
-      {modelInfo && (
-        <div className="model-info">
-          <span className="model-name">🤖 {modelInfo.name}</span>
-          <span className="model-context">📝 {modelInfo.contextLength.toLocaleString()} tokens</span>
-          <span className="model-cost">💰 ${modelInfo.costPer1KTokens.input}/${ modelInfo.costPer1KTokens.output} per 1K tokens</span>
+        <div className="setting-group">
+          <label>Response Mode:</label>
+          <select
+            value={responseMode}
+            onChange={(e) => setResponseMode(e.target.value as 'normal' | 'structured')}
+          >
+            <option value="normal">Normal</option>
+            <option value="structured">Structured</option>
+          </select>
         </div>
-      )}
+
+        {responseMode === 'structured' && (
+          <div className="setting-group">
+            <label>Response Type:</label>
+            <select
+              value={structuredResponseType}
+              onChange={(e) => setStructuredResponseType(e.target.value as any)}
+            >
+              <option value="code_generation">Code Generation</option>
+              <option value="code_review">Code Review</option>
+              <option value="error_explanation">Error Explanation</option>
+              <option value="learning">Learning Content</option>
+            </select>
+          </div>
+        )}
+      </div>
 
       <div className="chat-messages">
         {currentSession.messages.map((message, index) => (
-          <div key={index} className={`message ${message.role}`}>
-            <div className="message-header">
-              <span className="message-role">
-                {message.role === 'user' ? '👤 You' : '🤖 Assistant'}
-              </span>
-              <span className="message-time">
-                {message.timestamp.toLocaleTimeString()}
-              </span>
-              {message.tokens && message.tokens > 0 && (
-                <span className="message-tokens">{message.tokens} tokens</span>
-              )}
-              {message.cost && message.cost > 0 && (
-                <span className="message-cost">{formatCost(message.cost)}</span>
-              )}
-            </div>
+          <div
+            key={index}
+            className={`message ${message.role}`}
+          >
             <div className="message-content">
-              <pre>{message.content}</pre>
+              <div dangerouslySetInnerHTML={{
+                __html: message.content.replace(/\n/g, '<br>').replace(/```(\w+)?\n([\s\S]*?)\n```/g, '<pre><code>$2</code></pre>')
+              }} />
             </div>
+            {message.timestamp && (
+              <div className="message-timestamp">
+                {message.timestamp.toLocaleTimeString()}
+              </div>
+            )}
           </div>
         ))}
 
         {isLoading && (
-          <div className="message assistant loading">
-            <div className="message-header">
-              <span className="message-role">🤖 Assistant</span>
-              <span className="typing-indicator">
-                <span></span><span></span><span></span>
-              </span>
+          <div className="message assistant">
+            <div className="message-content">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
           </div>
         )}
+
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chat-input">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your message... (Shift+Enter for new line)"
-          disabled={isLoading}
-          rows={3}
-        />
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !input.trim()}
-          className="send-btn"
-        >
-          {isLoading ? '⏳' : '📤'}
-        </button>
+      <form onSubmit={handleSubmit} className="chat-input-form">
+        <div className="input-container">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message... (Shift+Enter for new line)"
+            className="chat-input"
+            rows={1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || isLoading}
+            className="send-button"
+          >
+            {isLoading ? '⏳' : '➤'}
+          </button>
+        </div>
+      </form>
+
+      <div className="chat-footer">
+        <div className="session-stats">
+          Tokens: {currentSession.totalTokens} |
+          Messages: {currentSession.messages.length - 1}
+        </div>
       </div>
-
-      {!isAuthenticated && persistConversation && (
-        <div className="auth-notice">
-          💡 Sign in to save conversations and access platform credits
-        </div>
-      )}
-
-      {!isAuthenticated && (
-        <div className="platform-info">
-          🚀 Sign in to access platform credits and ChatGPT-5, Claude 3.5, and other latest models!
-        </div>
-      )}
-
-      {hybridAIService.getAvailableProviders().length === 0 && (
-        <div className="config-warning">
-          ⚠️ No AI providers available. Please configure API keys in settings or sign in for platform credits.
-        </div>
-      )}
-
-      {isAuthenticated && userCredits && userCredits.available_credits <= 0 && useMode === 'platform_credits' && (
-        <div className="credits-warning">
-          ⚠️ No platform credits available. Switch to your own API keys or purchase credits.
-        </div>
-      )}
     </div>
   );
 };

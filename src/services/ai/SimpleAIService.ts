@@ -34,11 +34,11 @@ export class SimpleAIService {
         displayName: 'OpenAI',
         models: [
           {
-            id: 'gpt-4o',
-            name: 'GPT-4o',
+            id: 'gpt-5',
+            name: 'GPT-5',
             provider: 'openai',
-            contextLength: 128000,
-            costPer1KTokens: { input: 0.006, output: 0.018 } // 20% markup
+            contextLength: 200000,
+            costPer1KTokens: { input: 0.012, output: 0.036 } // 20% markup
           }
         ]
       },

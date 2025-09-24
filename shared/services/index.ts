@@ -2,7 +2,7 @@
 // Services that work across both desktop and web platforms
 
 // AI Service (works in both environments)
-export { aiService, AIService } from '../../src/services/ai/AIService';
+export { aiService, AIService } from '../../src/services/ai/ResponsesAIService';
 export type {
   AIProvider,
   AIMessage,
@@ -10,7 +10,7 @@ export type {
   AICompletionResponse,
   AICodeSuggestion,
   AIProviderConfig
-} from '../../src/services/ai/AIService';
+} from '../../src/types/ai';
 
 // Constants
 export { APP_CONFIG, ROUTES, STORAGE_KEYS } from '../../src/constants/app';
