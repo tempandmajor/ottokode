@@ -232,6 +232,7 @@ export function LoginForm() {
                       placeholder="Enter your email"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      className="input-enhanced"
                       required
                       disabled={loading}
                     />
@@ -246,6 +247,7 @@ export function LoginForm() {
                         placeholder="Enter your password"
                         value={loginData.password}
                         onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        className="input-enhanced pr-10"
                         required
                         disabled={loading}
                       />
@@ -319,6 +321,7 @@ export function LoginForm() {
                       placeholder="Enter your full name"
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                      className="input-enhanced"
                       disabled={loading}
                     />
                   </div>

@@ -283,7 +283,7 @@ export function AgentDashboardWeb() {
                   placeholder="e.g., Create a user dashboard with charts showing monthly revenue and user growth. Include responsive design and dark mode support."
                   value={newTask.description}
                   onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  className="min-h-[100px]"
+                  className="min-h-[100px] textarea-enhanced"
                 />
               </div>
 

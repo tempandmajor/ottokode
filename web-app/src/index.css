@@ -33,7 +33,7 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 220 13% 91%;
+    --border: 220 13% 85%;
     --input: 220 13% 91%;
     --ring: 0 0% 13.3%; /* #222222 in light mode */
     
@@ -96,8 +96,8 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 13.3%; /* #222222 */
-    --input: 0 0% 13.3%; /* #222222 */
+    --border: 0 0% 25%; /* Lighter than background for visibility */
+    --input: 0 0% 18%; /* Slightly lighter than border for contrast */
     --ring: 0 0% 100%;
     
     /* AI colors for dark mode */
@@ -128,6 +128,15 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Enhanced input visibility utilities */
+  .input-enhanced {
+    @apply border-2 border-border hover:border-border/80 focus:border-ring transition-colors;
+  }
+
+  .textarea-enhanced {
+    @apply border-2 border-border hover:border-border/80 focus:border-ring transition-colors;
+  }
+
   /* Animation delay utilities for CSP compliance */
   .animate-bounce-delay-100 {
     animation: bounce 1s infinite;
