@@ -27,6 +27,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:integration": "node scripts/run-integration-tests.js",
+    "test:integration:quick": "node scripts/run-integration-tests.js --quick",
+    "test:api": "node scripts/run-integration-tests.js --skip-build --skip-compatibility --skip-environment",
+    "test:build": "node scripts/run-integration-tests.js --skip-api --skip-compatibility --skip-environment",
+    "test:compatibility": "node scripts/run-integration-tests.js --skip-api --skip-build --skip-environment",
+    "test:environment": "node scripts/run-integration-tests.js --skip-api --skip-build --skip-compatibility",
+    "health": "node scripts/quick-health-check.js",
     "postinstall": "npm run build:shared",
     "release:prepare": "npm run clean && npm run build:production && npm run tauri:build:release",
     "release:github": "gh release create v$(node -p \"require('./package.json').version\") src-tauri/target/release/bundle/dmg/*.dmg src-tauri/target/release/bundle/msi/*.msi src-tauri/target/release/bundle/appimage/*.AppImage --title \"Ottokode v$(node -p \"require('./package.json').version\")\" --notes \"🎉 Ottokode v$(node -p \"require('./package.json').version\") - AI-powered IDE for modern development\" --repo tempandmajor/ottokode"
