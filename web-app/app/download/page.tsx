@@ -25,27 +25,30 @@ const DESKTOP_RELEASES = [
     icon: Apple,
     version: '1.0.0',
     size: '120 MB',
-    downloadUrl: '#',
+    downloadUrl: 'https://github.com/tempandmajor/ottokode/releases',
     requirements: 'macOS 10.15 or later',
-    featured: true
+    featured: true,
+    available: true
   },
   {
     platform: 'Windows',
     icon: Monitor,
-    version: '1.0.0',
-    size: '95 MB',
+    version: 'Coming Soon',
+    size: 'TBA',
     downloadUrl: '#',
     requirements: 'Windows 10 or later',
-    featured: true
+    featured: false,
+    available: false
   },
   {
     platform: 'Linux',
     icon: Monitor,
-    version: '1.0.0',
-    size: '110 MB',
+    version: 'Coming Soon',
+    size: 'TBA',
     downloadUrl: '#',
     requirements: 'Ubuntu 18.04, Debian 9, or equivalent',
-    featured: false
+    featured: false,
+    available: false
   }
 ];
 
@@ -108,7 +111,7 @@ function DownloadContent() {
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Cross-platform</span>
+              <span>Available for macOS</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -124,22 +127,27 @@ function DownloadContent() {
             return (
               <Card key={release.platform} className={`relative transition-all hover:shadow-lg ${
                 release.featured ? 'ring-2 ring-ai-primary/20' : ''
-              }`}>
-                {release.featured && (
+              } ${!release.available ? 'opacity-75' : ''}`}>
+                {release.featured && release.available && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-ai-primary">
-                    Recommended
+                    Available Now
+                  </Badge>
+                )}
+                {!release.available && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted-foreground">
+                    Coming Soon
                   </Badge>
                 )}
 
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-ai-primary/10 rounded-xl">
-                      <IconComponent className="h-8 w-8 text-ai-primary" />
+                    <div className={`p-3 rounded-xl ${release.available ? 'bg-ai-primary/10' : 'bg-muted/50'}`}>
+                      <IconComponent className={`h-8 w-8 ${release.available ? 'text-ai-primary' : 'text-muted-foreground'}`} />
                     </div>
                   </div>
                   <CardTitle className="text-xl">{release.platform}</CardTitle>
                   <CardDescription>
-                    Version {release.version} • {release.size}
+                    {release.available ? `Version ${release.version} • ${release.size}` : release.version}
                   </CardDescription>
                 </CardHeader>
 
@@ -148,13 +156,27 @@ function DownloadContent() {
                     {release.requirements}
                   </p>
 
-                  <Button
-                    className="w-full bg-ai-primary hover:bg-ai-primary/90"
-                    size="lg"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download for {release.platform}
-                  </Button>
+                  {release.available ? (
+                    <Button
+                      className="w-full bg-ai-primary hover:bg-ai-primary/90"
+                      size="lg"
+                      asChild
+                    >
+                      <Link href={release.downloadUrl} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download for {release.platform}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      variant="outline"
+                      disabled
+                    >
+                      Coming Soon
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );

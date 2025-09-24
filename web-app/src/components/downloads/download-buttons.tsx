@@ -68,10 +68,10 @@ export function DownloadButtons() {
       </div>
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
-          Currently available for macOS only. Also available as a web app.
+          Currently available for macOS only. Windows and Linux versions coming soon.
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Looking for other versions? <a href="https://github.com/tempandmajor/ottokode/releases" className="underline" target="_blank" rel="noreferrer">See all releases</a>
+          Looking for release notes? <a href="https://github.com/tempandmajor/ottokode/releases" className="underline" target="_blank" rel="noreferrer">See all releases</a>
         </p>
       </div>
     </div>
