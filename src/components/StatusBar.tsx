@@ -12,6 +12,8 @@ interface EditorFile {
 interface StatusBarProps {
   activeFile: EditorFile | null;
   terminalVisible: boolean;
+  isOnline?: boolean;
+  pendingOperations?: number;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({ activeFile, terminalVisible }) => {

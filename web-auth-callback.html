@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ottokode - Desktop Authentication</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            margin-right: 8px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4F46E5;
+        }
+
+        .status {
+            margin-bottom: 24px;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .status-message {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .status-details {
+            font-size: 14px;
+            color: #6B7280;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+        }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #E5E7EB;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(79, 70, 229, 0.3);
+            border-radius: 50%;
+            border-top-color: #4F46E5;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 16px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #DC2626;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            color: #166534;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .token-display {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            color: #374151;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .copy-btn {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #4338CA;
+        }
+
+        .instructions {
+            background: #F0F9FF;
+            border: 1px solid #BAE6FD;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .instructions h4 {
+            margin: 0 0 8px 0;
+            color: #0369A1;
+        }
+
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #0369A1;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Ottokode</span>
+        </div>
+
+        <div id="loading-state" class="status">
+            <div class="spinner"></div>
+            <div class="status-message">Authenticating...</div>
+            <div class="status-details">Setting up your desktop connection</div>
+        </div>
+
+        <div id="success-state" class="status" style="display: none;">
+            <div class="status-icon">✅</div>
+            <div class="status-message">Authentication Successful!</div>
+            <div class="status-details">You can now close this tab and return to Ottokode Desktop</div>
+            <div class="success">Your desktop app should automatically connect. If it doesn't, use the manual authentication method below.</div>
+
+            <div class="token-display" id="auth-token" style="display: none;">
+                <!-- Token will be inserted here -->
+            </div>
+            <button class="copy-btn" id="copy-token-btn" onclick="copyToken()" style="display: none;">
+                Copy Authentication Token
+            </button>
+
+            <div class="instructions">
+                <h4>Manual Authentication:</h4>
+                <ol>
+                    <li>Copy the authentication token above</li>
+                    <li>Return to Ottokode Desktop</li>
+                    <li>Click "Sign in with Token"</li>
+                    <li>Paste the token and authenticate</li>
+                </ol>
+            </div>
+        </div>
+
+        <div id="error-state" class="status" style="display: none;">
+            <div class="status-icon">❌</div>
+            <div class="status-message">Authentication Failed</div>
+            <div class="status-details">There was an error connecting to your desktop app</div>
+            <div class="error" id="error-message">
+                <!-- Error message will be inserted here -->
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="openDesktopApp()" id="open-desktop-btn" style="display: none;">
+                Open Ottokode Desktop
+            </button>
+            <button class="btn btn-secondary" onclick="window.close()">
+                Close Tab
+            </button>
+            <button class="btn btn-secondary" onclick="location.reload()">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - these would come from your authentication system
+        const config = {
+            desktopScheme: 'ottokode',
+            pollInterval: 2000,
+            maxPollAttempts: 150 // 5 minutes at 2-second intervals
+        };
+
+        let pollAttempts = 0;
+        let authToken = null;
+
+        // Initialize authentication flow
+        window.addEventListener('load', initializeAuth);
+
+        async function initializeAuth() {
+            try {
+                // Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('session_id');
+                const accessToken = urlParams.get('access_token');
+                const refreshToken = urlParams.get('refresh_token');
+                const error = urlParams.get('error');
+
+                if (error) {
+                    showError(`Authentication error: ${error}`);
+                    return;
+                }
+
+                if (accessToken) {
+                    // We have an access token, proceed with authentication
+                    authToken = accessToken;
+                    await handleSuccessfulAuth(accessToken, refreshToken, sessionId);
+                } else {
+                    // Poll for authentication completion
+                    await pollForAuth(sessionId);
+                }
+
+            } catch (error) {
+                console.error('Auth initialization error:', error);
+                showError('Failed to initialize authentication');
+            }
+        }
+
+        async function handleSuccessfulAuth(accessToken, refreshToken, sessionId) {
+            try {
+                // Try to communicate with desktop app via custom scheme
+                const desktopUrl = `${config.desktopScheme}://auth/callback?access_token=${encodeURIComponent(accessToken)}&session_id=${encodeURIComponent(sessionId)}`;
+
+                // Attempt to open desktop app with authentication data
+                window.location.href = desktopUrl;
+
+                // Show success state with fallback manual authentication
+                showSuccess(accessToken);
+
+            } catch (error) {
+                console.error('Desktop communication error:', error);
+                showSuccess(accessToken); // Show manual auth option
+            }
+        }
+
+        async function pollForAuth(sessionId) {
+            if (!sessionId) {
+                showError('Missing session ID for authentication polling');
+                return;
+            }
+
+            const pollTimer = setInterval(async () => {
+                pollAttempts++;
+
+                try {
+                    // This would call your backend to check if auth completed
+                    // For now, we'll simulate the polling
+                    const response = await fetch(`/api/auth/desktop/poll/${sessionId}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        if (data.authenticated && data.accessToken) {
+                            clearInterval(pollTimer);
+                            await handleSuccessfulAuth(data.accessToken, data.refreshToken, sessionId);
+                        } else if (data.error) {
+                            clearInterval(pollTimer);
+                            showError(data.error);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+
+                // Stop polling after max attempts
+                if (pollAttempts >= config.maxPollAttempts) {
+                    clearInterval(pollTimer);
+                    showError('Authentication timeout. Please try again.');
+                }
+
+            }, config.pollInterval);
+        }
+
+        function showSuccess(token) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('success-state').style.display = 'block';
+
+            if (token) {
+                document.getElementById('auth-token').textContent = token;
+                document.getElementById('auth-token').style.display = 'block';
+                document.getElementById('copy-token-btn').style.display = 'inline-block';
+            }
+
+            document.getElementById('open-desktop-btn').style.display = 'inline-block';
+        }
+
+        function showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('success-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function copyToken() {
+            const tokenElement = document.getElementById('auth-token');
+            const token = tokenElement.textContent;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(token).then(() => {
+                    const btn = document.getElementById('copy-token-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.background = '#10B981';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '#4F46E5';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy token:', err);
+                    fallbackCopyToken(token);
+                });
+            } else {
+                fallbackCopyToken(token);
+            }
+        }
+
+        function fallbackCopyToken(token) {
+            // Fallback copy method for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = token;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const btn = document.getElementById('copy-token-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.background = '#10B981';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '#4F46E5';
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function openDesktopApp() {
+            try {
+                // Try to open the desktop app
+                window.location.href = `${config.desktopScheme}://open`;
+            } catch (error) {
+                console.error('Failed to open desktop app:', error);
+                alert('Could not open Ottokode Desktop. Please open it manually.');
+            }
+        }
+    </script>
+</body>
+</html>

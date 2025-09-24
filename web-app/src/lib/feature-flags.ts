@@ -15,6 +15,13 @@ export const FEATURE_FLAGS = {
   COLLABORATION: false,              // Real-time collaboration
   AI_CHAT_IDE: false,               // AI chat in IDE context
 
+  // AI Agent Management (ENABLE for 2025 standards)
+  WEB_AGENT_MANAGEMENT: true,        // Background agent management via web
+  AI_TASK_ASSIGNMENT: true,          // Natural language task assignment
+  AGENT_STATUS_TRACKING: true,       // Real-time agent progress
+  DESKTOP_HANDOFF: true,             // Seamless desktop app transitions
+  PROJECT_CONTEXT_API: true,         // Codebase semantic analysis
+
   // Information Platform Features (KEEP for MVP)
   AUTHENTICATION: true,              // Login/signup/forgot password
   USER_DASHBOARD: true,              // User profile and dashboard

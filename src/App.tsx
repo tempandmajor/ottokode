@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
+// Layout
+import { ModernIDELayout2025 } from './components/layout/ModernIDELayout2025';
+
 // Components
 import { LazyMonacoEditor } from './components/LazyMonacoEditor';
 import { FileTree } from './components/FileTree';
@@ -16,7 +19,11 @@ import { GitPanel } from './components/GitPanel';
 import { EnhancedAIProviderSettings } from './components/EnhancedAIProviderSettings';
 import { EnhancedAIChat } from './components/EnhancedAIChat';
 import { BillingDashboard } from './components/BillingDashboard';
-import { Auth } from './components/Auth';
+import DesktopAuthScreen from './components/auth/DesktopAuthScreen';
+
+// Enterprise Components
+import AITerminal from './components/terminal/AITerminal';
+import EnterpriseAnalyticsDashboard from './components/analytics/EnterpriseAnalyticsDashboard';
 import { ErrorBoundary, FileSystemErrorBoundary, AIServiceErrorBoundary, EditorErrorBoundary } from './components/ErrorBoundary';
 
 // Store and hooks
@@ -26,137 +33,12 @@ import { useMemoizedCallback } from './hooks/usePerformance';
 
 // Services
 import { aiCodeCompletionProvider } from './services/ai/CodeCompletionProvider';
-import { authService } from './services/auth/AuthService';
+import { desktopAuthHandler } from './services/auth/DesktopAuthHandler';
 
 // Styles
 import './App.css';
 import './components/ErrorBoundary.css';
 
-// Optimized Header Component
-const AppHeader = React.memo(() => {
-  const {
-    showSetupChecklist,
-    showTerminal,
-    showAIChat,
-    showCostDashboard,
-    showPerformanceDashboard,
-    showAgentDashboard,
-    showCollaborationPanel,
-    showSecureNotepad,
-    showGitPanel,
-    showAIProviderSettings,
-    showBillingDashboard,
-    showAuth,
-    togglePanel,
-  } = useUIStore();
-
-  const { authState } = useAuthStore();
-  const { aiCompletionEnabled, setAiCompletionEnabled } = useSettingsStore();
-
-  const handleToggleAICompletion = useMemoizedCallback(() => {
-    setAiCompletionEnabled(!aiCompletionEnabled);
-  }, [aiCompletionEnabled, setAiCompletionEnabled]);
-
-  return (
-    <div className="app-header">
-      <div className="app-title">AI Code IDE</div>
-      <div className="app-controls">
-        <button
-          onClick={() => togglePanel('showSetupChecklist')}
-          className="header-button"
-          aria-label="Toggle Setup Guide"
-        >
-          Setup Guide
-        </button>
-        <button
-          onClick={() => togglePanel('showTerminal')}
-          className="header-button"
-          aria-label="Toggle Terminal"
-        >
-          Terminal
-        </button>
-        <button
-          onClick={() => togglePanel('showAIChat')}
-          className="header-button"
-          aria-label="Toggle AI Assistant"
-        >
-          AI Assistant
-        </button>
-        <button
-          onClick={() => togglePanel('showCostDashboard')}
-          className="header-button"
-          aria-label="Toggle Cost Analytics"
-        >
-          Cost Analytics
-        </button>
-        <button
-          onClick={handleToggleAICompletion}
-          className={`header-button ${aiCompletionEnabled ? 'active' : ''}`}
-          title={`AI Code Completion: ${aiCompletionEnabled ? 'Enabled' : 'Disabled'}`}
-          aria-label="Toggle AI Code Completion"
-        >
-          AI Completion
-        </button>
-        <button
-          onClick={() => togglePanel('showPerformanceDashboard')}
-          className="header-button"
-          aria-label="Toggle Performance Dashboard"
-        >
-          Performance
-        </button>
-        <button
-          onClick={() => togglePanel('showAgentDashboard')}
-          className="header-button"
-          aria-label="Toggle AI Agents"
-        >
-          🤖 AI Agents
-        </button>
-        <button
-          onClick={() => togglePanel('showCollaborationPanel')}
-          className="header-button"
-          aria-label="Toggle Collaboration"
-        >
-          👥 Collaborate
-        </button>
-        <button
-          onClick={() => togglePanel('showSecureNotepad')}
-          className="header-button"
-          aria-label="Toggle Secure Notepad"
-        >
-          🔐 Notepad
-        </button>
-        <button
-          onClick={() => togglePanel('showGitPanel')}
-          className="header-button"
-          aria-label="Toggle Git Panel"
-        >
-          🔀 Git
-        </button>
-        <button
-          onClick={() => togglePanel('showAIProviderSettings')}
-          className="header-button"
-          aria-label="Toggle AI Provider Settings"
-        >
-          🔑 AI Providers
-        </button>
-        <button
-          onClick={() => togglePanel('showBillingDashboard')}
-          className="header-button"
-          aria-label="Toggle Billing Dashboard"
-        >
-          💳 Billing
-        </button>
-        <button
-          onClick={() => togglePanel('showAuth')}
-          className="header-button"
-          aria-label="Toggle Authentication"
-        >
-          {authState.user ? `👤 ${authState.user.name || authState.user.email}` : '🔐 Login'}
-        </button>
-      </div>
-    </div>
-  );
-});
 
 // Optimized Editor Area Component
 const EditorArea = React.memo(() => {
@@ -309,6 +191,11 @@ const SidebarPanels = React.memo(() => {
     showGitPanel,
     showAIProviderSettings,
     showBillingDashboard,
+    showAITerminal,
+    showEnterpriseAnalytics,
+    showEnterpriseProject,
+    showEnterpriseDeployment,
+    showEnterpriseSecurity,
     setPanel,
   } = useUIStore();
 
@@ -377,6 +264,66 @@ const SidebarPanels = React.memo(() => {
           <BillingDashboard onClose={() => handleClose('showBillingDashboard')} />
         </div>
       )}
+
+      {/* Enterprise Panels */}
+      {showAITerminal && (
+        <div className="ai-terminal-sidebar">
+          <AIServiceErrorBoundary>
+            <AITerminal onClose={() => handleClose('showAITerminal')} />
+          </AIServiceErrorBoundary>
+        </div>
+      )}
+
+      {showEnterpriseAnalytics && (
+        <div className="enterprise-analytics-sidebar">
+          <EnterpriseAnalyticsDashboard onClose={() => handleClose('showEnterpriseAnalytics')} />
+        </div>
+      )}
+
+      {showEnterpriseProject && (
+        <div className="enterprise-project-sidebar">
+          <div className="sidebar-panel">
+            <div className="sidebar-header">
+              <h3>🚀 Project Management</h3>
+              <button onClick={() => handleClose('showEnterpriseProject')}>×</button>
+            </div>
+            <div className="sidebar-content">
+              <p>Advanced Project Management features will be integrated here.</p>
+              <p>Features include: Epic planning, Sprint management, Resource allocation, Risk assessment.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEnterpriseDeployment && (
+        <div className="enterprise-deployment-sidebar">
+          <div className="sidebar-panel">
+            <div className="sidebar-header">
+              <h3>🔄 Deployment Pipelines</h3>
+              <button onClick={() => handleClose('showEnterpriseDeployment')}>×</button>
+            </div>
+            <div className="sidebar-content">
+              <p>Custom Deployment Pipeline management.</p>
+              <p>Features include: CI/CD automation, Multi-stage approvals, Environment management, Rollback controls.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEnterpriseSecurity && (
+        <div className="enterprise-security-sidebar">
+          <div className="sidebar-panel">
+            <div className="sidebar-header">
+              <h3>🛡️ Security & Compliance</h3>
+              <button onClick={() => handleClose('showEnterpriseSecurity')}>×</button>
+            </div>
+            <div className="sidebar-content">
+              <p>Enterprise Security & Compliance management.</p>
+              <p>Features include: SOC2/GDPR compliance, Threat detection, Audit trails, Policy enforcement.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 });
@@ -406,7 +353,7 @@ const NetworkStatus = React.memo(() => {
 function App() {
   const { showSetupChecklist, showAuth, setPanel } = useUIStore();
   const { activeFile } = useEditorStore();
-  const { authState, setAuthState } = useAuthStore();
+  const { setAuthState } = useAuthStore();
   const { isLoading, error, setError } = useAppStatus();
   const { showTerminal } = useUIStore();
 
@@ -415,11 +362,11 @@ function App() {
 
   // Auth state synchronization
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChange((newState) => {
+    const unsubscribe = desktopAuthHandler.on('authStateChanged', (newState: any) => {
       setAuthState(newState);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, [setAuthState]);
 
   // Error handling
@@ -447,7 +394,7 @@ function App() {
       <SidebarPanels />
 
       {showAuth && (
-        <Auth onClose={() => setPanel('showAuth', false)} />
+        <DesktopAuthScreen onClose={() => setPanel('showAuth', false)} />
       )}
     </div>
   ), [showSetupChecklist, showAuth, setPanel]);
@@ -473,8 +420,9 @@ function App() {
           </div>
         )}
 
-        <AppHeader />
-        {memoizedContent}
+        <ModernIDELayout2025>
+          {memoizedContent}
+        </ModernIDELayout2025>
 
         <StatusBar
           activeFile={activeFile}

@@ -21,7 +21,9 @@ import {
   ArrowRight,
   ExternalLink,
   Sparkles,
-  Zap
+  Zap,
+  Bot,
+  Monitor
 } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { UserMenu } from '@/components/auth/user-menu';
@@ -29,6 +31,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from '@/components/theme-provider';
+import { AgentDashboardWeb } from '@/components/agents/agent-dashboard-web';
 
 // Mock data - in real app, this would come from APIs
 const MOCK_USAGE_DATA = {
@@ -152,22 +155,43 @@ export default function DashboardPage() {
         <div className="grid gap-6">
           {/* Quick Actions */}
           <div className="grid md:grid-cols-3 gap-4">
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-md transition-shadow border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
               <CardHeader className="pb-3">
                 <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-ai-primary/10 rounded-lg">
-                    <Download className="h-5 w-5 text-ai-primary" />
+                  <div className="p-2 bg-blue-600/10 rounded-lg">
+                    <Bot className="h-5 w-5 text-blue-600" />
                   </div>
-                  <CardTitle className="text-lg">Desktop App</CardTitle>
+                  <CardTitle className="text-lg">AI Agent Center</CardTitle>
+                  <Badge variant="secondary" className="ml-auto bg-blue-600 text-white">New 2025</Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Access the full IDE experience with AI assistance
+                  Manage background AI coding agents from any device
                 </p>
-                <Button asChild className="w-full">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Bot className="h-4 w-4 mr-2" />
+                  Manage Agents
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-ai-primary/10 rounded-lg">
+                    <Monitor className="h-5 w-5 text-ai-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Desktop IDE</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Full coding environment with local AI assistance
+                </p>
+                <Button asChild variant="outline" className="w-full">
                   <Link href="/download">
-                    Download Now
+                    Download App
                     <ExternalLink className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
@@ -221,8 +245,12 @@ export default function DashboardPage() {
 
           {/* Main Dashboard Content */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid grid-cols-4 lg:w-[400px]">
+            <TabsList className="grid grid-cols-5 lg:w-[500px]">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="agents" className="flex items-center gap-1">
+                <Bot className="w-3 h-3" />
+                Agents
+              </TabsTrigger>
               <TabsTrigger value="usage">Usage</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -303,6 +331,10 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="agents" className="space-y-6">
+              <AgentDashboardWeb />
             </TabsContent>
 
             <TabsContent value="usage" className="space-y-6">
