@@ -100,7 +100,7 @@ class EnhancedAIService extends EventEmitter {
           }
         },
         {
-          id: 'claude-sonnet-4',
+          id: 'claude-opus-4.1',
           name: 'Claude Sonnet 4',
           provider: 'anthropic',
           contextLength: 200000,
@@ -115,7 +115,7 @@ class EnhancedAIService extends EventEmitter {
           }
         },
         {
-          id: 'claude-3-5-sonnet-20241022',
+          id: 'claude-opus-4.1',
           name: 'Claude 3.5 Sonnet',
           provider: 'anthropic',
           contextLength: 200000,

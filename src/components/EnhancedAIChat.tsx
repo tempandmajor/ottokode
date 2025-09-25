@@ -290,10 +290,13 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
       if (config?.models?.includes(modelId)) {
         // For now, return basic info - this would be enhanced with actual model metadata
         const modelNames: Record<string, any> = {
-          'gpt-5': { name: 'GPT-5', provider: 'OpenAI', capabilities: ['Coding', 'Reasoning', 'Structured Output'], tier: 'Premium' },
-          'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'Anthropic', capabilities: ['Advanced Coding', 'Agentic Tasks', 'Hybrid Reasoning'], tier: 'Premium' },
-          'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'Anthropic', capabilities: ['Coding', 'Reasoning', 'Hybrid Mode'], tier: 'Standard' },
-          'claude-3-5-sonnet-20241022': { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', capabilities: ['General', 'Coding'], tier: 'Standard' },
+          'gpt-5': { name: 'GPT-5', provider: 'OpenAI', capabilities: ['Advanced Coding', 'Reasoning', 'Structured Output', 'Vision'], tier: 'Premium' },
+          'gpt-4-turbo': { name: 'GPT-4 Turbo', provider: 'OpenAI', capabilities: ['Coding', 'Vision', 'Long Context'], tier: 'Premium' },
+          'gpt-3.5-turbo': { name: 'GPT-3.5 Turbo', provider: 'OpenAI', capabilities: ['General', 'Fast'], tier: 'Standard' },
+          'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'Anthropic', capabilities: ['Advanced Coding', 'Agentic Tasks', 'Complex Reasoning'], tier: 'Premium' },
+          'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'Anthropic', capabilities: ['Coding', 'Reasoning', 'Balanced Performance'], tier: 'Standard' },
+          'claude-3-5-sonnet-20241022': { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', capabilities: ['Advanced Coding', 'Reasoning', 'Long Context'], tier: 'Premium' },
+          'claude-3-opus-20240229': { name: 'Claude 3 Opus', provider: 'Anthropic', capabilities: ['Advanced Reasoning', 'Complex Tasks'], tier: 'Premium' },
           'claude-3-haiku-20240307': { name: 'Claude 3 Haiku', provider: 'Anthropic', capabilities: ['Fast', 'Efficient'], tier: 'Economy' }
         };
         return modelNames[modelId] || { name: modelId, provider, capabilities: [], tier: 'Standard' };
@@ -316,6 +319,11 @@ export const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ onClose }) => {
 
     // For structured responses, prefer models with structured output capability
     if (responseMode === 'structured' && availableModels.includes('gpt-5')) {
+      return 'gpt-5';
+    }
+
+    // For vision tasks, prefer GPT-5
+    if (taskType.includes('vision') && availableModels.includes('gpt-5')) {
       return 'gpt-5';
     }
 

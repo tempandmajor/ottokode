@@ -604,7 +604,7 @@ Focus on extracting accurate structural information.`;
         role: 'user',
         content: analysisPrompt
       }], {
-        model: 'claude-sonnet-4',
+        model: 'claude-opus-4.1',
         temperature: 0.1,
         maxTokens: 3000
       });

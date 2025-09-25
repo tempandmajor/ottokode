@@ -30,6 +30,13 @@ export interface UIState {
   showBillingDashboard: boolean;
   showAuth: boolean;
 
+  // Enterprise Panels
+  showAITerminal: boolean;
+  showEnterpriseAnalytics: boolean;
+  showEnterpriseProject: boolean;
+  showEnterpriseDeployment: boolean;
+  showEnterpriseSecurity: boolean;
+
   // Editor state
   activeFile: EditorFile | null;
   openFiles: EditorFile[];
@@ -63,8 +70,8 @@ export interface AppState extends UIState {
 // State Actions
 export interface AppActions {
   // UI Actions
-  togglePanel: (panel: keyof Pick<UIState, 'showSetupChecklist' | 'showTerminal' | 'showAIChat' | 'showCostDashboard' | 'showPerformanceDashboard' | 'showAgentDashboard' | 'showCollaborationPanel' | 'showSecureNotepad' | 'showGitPanel' | 'showAIProviderSettings' | 'showBillingDashboard' | 'showAuth'>) => void;
-  setPanel: (panel: keyof Pick<UIState, 'showSetupChecklist' | 'showTerminal' | 'showAIChat' | 'showCostDashboard' | 'showPerformanceDashboard' | 'showAgentDashboard' | 'showCollaborationPanel' | 'showSecureNotepad' | 'showGitPanel' | 'showAIProviderSettings' | 'showBillingDashboard' | 'showAuth'>, visible: boolean) => void;
+  togglePanel: (panel: keyof Pick<UIState, 'showSetupChecklist' | 'showTerminal' | 'showAIChat' | 'showCostDashboard' | 'showPerformanceDashboard' | 'showAgentDashboard' | 'showCollaborationPanel' | 'showSecureNotepad' | 'showGitPanel' | 'showAIProviderSettings' | 'showBillingDashboard' | 'showAuth' | 'showAITerminal' | 'showEnterpriseAnalytics' | 'showEnterpriseProject' | 'showEnterpriseDeployment' | 'showEnterpriseSecurity'>) => void;
+  setPanel: (panel: keyof Pick<UIState, 'showSetupChecklist' | 'showTerminal' | 'showAIChat' | 'showCostDashboard' | 'showPerformanceDashboard' | 'showAgentDashboard' | 'showCollaborationPanel' | 'showSecureNotepad' | 'showGitPanel' | 'showAIProviderSettings' | 'showBillingDashboard' | 'showAuth' | 'showAITerminal' | 'showEnterpriseAnalytics' | 'showEnterpriseProject' | 'showEnterpriseDeployment' | 'showEnterpriseSecurity'>, visible: boolean) => void;
 
   // File Actions
   openFile: (file: EditorFile) => void;
@@ -114,6 +121,13 @@ const defaultState: AppState = {
   showAIProviderSettings: false,
   showBillingDashboard: false,
   showAuth: false,
+
+  // Enterprise Panels
+  showAITerminal: false,
+  showEnterpriseAnalytics: false,
+  showEnterpriseProject: false,
+  showEnterpriseDeployment: false,
+  showEnterpriseSecurity: false,
 
   // Editor
   activeFile: null,
@@ -312,6 +326,14 @@ export const useUIStore = () => useAppStore((state) => ({
   showAIProviderSettings: state.showAIProviderSettings,
   showBillingDashboard: state.showBillingDashboard,
   showAuth: state.showAuth,
+
+  // Enterprise Panels
+  showAITerminal: state.showAITerminal,
+  showEnterpriseAnalytics: state.showEnterpriseAnalytics,
+  showEnterpriseProject: state.showEnterpriseProject,
+  showEnterpriseDeployment: state.showEnterpriseDeployment,
+  showEnterpriseSecurity: state.showEnterpriseSecurity,
+
   togglePanel: state.togglePanel,
   setPanel: state.setPanel,
 }));

@@ -49,13 +49,13 @@ class ProductionAIService extends EventEmitter {
   // Production pricing (with markups applied)
   private readonly MODEL_PRICING: Record<string, Record<string, { input: number; output: number }>> = {
     'openai': {
-      'gpt-4o': { input: 0.005 * 1.2, output: 0.015 * 1.2 }, // 20% markup
-      'gpt-4o-mini': { input: 0.00015 * 1.2, output: 0.0006 * 1.2 },
+      'gpt-5': { input: 0.005 * 1.2, output: 0.015 * 1.2 }, // 20% markup
+      'gpt-5-mini': { input: 0.00015 * 1.2, output: 0.0006 * 1.2 },
       'gpt-3.5-turbo': { input: 0.0005 * 1.2, output: 0.0015 * 1.2 },
       'gpt-4-turbo': { input: 0.01 * 1.2, output: 0.03 * 1.2 }
     },
     'anthropic': {
-      'claude-3-5-sonnet-20241022': { input: 0.003 * 1.2, output: 0.015 * 1.2 },
+      'claude-opus-4.1': { input: 0.003 * 1.2, output: 0.015 * 1.2 },
       'claude-3-5-haiku-20241022': { input: 0.00025 * 1.2, output: 0.00125 * 1.2 },
       'claude-3-opus-20240229': { input: 0.015 * 1.2, output: 0.075 * 1.2 }
     },
@@ -87,7 +87,7 @@ class ProductionAIService extends EventEmitter {
       displayName: 'OpenAI',
       models: [
         {
-          id: 'gpt-4o',
+          id: 'gpt-5',
           name: 'GPT-4o',
           provider: 'openai',
           contextLength: 128000,
@@ -97,7 +97,7 @@ class ProductionAIService extends EventEmitter {
           supportsFunctions: true
         },
         {
-          id: 'gpt-4o-mini',
+          id: 'gpt-5-mini',
           name: 'GPT-4o Mini',
           provider: 'openai',
           contextLength: 128000,
@@ -126,7 +126,7 @@ class ProductionAIService extends EventEmitter {
       displayName: 'Anthropic',
       models: [
         {
-          id: 'claude-3-5-sonnet-20241022',
+          id: 'claude-opus-4.1',
           name: 'Claude 3.5 Sonnet',
           provider: 'anthropic',
           contextLength: 200000,

@@ -502,7 +502,7 @@ Provide a 2-3 sentence summary focusing on the main purpose and relationships.`;
         role: 'user',
         content: summaryPrompt
       }], {
-        model: 'claude-sonnet-4',
+        model: 'claude-opus-4.1',
         temperature: 0.3,
         maxTokens: 200
       });

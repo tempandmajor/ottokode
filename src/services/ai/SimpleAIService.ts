@@ -47,7 +47,7 @@ export class SimpleAIService {
         displayName: 'Anthropic',
         models: [
           {
-            id: 'claude-3-5-sonnet-20241022',
+            id: 'claude-opus-4.1',
             name: 'Claude 3.5 Sonnet',
             provider: 'anthropic',
             contextLength: 200000,

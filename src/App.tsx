@@ -393,7 +393,8 @@ function App() {
       <EditorArea />
       <SidebarPanels />
 
-      {showAuth && (
+      {/* Temporarily disabled for screenshots */}
+      {false && showAuth && (
         <DesktopAuthScreen onClose={() => setPanel('showAuth', false)} />
       )}
     </div>

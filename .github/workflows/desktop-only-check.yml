@@ -1,0 +1,165 @@
+name: 🖥️ Desktop-Only Development Policy Enforcement
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  enforce-desktop-only:
+    name: 🛡️ Enforce Desktop-Only Policy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: 🔍 Check Desktop-Only Development Policy
+      run: |
+        echo "🎯 DESKTOP-ONLY DEVELOPMENT POLICY CHECK"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+        # Check for web-app feature development violations
+        WEB_APP_VIOLATIONS=$(git diff --name-only HEAD~1..HEAD | grep -E "^web-app/src/(components|services|hooks|utils|store)/" | grep -v -E "(README|\.md$|package\.json$|\.test\.|\.spec\.)") || true
+
+        if [ ! -z "$WEB_APP_VIOLATIONS" ]; then
+          echo ""
+          echo "❌ POLICY VIOLATION: Web-app feature development detected!"
+          echo "🚫 PROHIBITED: New features in web-app/ directory"
+          echo ""
+          echo "🔍 Violating files:"
+          echo "$WEB_APP_VIOLATIONS" | while read file; do
+            echo "  • $file"
+          done
+          echo ""
+          echo "📋 POLICY: All new features must be in desktop app (src/)"
+          echo "📖 See: DESKTOP_ONLY_DEVELOPMENT_POLICY.md"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          exit 1
+        fi
+
+        # Check for desktop app development (positive)
+        DESKTOP_FILES=$(git diff --name-only HEAD~1..HEAD | grep -E "^src/" | head -10) || true
+        if [ ! -z "$DESKTOP_FILES" ]; then
+          echo "✅ Desktop app development detected - Policy compliant!"
+          echo "🚀 Desktop files modified:"
+          echo "$DESKTOP_FILES" | while read file; do
+            echo "  • $file"
+          done
+          echo ""
+        fi
+
+        # Check for policy documentation updates
+        POLICY_FILES=$(git diff --name-only HEAD~1..HEAD | grep -E "(DESKTOP_ONLY|desktop-only)" | head -5) || true
+        if [ ! -z "$POLICY_FILES" ]; then
+          echo "📋 Policy documentation updated:"
+          echo "$POLICY_FILES" | while read file; do
+            echo "  • $file"
+          done
+          echo ""
+        fi
+
+        echo "🎯 Desktop-Only Policy: ✅ PASSED"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    - name: 📊 Generate Policy Report
+      if: always()
+      run: |
+        echo "📊 DEVELOPMENT ACTIVITY REPORT" >> policy-report.txt
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >> policy-report.txt
+        echo "🗓️ Date: $(date)" >> policy-report.txt
+        echo "🔀 Branch: $GITHUB_REF_NAME" >> policy-report.txt
+        echo "👤 Author: $GITHUB_ACTOR" >> policy-report.txt
+        echo "" >> policy-report.txt
+
+        TOTAL_FILES=$(git diff --name-only HEAD~1..HEAD | wc -l)
+        DESKTOP_FILES=$(git diff --name-only HEAD~1..HEAD | grep -E "^src/" | wc -l)
+        WEB_FILES=$(git diff --name-only HEAD~1..HEAD | grep -E "^web-app/" | wc -l)
+
+        echo "📈 File Change Summary:" >> policy-report.txt
+        echo "  • Total files changed: $TOTAL_FILES" >> policy-report.txt
+        echo "  • Desktop app files: $DESKTOP_FILES" >> policy-report.txt
+        echo "  • Web app files: $WEB_FILES" >> policy-report.txt
+        echo "" >> policy-report.txt
+
+        if [ $DESKTOP_FILES -gt 0 ]; then
+          echo "✅ Policy Compliance: GOOD" >> policy-report.txt
+          echo "🎯 Focus: Desktop-first development ✓" >> policy-report.txt
+        else
+          echo "⚠️ Policy Compliance: REVIEW NEEDED" >> policy-report.txt
+          echo "🎯 Focus: Ensure desktop app development" >> policy-report.txt
+        fi
+
+        echo "" >> policy-report.txt
+        echo "📖 Policy: DESKTOP_ONLY_DEVELOPMENT_POLICY.md" >> policy-report.txt
+
+        cat policy-report.txt
+
+    - name: 💬 Comment Policy Status (on PR)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          // Check if policy report exists
+          let reportContent = '📊 Desktop-Only Policy Check: ✅ PASSED\n\n';
+
+          try {
+            reportContent = fs.readFileSync('policy-report.txt', 'utf8');
+          } catch (e) {
+            reportContent = '📊 Desktop-Only Policy Check completed successfully.';
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🖥️ Desktop-Only Development Policy Check\n\n${reportContent}\n\n---\n*Automated policy enforcement by GitHub Actions*`
+          });
+
+  validate-desktop-features:
+    name: 🔍 Validate Desktop Features
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'feat:') || contains(github.event.head_commit.message, 'feature:')
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔍 Check Feature Implementation Location
+      run: |
+        echo "🔍 FEATURE VALIDATION: Checking implementation location"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+        # Look for new feature files
+        NEW_FEATURES=$(git diff --name-only HEAD~1..HEAD | grep -E "\.(ts|tsx|js|jsx)$" | grep -E "(component|service|hook|util)" | head -10) || true
+
+        if [ ! -z "$NEW_FEATURES" ]; then
+          echo "🆕 New feature files detected:"
+          echo "$NEW_FEATURES" | while read file; do
+            if [[ $file == src/* ]]; then
+              echo "  ✅ $file (Desktop App - Compliant)"
+            elif [[ $file == web-app/* ]]; then
+              echo "  ❌ $file (Web App - Policy Violation)"
+            else
+              echo "  ℹ️ $file (Other location)"
+            fi
+          done
+          echo ""
+
+          # Check if any features are in web-app
+          WEB_FEATURES=$(echo "$NEW_FEATURES" | grep "^web-app/" || true)
+          if [ ! -z "$WEB_FEATURES" ]; then
+            echo "❌ FEATURE POLICY VIOLATION!"
+            echo "🚫 New features detected in web-app/ directory"
+            echo "📋 REQUIRED: Move features to desktop app (src/)"
+            exit 1
+          fi
+        fi
+
+        echo "🎯 Feature Implementation: ✅ COMPLIANT"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

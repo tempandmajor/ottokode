@@ -52,8 +52,8 @@ export class ResponsesAIService {
     // Anthropic Configuration (fallback)
     this.providers.set('anthropic', {
       name: 'Anthropic',
-      models: ['claude-opus-4.1', 'claude-sonnet-4', 'claude-3.5-sonnet-20241022', 'claude-3-haiku-20240307'],
-      defaultModel: 'claude-sonnet-4',
+      models: ['claude-opus-4.1', 'claude-opus-4.1', 'claude-3.5-sonnet-20241022', 'claude-3-haiku-20240307'],
+      defaultModel: 'claude-opus-4.1',
       supportsStreaming: true,
       supportsCodeCompletion: true,
       supportsChat: true,

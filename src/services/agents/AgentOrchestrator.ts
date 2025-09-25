@@ -197,7 +197,7 @@ export class AgentOrchestrator extends EventEmitter {
       averageExecutionTime: 120000, // 2 minutes
       maxConcurrentTasks: 1,
       currentTasks: new Set(),
-      model: 'claude-sonnet-4',
+      model: 'claude-opus-4.1',
       config: {
         temperature: 0.1,
         maxTokens: 4000,

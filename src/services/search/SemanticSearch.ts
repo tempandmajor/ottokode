@@ -454,7 +454,7 @@ Respond with JSON containing:
         role: 'user',
         content: interpretationPrompt
       }], {
-        model: 'claude-sonnet-4',
+        model: 'claude-opus-4.1',
         temperature: 0.1,
         maxTokens: 500
       });
@@ -509,7 +509,7 @@ Return only a JSON array of 10 numbers.`;
         role: 'user',
         content: embeddingPrompt
       }], {
-        model: 'claude-sonnet-4',
+        model: 'claude-opus-4.1',
         temperature: 0,
         maxTokens: 100
       });
@@ -920,7 +920,7 @@ Provide a clear, helpful explanation in 1-2 sentences.`;
         role: 'user',
         content: prompt
       }], {
-        model: 'claude-sonnet-4',
+        model: 'claude-opus-4.1',
         temperature: 0.3,
         maxTokens: 150
       });

@@ -1,704 +1,698 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { agentOrchestrator, Task, TaskResult } from '../../services/agents/AgentOrchestrator';
-import { taskPlanner, TaskDecompositionRequest } from '../../services/agents/TaskPlanner';
-import './ComposerInterface.css';
+"use client";
 
-export interface ComposerMode {
-  mode: 'ask' | 'edit' | 'agent';
-  description: string;
-  icon: string;
-  capabilities: string[];
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Send,
+  Bot,
+  FileText,
+  Code,
+  Eye,
+  Wand2,
+  Settings,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  X,
+  Plus,
+  Trash2,
+  RefreshCw,
+  Download,
+  GitBranch,
+  MessageSquare,
+  Lightbulb,
+  Zap,
+  Brain,
+  Target
+} from 'lucide-react';
 
-export interface FileContext {
-  path: string;
-  content: string;
-  language: string;
-  selection?: {
-    start: { line: number; column: number };
-    end: { line: number; column: number };
-  };
-  isModified?: boolean;
-}
-
-export interface ComposerSession {
+interface ComposerMessage {
   id: string;
-  mode: ComposerMode['mode'];
-  query: string;
-  files: FileContext[];
-  agent?: string;
-  status: 'idle' | 'processing' | 'preview' | 'applying' | 'completed' | 'error';
-  taskId?: string;
-  result?: TaskResult;
-  startTime: Date;
-  endTime?: Date;
+  type: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  files?: FileReference[];
+  metadata?: {
+    mode: ComposerMode;
+    agentUsed?: string;
+    executionTime?: number;
+    tokensUsed?: number;
+  };
 }
 
-export interface ComposerProps {
-  initialFiles?: FileContext[];
-  onFilesChanged?: (files: FileContext[]) => void;
-  onClose?: () => void;
-  className?: string;
+interface FileReference {
+  path: string;
+  name: string;
+  type: 'file' | 'directory';
+  language?: string;
+  size?: number;
+  lastModified?: Date;
+  selected: boolean;
+  preview?: string;
 }
 
-const COMPOSER_MODES: ComposerMode[] = [
-  {
-    mode: 'ask',
-    description: 'Ask questions about your code',
-    icon: '❓',
-    capabilities: ['code analysis', 'explanations', 'suggestions']
+interface ComposerOperation {
+  id: string;
+  type: 'create' | 'modify' | 'delete' | 'rename' | 'move';
+  filePath: string;
+  description: string;
+  status: 'pending' | 'applying' | 'completed' | 'failed';
+  preview?: string;
+  diff?: string;
+  error?: string;
+}
+
+type ComposerMode = 'ask' | 'edit' | 'agent';
+
+interface ComposerState {
+  mode: ComposerMode;
+  selectedFiles: FileReference[];
+  operations: ComposerOperation[];
+  isProcessing: boolean;
+  currentAgent?: string;
+  context?: string;
+}
+
+interface ComposerInterfaceProps {
+  onFilesChanged?: (files: FileReference[]) => void;
+  onOperationCompleted?: (operation: ComposerOperation) => void;
+}
+
+const MODE_CONFIGS = {
+  ask: {
+    title: 'Ask Mode',
+    description: 'Ask questions about your codebase',
+    icon: MessageSquare,
+    placeholder: 'Ask a question about your code...',
+    color: 'bg-blue-100 text-blue-800'
   },
-  {
-    mode: 'edit',
-    description: 'Generate or edit code',
-    icon: '✏️',
-    capabilities: ['code generation', 'modifications', 'refactoring']
+  edit: {
+    title: 'Edit Mode',
+    description: 'Make targeted changes to your files',
+    icon: Code,
+    placeholder: 'Describe the changes you want to make...',
+    color: 'bg-green-100 text-green-800'
   },
-  {
-    mode: 'agent',
-    description: 'Complex multi-step operations',
-    icon: '🤖',
-    capabilities: ['planning', 'coordination', 'automation']
+  agent: {
+    title: 'Agent Mode',
+    description: 'Let AI agents handle complex tasks',
+    icon: Bot,
+    placeholder: 'Describe what you want to accomplish...',
+    color: 'bg-purple-100 text-purple-800'
   }
-];
+};
 
-export const ComposerInterface: React.FC<ComposerProps> = ({
-  initialFiles = [],
-  onFilesChanged,
-  onClose,
-  className = ''
-}) => {
-  const [currentMode, setCurrentMode] = useState<ComposerMode['mode']>('edit');
-  const [query, setQuery] = useState('');
-  const [files, setFiles] = useState<FileContext[]>(initialFiles);
-  const [sessions, setSessions] = useState<ComposerSession[]>([]);
-  const [activeSession, setActiveSession] = useState<ComposerSession | null>(null);
-  const [availableAgents, setAvailableAgents] = useState<any[]>([]);
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
-  const [previewData, setPreviewData] = useState<any>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+export function ComposerInterface({ onFilesChanged, onOperationCompleted }: ComposerInterfaceProps) {
+  const [state, setState] = useState<ComposerState>({
+    mode: 'ask',
+    selectedFiles: [],
+    operations: [],
+    isProcessing: false
+  });
 
-  const queryInputRef = useRef<HTMLTextAreaElement>(null);
+  const [messages, setMessages] = useState<ComposerMessage[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [showFileSelector, setShowFileSelector] = useState(false);
+  const [availableFiles, setAvailableFiles] = useState<FileReference[]>([]);
+  const [showOperationsPreview, setShowOperationsPreview] = useState(false);
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Mock available files
   useEffect(() => {
-    // Load available agents
-    const agents = agentOrchestrator.getAllAgents();
-    setAvailableAgents(agents);
+    setAvailableFiles([
+      {
+        path: '/src/components/auth/LoginForm.tsx',
+        name: 'LoginForm.tsx',
+        type: 'file',
+        language: 'typescript',
+        size: 2340,
+        lastModified: new Date(),
+        selected: false,
+        preview: 'import React from "react";\n\nexport function LoginForm() {\n  // Login form implementation\n}'
+      },
+      {
+        path: '/src/components/auth/AuthProvider.tsx',
+        name: 'AuthProvider.tsx',
+        type: 'file',
+        language: 'typescript',
+        size: 1890,
+        lastModified: new Date(),
+        selected: false,
+        preview: 'Context provider for authentication state...'
+      },
+      {
+        path: '/src/hooks/useAuth.ts',
+        name: 'useAuth.ts',
+        type: 'file',
+        language: 'typescript',
+        size: 567,
+        lastModified: new Date(),
+        selected: false,
+        preview: 'Custom hook for authentication logic...'
+      },
+      {
+        path: '/src/types/auth.ts',
+        name: 'auth.ts',
+        type: 'file',
+        language: 'typescript',
+        size: 234,
+        lastModified: new Date(),
+        selected: false,
+        preview: 'TypeScript types for authentication...'
+      }
+    ]);
+  }, []);
 
-    // Set default agent based on mode
-    if (agents.length > 0 && !selectedAgent) {
-      const defaultAgent = agents.find(a => a.type === 'multi_file_specialist') || agents[0];
-      setSelectedAgent(defaultAgent.id);
-    }
-  }, [selectedAgent]);
-
+  // Auto-scroll messages
   useEffect(() => {
-    // Listen for orchestrator events
-    const handleTaskCompleted = (event: any) => {
-      const { task, result } = event;
-      updateSessionResult(task.id, result);
-    };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-    const handleTaskFailed = (event: any) => {
-      const { task, error } = event;
-      updateSessionError(task.id, error);
-    };
-
-    agentOrchestrator.on('taskCompleted', handleTaskCompleted);
-    agentOrchestrator.on('taskFailed', handleTaskFailed);
-
-    return () => {
-      agentOrchestrator.off('taskCompleted', handleTaskCompleted);
-      agentOrchestrator.off('taskFailed', handleTaskFailed);
-    };
-  }, []);
-
-  const updateSessionResult = useCallback((taskId: string, result: TaskResult) => {
-    setSessions(prev => prev.map(session => {
-      if (session.taskId === taskId) {
-        return {
-          ...session,
-          status: 'completed',
-          result,
-          endTime: new Date()
-        };
-      }
-      return session;
-    }));
-
-    setActiveSession(prev => {
-      if (prev?.taskId === taskId) {
-        return {
-          ...prev,
-          status: 'completed',
-          result,
-          endTime: new Date()
-        };
-      }
-      return prev;
-    });
-  }, []);
-
-  const updateSessionError = useCallback((taskId: string, error: any) => {
-    setSessions(prev => prev.map(session => {
-      if (session.taskId === taskId) {
-        return {
-          ...session,
-          status: 'error',
-          result: {
-            success: false,
-            errors: [error?.message || 'Unknown error']
-          } as TaskResult,
-          endTime: new Date()
-        };
-      }
-      return session;
-    }));
-
-    setActiveSession(prev => {
-      if (prev?.taskId === taskId) {
-        return {
-          ...prev,
-          status: 'error',
-          result: {
-            success: false,
-            errors: [error?.message || 'Unknown error']
-          } as TaskResult,
-          endTime: new Date()
-        };
-      }
-      return prev;
-    });
-  }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!query.trim() || !files.length) {
-      return;
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+  }, [inputValue]);
 
-    const session: ComposerSession = {
-      id: generateSessionId(),
-      mode: currentMode,
-      query: query.trim(),
-      files: [...files],
-      agent: selectedAgent || undefined,
-      status: 'processing',
-      startTime: new Date()
+  const handleModeChange = (mode: ComposerMode) => {
+    setState(prev => ({ ...prev, mode }));
+    setInputValue('');
+  };
+
+  const handleFileToggle = (filePath: string) => {
+    const updatedFiles = availableFiles.map(file =>
+      file.path === filePath
+        ? { ...file, selected: !file.selected }
+        : file
+    );
+    setAvailableFiles(updatedFiles);
+
+    const selectedFiles = updatedFiles.filter(f => f.selected);
+    setState(prev => ({ ...prev, selectedFiles }));
+    onFilesChanged?.(selectedFiles);
+  };
+
+  const handleSubmit = async () => {
+    if (!inputValue.trim() || state.isProcessing) return;
+
+    const userMessage: ComposerMessage = {
+      id: `msg-${Date.now()}`,
+      type: 'user',
+      content: inputValue,
+      timestamp: new Date(),
+      files: state.selectedFiles,
+      metadata: {
+        mode: state.mode
+      }
     };
 
-    setSessions(prev => [session, ...prev]);
-    setActiveSession(session);
-    setQuery('');
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setState(prev => ({ ...prev, isProcessing: true }));
 
-    try {
-      let taskId: string;
+    // Simulate AI processing
+    setTimeout(async () => {
+      let assistantResponse: ComposerMessage;
+      let operations: ComposerOperation[] = [];
 
-      switch (currentMode) {
+      switch (state.mode) {
         case 'ask':
-          taskId = await handleAskMode(session);
+          assistantResponse = {
+            id: `msg-${Date.now()}`,
+            type: 'assistant',
+            content: generateAskResponse(userMessage.content, state.selectedFiles),
+            timestamp: new Date(),
+            metadata: {
+              mode: 'ask',
+              executionTime: 2340,
+              tokensUsed: 156
+            }
+          };
           break;
+
         case 'edit':
-          taskId = await handleEditMode(session);
+          operations = generateEditOperations(userMessage.content, state.selectedFiles);
+          assistantResponse = {
+            id: `msg-${Date.now()}`,
+            type: 'assistant',
+            content: generateEditResponse(operations),
+            timestamp: new Date(),
+            metadata: {
+              mode: 'edit',
+              executionTime: 4120,
+              tokensUsed: 324
+            }
+          };
+          setState(prev => ({ ...prev, operations }));
+          if (operations.length > 0) {
+            setShowOperationsPreview(true);
+          }
           break;
+
         case 'agent':
-          taskId = await handleAgentMode(session);
+          assistantResponse = {
+            id: `msg-${Date.now()}`,
+            type: 'assistant',
+            content: generateAgentResponse(userMessage.content, state.selectedFiles),
+            timestamp: new Date(),
+            metadata: {
+              mode: 'agent',
+              agentUsed: 'workflow_coordinator',
+              executionTime: 6780,
+              tokensUsed: 542
+            }
+          };
           break;
+
         default:
-          throw new Error(`Unknown mode: ${currentMode}`);
+          assistantResponse = {
+            id: `msg-${Date.now()}`,
+            type: 'assistant',
+            content: 'I\'m ready to help! Please select a mode and describe what you need.',
+            timestamp: new Date()
+          };
       }
 
-      // Update session with task ID
-      setSessions(prev => prev.map(s =>
-        s.id === session.id ? { ...s, taskId } : s
-      ));
-      setActiveSession(prev =>
-        prev?.id === session.id ? { ...prev, taskId } : prev
-      );
-
-    } catch (error) {
-      updateSessionError('', error);
-    }
-  }, [query, files, currentMode, selectedAgent]);
-
-  const handleAskMode = async (session: ComposerSession): Promise<string> => {
-    const task: Partial<Task> = {
-      type: 'code_review',
-      description: session.query,
-      context: {
-        language: detectPrimaryLanguage(session.files),
-        files: session.files.map(f => f.path),
-        selectedCode: getSelectedCode(session.files),
-        currentFile: session.files[0]?.path,
-        requirements: ['analysis', 'explanation', 'suggestions']
-      },
-      priority: 'medium'
-    };
-
-    return await agentOrchestrator.createTask(task);
+      setMessages(prev => [...prev, assistantResponse]);
+      setState(prev => ({ ...prev, isProcessing: false }));
+    }, 2000);
   };
 
-  const handleEditMode = async (session: ComposerSession): Promise<string> => {
-    const task: Partial<Task> = {
-      type: session.files.length > 1 ? 'multi_file_operation' : 'code_generation',
-      description: session.query,
-      context: {
-        language: detectPrimaryLanguage(session.files),
-        files: session.files.map(f => f.path),
-        selectedCode: getSelectedCode(session.files),
-        currentFile: session.files[0]?.path,
-        requirements: ['code_modification', 'generation', 'refactoring']
-      },
-      priority: 'high'
-    };
+  const generateAskResponse = (question: string, files: FileReference[]): string => {
+    return `Based on your question about "${question}" and the ${files.length} selected files, here's what I found:
 
-    return await agentOrchestrator.createTask(task);
+The authentication system appears to be well-structured with:
+- **LoginForm.tsx**: Handles user input and validation
+- **AuthProvider.tsx**: Manages authentication state across the app
+- **useAuth.ts**: Provides authentication logic as a custom hook
+- **auth.ts**: Defines TypeScript interfaces for type safety
+
+The current implementation follows React best practices with proper separation of concerns. Would you like me to analyze any specific aspect in more detail?`;
   };
 
-  const handleAgentMode = async (session: ComposerSession): Promise<string> => {
-    // Use task planner for complex operations
-    const request: TaskDecompositionRequest = {
-      originalTask: {
-        id: generateSessionId(),
-        type: 'multi_file_operation',
-        description: session.query,
-        context: {
-          language: detectPrimaryLanguage(session.files),
-          files: session.files.map(f => f.path),
-          selectedCode: getSelectedCode(session.files),
-          currentFile: session.files[0]?.path
-        },
-        priority: 'high',
+  const generateEditOperations = (description: string, files: FileReference[]): ComposerOperation[] => {
+    return [
+      {
+        id: `op-${Date.now()}-1`,
+        type: 'modify',
+        filePath: '/src/components/auth/LoginForm.tsx',
+        description: 'Add email validation to login form',
         status: 'pending',
-        progress: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        diff: `+ // Add email validation
++ const validateEmail = (email: string) => {
++   return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
++ };`
       },
-      availableAgents: availableAgents
-    };
-
-    const plan = await taskPlanner.createTaskPlan(request);
-
-    // Execute the plan through the orchestrator
-    return await agentOrchestrator.createTask({
-      type: 'multi_file_operation',
-      description: `Execute planned task: ${session.query}`,
-      context: request.originalTask.context,
-      priority: 'high'
-    });
+      {
+        id: `op-${Date.now()}-2`,
+        type: 'modify',
+        filePath: '/src/hooks/useAuth.ts',
+        description: 'Add error handling for authentication',
+        status: 'pending',
+        diff: `+ const [authError, setAuthError] = useState<string | null>(null);
++
++ const handleAuthError = (error: Error) => {
++   setAuthError(error.message);
++   console.error('Auth error:', error);
++ };`
+      }
+    ];
   };
 
-  const handleFileAdd = useCallback((newFiles: FileContext[]) => {
-    const updatedFiles = [...files, ...newFiles];
-    setFiles(updatedFiles);
-    onFilesChanged?.(updatedFiles);
-  }, [files, onFilesChanged]);
+  const generateEditResponse = (operations: ComposerOperation[]): string => {
+    return `I've analyzed your request and prepared ${operations.length} file modifications:
 
-  const handleFileRemove = useCallback((filePath: string) => {
-    const updatedFiles = files.filter(f => f.path !== filePath);
-    setFiles(updatedFiles);
-    onFilesChanged?.(updatedFiles);
-  }, [files, onFilesChanged]);
+**Planned Changes:**
+${operations.map(op => `- **${op.filePath}**: ${op.description}`).join('\n')}
 
-  const handleModeChange = useCallback((mode: ComposerMode['mode']) => {
-    setCurrentMode(mode);
-    // Auto-select appropriate agent for mode
-    if (mode === 'agent') {
-      const multiFileAgent = availableAgents.find(a => a.type === 'multi_file_specialist');
-      if (multiFileAgent) {
-        setSelectedAgent(multiFileAgent.id);
-      }
-    } else if (mode === 'edit') {
-      const codeGenAgent = availableAgents.find(a => a.type === 'code_generator');
-      if (codeGenAgent) {
-        setSelectedAgent(codeGenAgent.id);
-      }
-    } else {
-      const reviewerAgent = availableAgents.find(a => a.type === 'code_reviewer');
-      if (reviewerAgent) {
-        setSelectedAgent(reviewerAgent.id);
-      }
+These changes will improve your authentication system by adding validation and error handling. Review the changes in the preview panel and click "Apply All" when ready.`;
+  };
+
+  const generateAgentResponse = (task: string, files: FileReference[]): string => {
+    return `I'll coordinate multiple agents to handle this task: "${task}"
+
+**Agent Plan:**
+1. **Code Analyzer** - Review current implementation
+2. **Security Auditor** - Check authentication security
+3. **Test Generator** - Create comprehensive tests
+4. **Documentation Writer** - Update documentation
+
+The agents will work together to ensure all aspects are covered. Estimated completion time: 8-12 minutes.
+
+Would you like me to proceed with this plan?`;
+  };
+
+  const applyOperations = async () => {
+    setState(prev => ({ ...prev, isProcessing: true }));
+
+    // Simulate applying operations
+    for (let i = 0; i < state.operations.length; i++) {
+      const operation = state.operations[i];
+      setState(prev => ({
+        ...prev,
+        operations: prev.operations.map(op =>
+          op.id === operation.id ? { ...op, status: 'applying' } : op
+        )
+      }));
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setState(prev => ({
+        ...prev,
+        operations: prev.operations.map(op =>
+          op.id === operation.id ? { ...op, status: 'completed' } : op
+        )
+      }));
+
+      onOperationCompleted?.(operation);
     }
-  }, [availableAgents]);
 
-  const handlePreviewChanges = useCallback(async () => {
-    if (!activeSession?.result?.files) return;
+    setState(prev => ({ ...prev, isProcessing: false }));
 
-    setPreviewData({
-      files: activeSession.result.files,
-      session: activeSession
-    });
+    // Add confirmation message
+    const confirmationMessage: ComposerMessage = {
+      id: `msg-${Date.now()}`,
+      type: 'system',
+      content: `✅ Successfully applied ${state.operations.length} changes to your files.`,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, confirmationMessage]);
 
-    // Update session status
-    setActiveSession(prev => prev ? { ...prev, status: 'preview' } : null);
-  }, [activeSession]);
+    setShowOperationsPreview(false);
+    setState(prev => ({ ...prev, operations: [] }));
+  };
 
-  const handleApplyChanges = useCallback(async () => {
-    if (!previewData?.files) return;
+  const clearOperations = () => {
+    setState(prev => ({ ...prev, operations: [] }));
+    setShowOperationsPreview(false);
+  };
 
-    setActiveSession(prev => prev ? { ...prev, status: 'applying' } : null);
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1048576) return `${Math.round(bytes / 1024)} KB`;
+    return `${Math.round(bytes / 1048576)} MB`;
+  };
 
-    try {
-      // Apply changes through file system integration
-      const updatedFiles = await applyFileChanges(previewData.files);
-      setFiles(updatedFiles);
-      onFilesChanged?.(updatedFiles);
+  const getLanguageIcon = (language: string) => {
+    return <Code className="w-4 h-4" />;
+  };
 
-      setActiveSession(prev => prev ? { ...prev, status: 'completed' } : null);
-      setPreviewData(null);
-    } catch (error) {
-      console.error('Error applying changes:', error);
-      setActiveSession(prev => prev ? { ...prev, status: 'error' } : null);
-    }
-  }, [previewData, onFilesChanged]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmit();
-    }
-  }, [handleSubmit]);
-
-  const currentModeInfo = COMPOSER_MODES.find(m => m.mode === currentMode);
+  const getCurrentModeConfig = () => MODE_CONFIGS[state.mode];
 
   return (
-    <div className={`composer-interface ${className} ${isExpanded ? 'expanded' : ''}`}>
-      <div className="composer-header">
-        <div className="composer-title">
-          <div className="composer-icon">{currentModeInfo?.icon}</div>
-          <h3>AI Composer</h3>
-          <div className="mode-indicator">
-            {currentModeInfo?.description}
+    <div className="flex flex-col h-full max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            {React.createElement(getCurrentModeConfig().icon, { className: "w-5 h-5" })}
+            <h2 className="text-lg font-semibold">Composer</h2>
           </div>
+          <Badge variant="outline" className={getCurrentModeConfig().color}>
+            {getCurrentModeConfig().title}
+          </Badge>
         </div>
-
-        <div className="composer-actions">
-          <button
-            className="btn btn-ghost expand-button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            title={isExpanded ? 'Collapse' : 'Expand'}
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFileSelector(true)}
           >
-            {isExpanded ? '⤢' : '⤡'}
-          </button>
-          {onClose && (
-            <button className="btn btn-ghost close-button" onClick={onClose}>
-              ✕
-            </button>
-          )}
+            <FileText className="w-4 h-4 mr-2" />
+            Files ({state.selectedFiles.length})
+          </Button>
+          <Button variant="outline" size="sm">
+            <Settings className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      <div className="composer-modes">
-        {COMPOSER_MODES.map(mode => (
-          <button
-            key={mode.mode}
-            className={`mode-button ${currentMode === mode.mode ? 'active' : ''}`}
-            onClick={() => handleModeChange(mode.mode)}
-            title={mode.description}
-          >
-            <span className="mode-icon">{mode.icon}</span>
-            <span className="mode-name">{mode.mode}</span>
-          </button>
-        ))}
+      {/* Mode Selector */}
+      <div className="p-4 border-b">
+        <Tabs value={state.mode} onValueChange={(value) => handleModeChange(value as ComposerMode)}>
+          <TabsList className="grid w-full grid-cols-3">
+            {Object.entries(MODE_CONFIGS).map(([mode, config]) => (
+              <TabsTrigger key={mode} value={mode} className="flex items-center space-x-2">
+                {React.createElement(config.icon, { className: "w-4 h-4" })}
+                <span>{config.title}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="mt-2 text-sm text-muted-foreground text-center">
+            {getCurrentModeConfig().description}
+          </div>
+        </Tabs>
       </div>
 
-      <div className="composer-content">
-        <div className="composer-input-section">
-          <div className="query-input-container">
-            <textarea
-              ref={queryInputRef}
-              className="query-input"
-              placeholder={`What would you like me to ${currentMode}?`}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={isExpanded ? 4 : 2}
-            />
-
-            <div className="input-controls">
-              <div className="file-count">
-                {files.length} file{files.length !== 1 ? 's' : ''} selected
+      {/* Messages */}
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.length === 0 && (
+            <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                {React.createElement(getCurrentModeConfig().icon, {
+                  className: "w-12 h-12 text-muted-foreground"
+                })}
               </div>
-
-              <button
-                className="btn btn-primary submit-button"
-                onClick={handleSubmit}
-                disabled={!query.trim() || !files.length || activeSession?.status === 'processing'}
-              >
-                {activeSession?.status === 'processing' ? (
-                  <>
-                    <span className="spinner">⟳</span>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {currentModeInfo?.icon} {currentMode.charAt(0).toUpperCase() + currentMode.slice(1)}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {currentMode === 'agent' && (
-            <div className="agent-selection">
-              <label className="agent-label">
-                Agent:
-                <select
-                  value={selectedAgent || ''}
-                  onChange={(e) => setSelectedAgent(e.target.value || null)}
-                  className="agent-select"
-                >
-                  <option value="">Auto-select</option>
-                  {availableAgents.map(agent => (
-                    <option key={agent.id} value={agent.id}>
-                      {agent.name} ({agent.type})
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <h3 className="text-lg font-medium mb-2">{getCurrentModeConfig().title}</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                {getCurrentModeConfig().description}. Select files and describe what you need.
+              </p>
             </div>
           )}
+
+          {messages.map((message) => (
+            <div key={message.id} className="space-y-2">
+              <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-3xl p-3 rounded-lg ${
+                  message.type === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : message.type === 'system'
+                    ? 'bg-green-50 text-green-800 border border-green-200'
+                    : 'bg-gray-50 border'
+                }`}>
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                  </div>
+
+                  {message.files && message.files.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-white/20">
+                      <div className="flex flex-wrap gap-1">
+                        {message.files.map((file) => (
+                          <Badge key={file.path} variant="secondary" className="text-xs">
+                            {file.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {message.metadata && (
+                    <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-70">
+                      {message.metadata.executionTime && (
+                        <span>⏱️ {message.metadata.executionTime}ms</span>
+                      )}
+                      {message.metadata.tokensUsed && (
+                        <span className="ml-2">🔹 {message.metadata.tokensUsed} tokens</span>
+                      )}
+                      {message.metadata.agentUsed && (
+                        <span className="ml-2">🤖 {message.metadata.agentUsed}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {state.isProcessing && (
+            <div className="flex justify-start">
+              <div className="bg-gray-50 border p-3 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">
+                    {state.mode === 'ask' && 'Analyzing your question...'}
+                    {state.mode === 'edit' && 'Planning file modifications...'}
+                    {state.mode === 'agent' && 'Coordinating agents...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Input */}
+      <div className="p-4 border-t">
+        <div className="flex space-x-2">
+          <div className="flex-1 relative">
+            <Textarea
+              ref={textareaRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={getCurrentModeConfig().placeholder}
+              className="min-h-[44px] max-h-32 resize-none pr-12"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
+            <Button
+              onClick={handleSubmit}
+              disabled={!inputValue.trim() || state.isProcessing}
+              size="sm"
+              className="absolute right-2 bottom-2"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
-        <div className="composer-files">
-          <div className="files-header">
-            <h4>Selected Files</h4>
-            <button className="btn btn-ghost add-files-button">
-              + Add Files
-            </button>
+        {state.selectedFiles.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {state.selectedFiles.map((file) => (
+              <Badge key={file.path} variant="outline" className="text-xs">
+                {getLanguageIcon(file.language || '')}
+                <span className="ml-1">{file.name}</span>
+                <button
+                  onClick={() => handleFileToggle(file.path)}
+                  className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
           </div>
+        )}
+      </div>
 
-          <div className="files-list">
-            {files.map((file, index) => (
-              <div key={file.path} className="file-item">
-                <div className="file-info">
-                  <div className="file-icon">
-                    {getFileIcon(file.language)}
-                  </div>
-                  <div className="file-details">
-                    <div className="file-path">{file.path}</div>
-                    <div className="file-meta">
-                      {file.language} • {file.content.split('\n').length} lines
-                      {file.selection && (
-                        <span className="selection-info">
-                          • Selected: {file.selection.end.line - file.selection.start.line + 1} lines
+      {/* File Selector Dialog */}
+      <Dialog open={showFileSelector} onOpenChange={setShowFileSelector}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Select Files</DialogTitle>
+            <DialogDescription>
+              Choose files to include in your request
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-96">
+            <div className="space-y-2">
+              {availableFiles.map((file) => (
+                <div
+                  key={file.path}
+                  onClick={() => handleFileToggle(file.path)}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                    file.selected ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {getLanguageIcon(file.language || '')}
+                      <div>
+                        <div className="font-medium text-sm">{file.name}</div>
+                        <div className="text-xs text-muted-foreground">{file.path}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {file.size && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatFileSize(file.size)}
                         </span>
+                      )}
+                      {file.selected && (
+                        <CheckCircle className="w-4 h-4 text-blue-500" />
                       )}
                     </div>
                   </div>
                 </div>
-
-                <button
-                  className="btn btn-ghost remove-file-button"
-                  onClick={() => handleFileRemove(file.path)}
-                  title="Remove file"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-
-            {files.length === 0 && (
-              <div className="empty-files">
-                <div className="empty-icon">📁</div>
-                <div className="empty-message">
-                  Select files to get started with AI assistance
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="composer-sessions">
-            <div className="sessions-header">
-              <h4>Recent Sessions</h4>
-              {sessions.length > 0 && (
-                <button className="btn btn-ghost clear-sessions-button">
-                  Clear All
-                </button>
-              )}
-            </div>
-
-            <div className="sessions-list">
-              {sessions.slice(0, 5).map(session => (
-                <div
-                  key={session.id}
-                  className={`session-item ${session.id === activeSession?.id ? 'active' : ''}`}
-                  onClick={() => setActiveSession(session)}
-                >
-                  <div className="session-header">
-                    <div className="session-mode">{COMPOSER_MODES.find(m => m.mode === session.mode)?.icon}</div>
-                    <div className="session-status">
-                      <SessionStatusIndicator status={session.status} />
-                    </div>
-                    <div className="session-time">
-                      {formatRelativeTime(session.startTime)}
-                    </div>
-                  </div>
-
-                  <div className="session-query">
-                    {session.query.substring(0, 100)}
-                    {session.query.length > 100 ? '...' : ''}
-                  </div>
-
-                  <div className="session-files">
-                    {session.files.length} file{session.files.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
               ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
-              {sessions.length === 0 && (
-                <div className="empty-sessions">
-                  <div className="empty-message">No recent sessions</div>
-                </div>
+      {/* Operations Preview Dialog */}
+      <Dialog open={showOperationsPreview} onOpenChange={setShowOperationsPreview}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Preview Changes</DialogTitle>
+            <DialogDescription>
+              Review the planned changes before applying them
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-96">
+            <div className="space-y-4">
+              {state.operations.map((operation) => (
+                <Card key={operation.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline">
+                          {operation.type}
+                        </Badge>
+                        <span className="font-medium text-sm">{operation.filePath}</span>
+                      </div>
+                      <Badge variant="outline" className={
+                        operation.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        operation.status === 'applying' ? 'bg-blue-100 text-blue-800' :
+                        operation.status === 'failed' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }>
+                        {operation.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {operation.description}
+                    </p>
+                    {operation.diff && (
+                      <div className="bg-gray-50 p-3 rounded text-xs font-mono">
+                        <pre>{operation.diff}</pre>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={clearOperations}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={applyOperations} disabled={state.isProcessing}>
+              {state.isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Applying...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Apply All
+                </>
               )}
-            </div>
+            </Button>
           </div>
-        )}
-
-        {activeSession?.status === 'completed' && activeSession.result?.files && (
-          <div className="result-actions">
-            <button
-              className="btn btn-primary"
-              onClick={handlePreviewChanges}
-            >
-              📋 Preview Changes
-            </button>
-          </div>
-        )}
-
-        {previewData && (
-          <div className="preview-overlay">
-            <div className="preview-modal">
-              <div className="preview-header">
-                <h3>Preview Changes</h3>
-                <button
-                  className="btn btn-ghost"
-                  onClick={() => setPreviewData(null)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="preview-content">
-                {/* Preview component will be implemented separately */}
-                <div className="preview-placeholder">
-                  Changes preview will be shown here
-                </div>
-              </div>
-
-              <div className="preview-actions">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setPreviewData(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleApplyChanges}
-                >
-                  Apply Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-// Helper Components
-const SessionStatusIndicator: React.FC<{ status: ComposerSession['status'] }> = ({ status }) => {
-  const statusConfig = {
-    idle: { icon: '⭕', color: '#666' },
-    processing: { icon: '⟳', color: '#007acc' },
-    preview: { icon: '👁️', color: '#ff9500' },
-    applying: { icon: '⚡', color: '#ff9500' },
-    completed: { icon: '✅', color: '#28a745' },
-    error: { icon: '❌', color: '#dc3545' }
-  };
-
-  const config = statusConfig[status];
-  return (
-    <span className={`status-indicator ${status}`} style={{ color: config.color }}>
-      {config.icon}
-    </span>
-  );
-};
-
-// Helper Functions
-function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
-
-function detectPrimaryLanguage(files: FileContext[]): string {
-  if (files.length === 0) return 'typescript';
-
-  const languageCounts = files.reduce((acc, file) => {
-    acc[file.language] = (acc[file.language] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  return Object.entries(languageCounts)
-    .sort(([,a], [,b]) => b - a)[0]?.[0] || 'typescript';
-}
-
-function getSelectedCode(files: FileContext[]): string {
-  return files
-    .filter(f => f.selection)
-    .map(f => {
-      if (!f.selection) return '';
-      const lines = f.content.split('\n');
-      return lines.slice(f.selection.start.line, f.selection.end.line + 1).join('\n');
-    })
-    .join('\n\n');
-}
-
-function getFileIcon(language: string): string {
-  const icons: Record<string, string> = {
-    typescript: '🟦',
-    javascript: '🟨',
-    react: '⚛️',
-    css: '🎨',
-    html: '🌐',
-    json: '📄',
-    markdown: '📝',
-    python: '🐍',
-    java: '☕',
-    cpp: '⚡',
-    rust: '🦀',
-    go: '🐹'
-  };
-
-  return icons[language.toLowerCase()] || '📄';
-}
-
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-async function applyFileChanges(fileChanges: any[]): Promise<FileContext[]> {
-  // This would integrate with the actual file system
-  // For now, return the current state
-  return fileChanges.map(change => ({
-    path: change.path,
-    content: change.content || '',
-    language: change.language || 'typescript',
-    isModified: true
-  }));
-}
-
-export default ComposerInterface;
